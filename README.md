@@ -33,6 +33,10 @@ The two analyses for each sample are then compared to check for anomalies.
 
 Start the server as described above. Go to the docs and upload the excel example in `tests/fixtures/excel/genotype.xlsx` to the upload plate endpoint. Then upload the `tests/fixtures/vcf/sequence.vcf` to the upload sequence endpoint.
 
+[genotype]: https://github.com/Clinical-Genomics/genotype
+[fastapi]: https://fastapi.tiangolo.com
+[poetry: https://python-poetry.org/docs/#installation
+
 
 
  
