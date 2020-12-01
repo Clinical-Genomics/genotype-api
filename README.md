@@ -35,7 +35,7 @@ Start the server as described above. Go to the docs and upload the excel example
 
 [genotype]: https://github.com/Clinical-Genomics/genotype
 [fastapi]: https://fastapi.tiangolo.com
-[poetry: https://python-poetry.org/docs/#installation
+[poetry]: https://python-poetry.org/docs/#installation
 
 
 
