@@ -76,3 +76,6 @@ NOTES.md
 
 # Other
 /local
+
+*.idea/
+*genotype.db

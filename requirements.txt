@@ -1,0 +1,20 @@
+click
+pyyaml
+coloredlogs
+bump2version
+
+sqlalchemy
+openpyxl
+
+# server stuff
+passlib
+fastapi
+uvicorn
+uvloop
+httptools
+gunicorn
+python-jose[cryptography]
+bcrypt
+numpy
+aiofiles
+sendmail-container
