@@ -7,7 +7,7 @@ from typing import List
 import genotype_api.crud.analyses
 import genotype_api.crud.samples
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
-from genotype_api.database import get_db
+from genotype_api.database import get_session
 from genotype_api.schemas.analysis import Analysis
 from genotype_api.schemas.samples import SampleCreate
 from genotype_api.vcf import SequenceAnalysis
@@ -17,7 +17,7 @@ router = APIRouter()
 
 
 @router.post("/", response_model=List[Analysis])
-def upload_vcf(file: UploadFile = File(...), db: Session = Depends(get_db)):
+def upload_vcf(file: UploadFile = File(...), db: Session = Depends(get_session)):
     file_name: Path = Path(file.filename)
     if not file_name.name.endswith(".vcf"):
         raise HTTPException(

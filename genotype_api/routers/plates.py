@@ -9,7 +9,7 @@ import genotype_api.crud.plates
 import genotype_api.crud.samples
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from genotype_api import models
-from genotype_api.database import get_db
+from genotype_api.database import get_session
 from genotype_api.excel import GenotypeAnalysis
 from genotype_api.schemas.plates import Plate
 from genotype_api.schemas.samples import SampleCreate
@@ -19,7 +19,7 @@ router = APIRouter()
 
 
 @router.post("/plate", response_model=Plate)
-def upload_plate(file: UploadFile = File(...), db: Session = Depends(get_db)):
+def upload_plate(file: UploadFile = File(...), db: Session = Depends(get_session)):
     file_name: Path = Path(file.filename)
     if not file_name.name.endswith(".xlsx"):
         raise HTTPException(
@@ -55,7 +55,7 @@ def upload_plate(file: UploadFile = File(...), db: Session = Depends(get_db)):
 
 
 @router.get("/<plate_id>", response_model=Plate)
-def read_plate(plate_id: str, db: Session = Depends(get_db)):
+def read_plate(plate_id: str, db: Session = Depends(get_session)):
     """Display information about a plate."""
     db_plate = genotype_api.crud.plates.get_plate_by_plate_id(db, plate_id=plate_id)
     if db_plate is None:
@@ -64,7 +64,7 @@ def read_plate(plate_id: str, db: Session = Depends(get_db)):
 
 
 @router.get("/<plate_id>/sign-off/<name>", response_model=Plate)
-def sign_off_plate(plate_id: str, name: str, db: Session = Depends(get_db)):
+def sign_off_plate(plate_id: str, name: str, db: Session = Depends(get_session)):
     """Sign off a plate.
 
     This means that current User sign off that the plate is checked
@@ -76,7 +76,7 @@ def sign_off_plate(plate_id: str, name: str, db: Session = Depends(get_db)):
 
 
 @router.get("/", response_model=List[Plate])
-def read_plates(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+def read_plates(skip: int = 0, limit: int = 100, db: Session = Depends(get_session)):
     """Display information about a plate."""
     plates = genotype_api.crud.plates.get_plates(db, skip=skip, limit=limit)
 
@@ -84,7 +84,7 @@ def read_plates(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
 
 
 @router.delete("/<plate_id>", response_model=Plate)
-def delete_plate(plate_id: int, db: Session = Depends(get_db)):
+def delete_plate(plate_id: int, db: Session = Depends(get_session)):
     """Display information about a plate."""
     db_plate = genotype_api.crud.plates.delete_plate(db, plate_id=plate_id)
     if db_plate is None:

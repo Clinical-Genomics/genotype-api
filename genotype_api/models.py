@@ -1,15 +1,13 @@
 from collections import Counter
 from datetime import datetime
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from genotype_api.constants import SEXES, TYPES
-from genotype_api.database import Base
-from sqlalchemy import Boolean, Column, DateTime, Enum, ForeignKey, Integer, String, Text
-from sqlalchemy.orm import relationship
-from sqlalchemy.schema import UniqueConstraint
+from sqlmodel import Field, Relationship, SQLModel
+from pydantic import Field as PydanticField
 
 
-class Plate(Base):
+class Plate(SQLModel):
 
     """Describe a MAF plate of samples and it's status."""
 
@@ -37,11 +35,9 @@ class Plate(Base):
         return done_samples_count / all_samples_count * 100
 
 
-class Analysis(Base):
+class Analysis(SQLModel):
     """Represent a SNP analysis
-
     The analysis can by any of (genotyping, sequencing).
-
     Attributes:
         type (str): 'sequence' or 'genotype'
         source (str): where the genotypes originated from
@@ -82,10 +78,9 @@ class Analysis(Base):
         return counter
 
 
-class Genotype(Base):
+class Genotype(SQLModel):
 
     """Represent a genotype call for a position.
-
     Attributes:
         rsnumber (str): SNP id
         analysis (Analysis): related Analysis model
@@ -116,10 +111,9 @@ class Genotype(Base):
         return f"<Genotype {self.id}>"
 
 
-class Sample(Base):
+class Sample(SQLModel):
 
     """Represent a sample.
-
     Attributes:
         id (str): unique sample id
         status (str): status of sample comparison
@@ -145,7 +139,7 @@ class Sample(Base):
         return f"<Sample {self.id}>"
 
 
-class SNP(Base):
+class SNP(SQLModel):
     """Represent a SNP position under investigation."""
 
     __tablename__ = "snps"
@@ -161,11 +155,10 @@ class SNP(Base):
     def __repr__(self):
         return f"<SNP {self.id}>"
 
-
-class User(Base):
+class User(SQLModel, table=True):
     __tablename__ = "users"
 
-    id = Column(Integer, primary_key=True, index=True)
-    email = Column(String, unique=True, index=True)
-    hashed_password = Column(String)
-    is_active = Column(Boolean, default=True)
+    id: Optional[int] = Field(default=None, primary_key=True)
+    email: str = Field(index=True) # should be unique https://dev.to/rexosei/how-to-make-a-field-unique-with-sqlmodel-4km9
+    hashed_password: str
+    is_active: Optional[bool] = True

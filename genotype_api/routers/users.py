@@ -5,7 +5,7 @@ from typing import List
 import genotype_api.crud.users
 from fastapi import APIRouter, Depends, HTTPException
 from genotype_api import crud
-from genotype_api.database import get_db
+from genotype_api.database import get_session
 from genotype_api.schemas.users import User, UserCreate
 from sqlalchemy.orm import Session
 
@@ -13,7 +13,7 @@ router = APIRouter()
 
 
 @router.get("/{user_id}", response_model=User)
-def read_user(user_id: int, db: Session = Depends(get_db)):
+def read_user(user_id: int, db: Session = Depends(get_session)):
     db_user = genotype_api.crud.users.get_user(db, user_id=user_id)
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
@@ -21,7 +21,7 @@ def read_user(user_id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/", response_model=User)
-def create_user(user: UserCreate, db: Session = Depends(get_db)):
+def create_user(user: UserCreate, db: Session = Depends(get_session)):
     db_user = genotype_api.crud.users.get_user_by_email(db, email=user.email)
     if db_user:
         raise HTTPException(status_code=400, detail="Email already registered")
@@ -32,7 +32,7 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
 def read_users(
     skip: int = 0,
     limit: int = 100,
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_session),
 ):
     users = genotype_api.crud.users.get_users(db, skip=skip, limit=limit)
     return users
