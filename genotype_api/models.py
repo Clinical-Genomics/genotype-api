@@ -1,7 +1,7 @@
 from collections import Counter
 from datetime import datetime
-from typing import Dict, List, Optional, Literal
-
+from typing import Dict, List, Optional
+from constants import SEXES, TYPES, STATUS
 from pydantic import constr
 from sqlmodel import Field, Relationship, SQLModel
 
@@ -37,9 +37,9 @@ class Analysis(SQLModel, table=True):
     # __table_args__ = (UniqueConstraint("sample_id", "type", name="_sample_type"),)
 
     id: Optional[int] = Field(default=None, primary_key=True)
-    type: Literal["genotype", "sequence"]
+    type: TYPES
     source: Optional[str]
-    sex: Optional[Literal["male", "female", "unknown"]]
+    sex: Optional[SEXES]
     created_at: Optional[datetime] = datetime.now()
     sample_id: Optional[constr(max_length=32)] = Field(default=None, foreign_key="samples.id")
 
@@ -99,12 +99,12 @@ class Sample(SQLModel, table=True):
     __tablename__ = "samples"
 
     id: Optional[constr(max_length=32)] = Field(default=None, primary_key=True)
-    status: Optional[Literal["pass", "fail", "cancel"]]
+    status: Optional[STATUS]
     comment: Optional[str]
-    sex: Optional[Literal["male", "female", "unknown"]]
+    sex: Optional[SEXES]
     created_at: Optional[datetime] = datetime.now()
 
-    analyses = Relationship(back_populates="sample")
+    #analyses = Relationship(back_populates="sample")
 
     def __str__(self):
         """Stringify sample record."""
