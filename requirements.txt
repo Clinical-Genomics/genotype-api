@@ -3,7 +3,7 @@ pyyaml
 coloredlogs
 bump2version
 
-sqlalchemy
+sqlmodel
 openpyxl
 
 # server stuff

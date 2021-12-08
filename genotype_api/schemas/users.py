@@ -1,9 +1,9 @@
 """User schemas"""
 
-from pydantic import BaseModel
+from sqlmodel import SQLModel
 
 
-class UserBase(BaseModel):
+class UserBase(SQLModel):
     email: str
 
 
