@@ -8,8 +8,7 @@ import genotype_api.crud.analyses
 import genotype_api.crud.samples
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from genotype_api.database import get_session
-from genotype_api.schemas.analysis import Analysis
-from genotype_api.schemas.samples import SampleCreate
+from genotype_api.models import Analysis, SampleCreate
 from genotype_api.vcf import SequenceAnalysis
 from sqlalchemy.orm import Session
 

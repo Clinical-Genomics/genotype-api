@@ -7,6 +7,7 @@ from typing import ByteString, Iterable, List, Optional
 import openpyxl
 from genotype_api.exceptions import SexConflictError
 from genotype_api.models import Analysis, Genotype
+
 from openpyxl.workbook import Workbook
 from openpyxl.worksheet.worksheet import Worksheet
 

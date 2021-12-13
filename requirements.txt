@@ -2,7 +2,7 @@ click
 pyyaml
 coloredlogs
 bump2version
-
+pymysql
 sqlmodel
 openpyxl
 
