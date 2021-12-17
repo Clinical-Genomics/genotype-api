@@ -6,7 +6,7 @@ from genotype_api.config import settings
 sqlite_file_name = "database.db"
 sqlite_url = f"sqlite:///{sqlite_file_name}"
 
-engine = create_engine(settings.db_uri, echo=True) # remove echo=True when going to prod
+engine = create_engine(settings.db_uri)
 
 
 def get_session():
@@ -16,4 +16,3 @@ def get_session():
 
 def create_db_and_tables():
     SQLModel.metadata.create_all(engine)
-

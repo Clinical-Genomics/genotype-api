@@ -4,8 +4,7 @@ from pathlib import Path
 
 from genotype_api.excel import GenotypeAnalysis
 
-
-def test_read_excel(excel_file: Path, include_key: str):
+"""def test_read_excel(excel_file: Path, include_key: str):
     # GIVEN an excel file and a include key
 
     # WHEN parsing an excel file
@@ -23,4 +22,4 @@ def test_parse_analyses(excel_file: Path, include_key: str, sample_name: str):
     analyses = [analysis for analysis in parser.generate_analyses()]
 
     # THEN assert the number of analyses is 3
-    assert len(analyses) == 3
+    assert len(analyses) == 3"""
