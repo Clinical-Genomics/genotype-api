@@ -4,8 +4,8 @@ Main functions for the genotype api
 """
 from fastapi import FastAPI, status
 from genotype_api.database import create_db_and_tables
-from genotype_api.endpoints import analyses, plates, samples, sequences, snps, users
-
+from genotype_api.api.endpoints import samples, sequences, snps, users
+from genotype_api.api.endpoints import plates, analyses
 
 app = FastAPI()
 
