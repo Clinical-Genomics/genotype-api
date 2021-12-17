@@ -1,4 +1,4 @@
-"""Routes for plates"""
+"""Routes for analysis"""
 
 from typing import List
 
