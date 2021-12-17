@@ -33,7 +33,7 @@ def read_analyses(
     return analyses
 
 
-@router.delete("/<analysis_id>", response_model=AnalysisRead)
+@router.delete("/{analysis_id}", response_model=AnalysisRead)
 def delete_analysis(analysis_id: int, session: Session = Depends(get_session)):
     """Delete analysis based on analysis_id"""
     analysis = session.get(Analysis, analysis_id)

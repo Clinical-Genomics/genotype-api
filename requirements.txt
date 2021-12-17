@@ -18,3 +18,4 @@ bcrypt
 numpy
 aiofiles
 sendmail-container
+python-dotenv

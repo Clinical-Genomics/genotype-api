@@ -16,7 +16,7 @@ router = APIRouter()
 
 
 @router.post("/", response_model=List[Analysis])
-def upload_vcf(file: UploadFile = File(...), db: Session = Depends(get_session)):
+def upload_vcf(file: UploadFile = File(...), session: Session = Depends(get_session)):
     file_name: Path = Path(file.filename)
     if not file_name.name.endswith(".vcf"):
         raise HTTPException(
@@ -29,14 +29,18 @@ def upload_vcf(file: UploadFile = File(...), db: Session = Depends(get_session))
     analyses = []
     for analysis_obj in sequence_analysis.generate_analyses():
         db_analysis = genotype_api.crud.analyses.get_analysis_type_sample(
-            db=db, sample_id=analysis_obj.sample_id, analysis_type="sequence"
+            session=session, sample_id=analysis_obj.sample_id, analysis_type="sequence"
         )
         if db_analysis:
             raise HTTPException(status_code=400, detail="Analysis already exists")
-        if not genotype_api.crud.samples.get_sample(db=db, sample_id=analysis_obj.sample_id):
+        if not genotype_api.crud.samples.get_sample(
+            session=session, sample_id=analysis_obj.sample_id
+        ):
             genotype_api.crud.samples.create_sample(
-                db=db, sample=SampleCreate(id=analysis_obj.sample_id)
+                session=session, sample=SampleCreate(id=analysis_obj.sample_id)
             )
-        analyses.append(genotype_api.crud.analyses.create_analysis(db=db, analysis=analysis_obj))
+        analyses.append(
+            genotype_api.crud.analyses.create_analysis(session=session, analysis=analysis_obj)
+        )
 
     return analyses

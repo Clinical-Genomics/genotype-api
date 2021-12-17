@@ -17,6 +17,8 @@ class GenotypeBase(SQLModel):
 class Genotype(GenotypeBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
 
+    analysis: Optional["Analysis"] = Relationship(back_populates="genotypes")
+
 
 class GenotypeRead(GenotypeBase):
     id: int
@@ -132,7 +134,7 @@ class PlateCreate(PlateBase):
 
 
 class UserReadWithPlates(UserRead):
-    plates: Optional[List["Plate"]] = []
+    plates: Optional[List[Plate]] = []
 
 
 class PlateReadWithAnalyses(PlateRead):
@@ -144,4 +146,4 @@ class SampleReadWithAnalysis(SampleRead):
 
 
 class AnalysisReadWithGenotype(AnalysisRead):
-    genotypes: Optional[List["Genotype"]] = []
+    genotypes: Optional[List[Genotype]] = []

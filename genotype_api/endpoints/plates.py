@@ -1,5 +1,5 @@
 """Routes for plates"""
-
+from datetime import datetime
 from io import BytesIO
 from pathlib import Path
 from typing import List
@@ -9,10 +9,9 @@ import genotype_api.crud.plates
 import genotype_api.crud.samples
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status, Query
 
-import genotype_api.models
 from genotype_api.database import get_session
 from genotype_api.excel import GenotypeAnalysis
-from genotype_api.models import SampleCreate, Plate, PlateReadWithAnalyses
+from genotype_api.models import SampleCreate, Plate, PlateReadWithAnalyses, PlateRead
 from sqlmodel import Session, select
 
 router = APIRouter()
@@ -32,7 +31,7 @@ def upload_plate(file: UploadFile = File(...), session: Session = Depends(get_se
     db_plate = genotype_api.crud.plates.get_plate_by_plate_id(session, plate_id)
     if db_plate:
         raise HTTPException(status_code=400, detail="Plate already uploaded")
-    plate_obj = genotype_api.models.Plate(plate_id=plate_id)
+    plate_obj = Plate(plate_id=plate_id)
     content = BytesIO(file.file.read())
     excel_parser = GenotypeAnalysis(
         excel_file=content, file_name=str(file_name), include_key="-CG-"
@@ -63,19 +62,32 @@ def read_plate(plate_id: str, session: Session = Depends(get_session)):
     return plate
 
 
-@router.get("/{plate_id}/sign-off/<name>", response_model=Plate)
-def sign_off_plate(plate_id: str, name: str, session: Session = Depends(get_session)):
+@router.post("/{plate_id}/sign-off", response_model=Plate)
+def sign_off_plate(
+    plate_id: str,
+    method_document: str = Query(...),
+    method_version: str = Query(...),
+    session: Session = Depends(get_session),
+):
     """Sign off a plate.
 
     This means that current User sign off that the plate is checked
+    Add Depends with curent user
     """
-    db_plate = genotype_api.crud.plates.get_plate_by_plate_id(session, plate_id=plate_id)
-    if db_plate is None:
-        raise HTTPException(status_code=404, detail="Plate not found")
-    return db_plate
+
+    plate = session.get(Plate, plate_id)
+    if not plate:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Plate not found")
+
+    # plate.user = current_user
+    plate.signed_at = datetime.now()
+    plate.method_document = method_document
+    plate.method_version = method_version
+    session.commit()
+    return plate
 
 
-@router.get("/", response_model=List[Plate])
+@router.get("/", response_model=List[PlateRead])
 def read_plates(
     skip: int = 0, limit: int = Query(default=100, lte=100), session: Session = Depends(get_session)
 ):
@@ -85,10 +97,11 @@ def read_plates(
     return plates
 
 
-@router.delete("/<plate_id>", response_model=Plate)
+@router.delete("/{plate_id}", response_model=Plate)
 def delete_plate(plate_id: int, session: Session = Depends(get_session)):
-    """Display information about a plate."""
-    db_plate = genotype_api.crud.plates.delete_plate(session, plate_id=plate_id)
-    if db_plate is None:
-        raise HTTPException(status_code=404, detail="Plate not found")
-    return db_plate
+    """Delete plate."""
+    plate = session.get(Plate, plate_id)
+    session.delete(plate)
+    session.commit()
+
+    return plate
