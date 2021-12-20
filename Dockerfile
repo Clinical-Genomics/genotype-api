@@ -1,6 +1,6 @@
-FROM python:3.9-slim
+FROM python:3.10-slim
 
-LABEL base_image="python:3.9-slim"
+LABEL base_image="python:3.10-slim"
 LABEL about.home="https://github.com/Clinical-Genomics/genotype-api"
 LABEL about.tags="CG Core database and API"
 
