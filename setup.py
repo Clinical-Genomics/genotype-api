@@ -12,7 +12,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(
-    name="genotype-api",
+    name="genotype_api",
     version="0.1.0",
     description="",
     long_description=long_description,

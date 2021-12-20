@@ -70,7 +70,7 @@ jobs:
 
       - name: Test with pytest & Coveralls
         run: |
-          pytest --cov=genotype-api/
+          pytest --cov=genotype_api/
           coveralls
         env:
           GITHUB: 1
