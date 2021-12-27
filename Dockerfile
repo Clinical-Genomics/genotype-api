@@ -1,6 +1,6 @@
-FROM python:3.9-slim
+FROM python:3.10-slim
 
-LABEL base_image="python:3.9-slim"
+LABEL base_image="python:3.10-slim"
 LABEL about.home="https://github.com/Clinical-Genomics/genotype-api"
 LABEL about.tags="CG Core database and API"
 
@@ -11,8 +11,9 @@ ENV GUNICORN_BIND="0.0.0.0:8000"
 ENV GUNICORN_TIMEOUT=400
 ENV VERSION="v1"
 
-ENV DB_URI=""
-ENV DB_NAME="genotype-api-demo"
+ENV DB_URI="sqlite:///database.db"
+ENV DB_NAME="database.db"
+ENV HOST="localhost"
 
 EXPOSE 8000
 
@@ -36,4 +37,4 @@ CMD gunicorn \
     --access-logfile - \
     --log-level="debug" \
     --worker-class=uvicorn.workers.UvicornWorker \
-    genotype-api.api.api_$VERSION.api:app
+    genotype_api.api.app:app

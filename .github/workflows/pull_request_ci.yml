@@ -53,7 +53,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: 3.8
+          python-version: "3.10"
 
       - name: Check out genotype-api
         uses: actions/checkout@v2
@@ -70,7 +70,7 @@ jobs:
 
       - name: Test with pytest & Coveralls
         run: |
-          pytest --cov=genotype-api/
+          pytest --cov=genotype_api/
           coveralls
         env:
           GITHUB: 1

@@ -2,8 +2,8 @@ click
 pyyaml
 coloredlogs
 bump2version
-
-sqlalchemy
+pymysql
+sqlmodel
 openpyxl
 
 # server stuff
@@ -18,3 +18,4 @@ bcrypt
 numpy
 aiofiles
 sendmail-container
+python-dotenv
