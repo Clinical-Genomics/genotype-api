@@ -70,10 +70,6 @@ def sign_off_plate(
     session: Session = Depends(get_session),
 ):
     """Sign off a plate.
-<<<<<<< HEAD
-=======
-
->>>>>>> 7473ff2519e4ce0f3509eec33ad800a1e0d162b9
     This means that current User sign off that the plate is checked
     Add Depends with curent user
     """
