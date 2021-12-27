@@ -37,4 +37,4 @@ CMD gunicorn \
     --access-logfile - \
     --log-level="debug" \
     --worker-class=uvicorn.workers.UvicornWorker \
-    genotype-api.api.app:app
+    genotype_api.api.app:app
