@@ -3,7 +3,7 @@
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from genotype_api.database import get_session
-from genotype_api.models import Sample, SampleRead, SampleReadWithAnalysis
+from genotype_api.models import Sample, SampleRead, SampleReadWithAnalysis, Analysis
 from sqlmodel import Session, select
 
 router = APIRouter()
@@ -29,8 +29,17 @@ def read_samples(
         query_string: Optional[str] = None,
         session: Session = Depends(get_session),
 ) -> List[Sample]:
-    # do stuff with queries in crud
-    samples: List[Sample] = session.exec(select(Sample).offset(skip).limit(limit)).all()
+    statement = select(Sample)
+    if plate_id:
+        statement = statement.join(Analysis).where(f"%/{plate_id}\_%" in Analysis.source)  # like doesnt exist it seems
+    if incomplete:
+        statement.where(len(Sample.analyses) < 2) # probably not as it should. see original
+    if commented:
+        statement.where(Sample.comment is not None)
+    if query_string:
+        statement.where(f"%/{query_string}\_%" in Sample.id) # like doesnt exist it seems
+
+    samples: List[Sample] = session.exec(statement.offset(skip).limit(limit)).all()
     return samples
 
 
