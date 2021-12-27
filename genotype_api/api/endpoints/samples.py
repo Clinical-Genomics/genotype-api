@@ -1,9 +1,16 @@
 """Routes for samples"""
 
+<<<<<<< HEAD
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from genotype_api.database import get_session
 from genotype_api.models import Sample, SampleRead, SampleReadWithAnalysis, Analysis
+=======
+from typing import List
+from fastapi import APIRouter, Depends, HTTPException, status, Query
+from genotype_api.database import get_session
+from genotype_api.models import Sample, SampleRead, SampleReadWithAnalysis
+>>>>>>> 7473ff2519e4ce0f3509eec33ad800a1e0d162b9
 from sqlmodel import Session, select
 
 router = APIRouter()
@@ -13,14 +20,19 @@ router = APIRouter()
 def read_sample(sample_id: str, session: Session = Depends(get_session)):
     sample = session.get(Sample, sample_id)
     if not sample:
+<<<<<<< HEAD
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Sample not found"
         )
+=======
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Sample not found")
+>>>>>>> 7473ff2519e4ce0f3509eec33ad800a1e0d162b9
     return sample
 
 
 @router.get("/", response_model=List[SampleRead])
 def read_samples(
+<<<<<<< HEAD
         skip: int = 0,
         limit: int = Query(default=100, lte=100),
         plate_id: Optional[str] = None,
@@ -40,6 +52,13 @@ def read_samples(
         statement.where(f"%/{query_string}\_%" in Sample.id) # like doesnt exist it seems
 
     samples: List[Sample] = session.exec(statement.offset(skip).limit(limit)).all()
+=======
+    skip: int = 0,
+    limit: int = Query(default=100, lte=100),
+    session: Session = Depends(get_session),
+) -> List[Sample]:
+    samples: List[Sample] = session.exec(select(Sample).offset(skip).limit(limit)).all()
+>>>>>>> 7473ff2519e4ce0f3509eec33ad800a1e0d162b9
     return samples
 
 
@@ -53,6 +72,7 @@ def create_sample(sample: Sample, session: Session = Depends(get_session)):
     session.commit()
     session.refresh(db_sample)
     return db_sample
+<<<<<<< HEAD
 
 
 @router.put("/update-sex/{sample_id}", response_model=SampleRead)
@@ -113,3 +133,5 @@ def delete_sample(sample_id: int, session: Session = Depends(get_session)):
     session.commit()
 
     return sample
+=======
+>>>>>>> 7473ff2519e4ce0f3509eec33ad800a1e0d162b9
