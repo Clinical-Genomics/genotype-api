@@ -1,7 +1,8 @@
 from typing import List, Optional
 
-from genotype_api.models import Sample, SampleCreate, SNP
-from sqlalchemy.orm import Session
+from genotype_api.models import Sample, SampleCreate, SNP, Analysis
+from sqlmodel import Session, func
+from sqlmodel.sql.expression import SelectOfScalar
 
 
 def get_samples(db: Session, skip: int = 0, limit: int = 100) -> List[Sample]:
@@ -25,3 +26,25 @@ def create_sample(db: Session, sample: SampleCreate):
     db.commit()
     db.refresh(db_sample)
     return db_sample
+
+
+def get_incomplete_samples(statement: SelectOfScalar) -> SelectOfScalar:
+    # return statement.join(Analysis).where(func.count(Sample.analyses) < 2)
+    return (
+        statement.join(Analysis)
+        .group_by(Analysis.sample_id)
+        .order_by(Analysis.created_at)
+        .having(func.count(Analysis.sample_id) < 2)
+    )
+
+
+def get_plate_samples(statement: SelectOfScalar, plate_id: str) -> SelectOfScalar:
+    return statement.join(Analysis).where(Analysis.plate_id == plate_id)
+
+
+def get_commented_samples(statement: SelectOfScalar) -> SelectOfScalar:
+    return statement.where(Sample.comment != None)
+
+
+def get_samples_like(statement: SelectOfScalar, query_string: str) -> SelectOfScalar:
+    return statement.where(Sample.id.like(f"%/{query_string}\_%"))

@@ -4,8 +4,15 @@
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from genotype_api.database import get_session
-from genotype_api.models import Sample, SampleReadWithAnalysis, Analysis, SampleRead
+from genotype_api.models import Sample, SampleReadWithAnalysis, SampleRead
+from genotype_api.crud.samples import (
+    get_incomplete_samples,
+    get_plate_samples,
+    get_commented_samples,
+    get_samples_like,
+)
 from sqlmodel import Session, select
+from sqlmodel.sql.expression import SelectOfScalar
 
 router = APIRouter()
 
@@ -18,26 +25,25 @@ def read_sample(sample_id: str, session: Session = Depends(get_session)):
     return sample
 
 
-@router.get("/", response_model=List[SampleRead])
+@router.get("/", response_model=List[SampleReadWithAnalysis])
 def read_samples(
-        skip: int = 0,
-        limit: int = Query(default=100, lte=100),
-        plate_id: Optional[str] = None,
-        incomplete: Optional[str] = None,
-        commented: Optional[str] = None,
-        query_string: Optional[str] = None,
-        session: Session = Depends(get_session),
-) -> List[Sample]:
-    statement = select(Sample)
+    skip: int = 0,
+    limit: int = Query(default=100, lte=100),
+    plate_id: Optional[str] = None,
+    incomplete: Optional[bool] = False,
+    commented: Optional[bool] = False,
+    query_string: Optional[str] = None,
+    session: Session = Depends(get_session),
+):
+    statement: SelectOfScalar = select(Sample)
     if plate_id:
-        statement = statement.join(Analysis).where(f"%/{plate_id}\_%" in Analysis.source)  # like doesnt exist it seems
+        statement: SelectOfScalar = get_plate_samples(statement=statement, plate_id=plate_id)
     if incomplete:
-        statement.where(len(Sample.analyses) < 2) # probably not as it should. see original
+        statement: SelectOfScalar = get_incomplete_samples(statement=statement)
     if commented:
-        statement.where(Sample.comment is not None)
+        statement: SelectOfScalar = get_commented_samples(statement=statement)
     if query_string:
-        statement.where(f"%/{query_string}\_%" in Sample.id) # like doesnt exist it seems
-
+        statement: SelectOfScalar = get_samples_like(statement=statement, query_string=query_string)
     samples: List[Sample] = session.exec(statement.offset(skip).limit(limit)).all()
     return samples
 
@@ -56,12 +62,12 @@ def create_sample(sample: Sample, session: Session = Depends(get_session)):
 
 @router.put("/update-sex/{sample_id}", response_model=SampleRead)
 def update_sex(
-        sample: Sample,
-        sex: str = Query(...),
-        genotype_sex: Optional[str] = None,
-        sequence_sex: Optional[str] = None,
-        comment: str = Query(...),
-        session: Session = Depends(get_session),
+    sample: Sample,
+    sex: str = Query(...),
+    genotype_sex: Optional[str] = None,
+    sequence_sex: Optional[str] = None,
+    comment: str = Query(...),
+    session: Session = Depends(get_session),
 ):
     sample_in_db = session.get(Sample, sample.id)
     if not sample_in_db:
@@ -84,10 +90,10 @@ def update_sex(
 
 @router.put("/update-status/{sample_id}", response_model=SampleRead)
 def update_status(
-        sample: Sample,
-        status: str = Query(...),
-        comment: str = Query(...),
-        session: Session = Depends(get_session),
+    sample: Sample,
+    status: str = Query(...),
+    comment: str = Query(...),
+    session: Session = Depends(get_session),
 ):
     sample_in_db = session.get(Sample, sample.id)
     if not sample_in_db:
@@ -112,4 +118,3 @@ def delete_sample(sample_id: int, session: Session = Depends(get_session)):
     session.commit()
 
     return sample
-
