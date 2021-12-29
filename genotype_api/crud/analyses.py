@@ -4,6 +4,11 @@ from genotype_api.models import Analysis, AnalysisRead
 from sqlmodel import Session, select
 
 
+def get_analyses_from_plate(plate_id: int, session: Session) -> List[Analysis]:
+    statement = select(Analysis).where(Analysis.plate_id == plate_id)
+    return session.exec(statement).all()
+
+
 def get_analysis(analysis_id: int, session: Session) -> Optional[Analysis]:
     return session.get(Analysis, analysis_id)
 

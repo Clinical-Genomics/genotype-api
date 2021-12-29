@@ -2,12 +2,16 @@
 from datetime import datetime
 from io import BytesIO
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status, Query
 from sqlmodel import Session, select
 
-from genotype_api.crud.analyses import create_analysis, get_analysis_type_sample
+from genotype_api.crud.analyses import (
+    create_analysis,
+    get_analysis_type_sample,
+    get_analyses_from_plate,
+)
 from genotype_api.crud.samples import create_sample
 from genotype_api.crud.plates import create_plate, get_plate
 from genotype_api.database import get_session
@@ -25,20 +29,21 @@ from genotype_api.models import (
 router = APIRouter()
 
 
-def create_analyses_objects(session: Session, excel_parser: GenotypeAnalysis) -> List[Analysis]:
-    analyses = []
-    samples = []
-    for analysis_obj in excel_parser.generate_analyses():
+def check_analyses_objects(session: Session, analyses: List[Analysis]) -> None:
+    for analysis_obj in analyses:
         db_analysis: Analysis = get_analysis_type_sample(
             session=session, sample_id=analysis_obj.sample_id, analysis_type="genotype"
         )
         if db_analysis:
-            print(db_analysis.id)
             raise HTTPException(status_code=400, detail="Analysis already exists")
-        if not session.get(Sample, analysis_obj.sample_id):
-            create_sample(session=session, sample=Sample(id=analysis_obj.sample_id))
-        analyses.append(create_analysis(session=session, analysis=analysis_obj))
-    return analyses
+
+
+def create_analyses_sample_objects(session: Session, analyses: List[Analysis]) -> List[Sample]:
+    return [
+        Sample(id=analysis_obj.sample_id)
+        for analysis_obj in analyses
+        if not session.get(Sample, analysis_obj.sample_id)
+    ]
 
 
 def get_plate_id_from_file(file_name: Path) -> str:
@@ -57,12 +62,11 @@ def upload_plate(file: UploadFile = File(...), session: Session = Depends(get_se
     excel_parser = GenotypeAnalysis(
         excel_file=BytesIO(file.file.read()), file_name=str(file_name), include_key="-CG-"
     )
-
-    plate_obj = PlateCreate(
-        plate_id=plate_id,
-        analyses=create_analyses_objects(session=session, excel_parser=excel_parser),
-    )
-
+    analyses = list(excel_parser.generate_analyses())
+    check_analyses_objects(session=session, analyses=analyses)
+    print(analyses)
+    # samples: List[Sample] = create_analyses_sample_objects(session=session, analyses=analyses)
+    plate_obj = PlateCreate(plate_id=plate_id, analyses=analyses)
     return create_plate(session=session, plate=plate_obj)
 
 
@@ -109,6 +113,9 @@ def read_plates(
 def delete_plate(plate_id: int, session: Session = Depends(get_session)):
     """Delete plate."""
     plate = session.get(Plate, plate_id)
+    analyses: List[Analysis] = get_analyses_from_plate(session=session, plate_id=plate_id)
+    for analysis in analyses:
+        session.delete(analysis)
     session.delete(plate)
     session.commit()
 
