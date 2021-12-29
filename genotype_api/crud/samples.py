@@ -16,7 +16,7 @@ def delete_sample(session: Session, sample_id: str) -> Sample:
     return db_sample
 
 
-def create_sample(session: Session, sample: Sample):
+def create_sample(session: Session, sample: Sample) -> Sample:
     session.add(sample)
     session.commit()
     session.refresh(sample)

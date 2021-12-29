@@ -1,11 +1,10 @@
 """Routes for the snps"""
-
 from genotype_api.models import SNP
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, Query, File
 from genotype_api.database import get_session
-from sqlmodel import Session, select, delete
+from sqlmodel import Session, delete, select
 
 router = APIRouter()
 
@@ -14,9 +13,7 @@ router = APIRouter()
 def read_snps(
     skip: int = 0, limit: int = Query(default=100, lte=100), session: Session = Depends(get_session)
 ) -> List[SNP]:
-    """Return all snpns."""
-    snps: List[SNP] = session.exec(select(SNP).offset(skip).limit(limit)).all()
-    return snps
+    return session.exec(select(SNP).offset(skip).limit(limit)).all()
 
 
 @router.post("/", response_model=List[SNP])
@@ -40,7 +37,7 @@ def upload_snps(snps_file: bytes = File(...), session: Session = Depends(get_ses
 @router.delete("/")
 def delete_snps(session: Session = Depends(get_session)):
     """Delete all SNPs"""
-    statement = delete(SNP)
-    result = session.exec(statement)
+
+    result = session.exec(delete(SNP))
     session.commit()
     return {"message": f"all snps deleted ({result.rowcount} snps)"}

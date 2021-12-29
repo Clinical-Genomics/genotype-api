@@ -2,11 +2,10 @@
 
 from typing import List
 
-import genotype_api.crud.analyses
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from genotype_api.database import get_session
 from genotype_api.models import Analysis, AnalysisRead, AnalysisReadWithGenotype
-from sqlmodel import Session, select, delete
+from sqlmodel import Session, select
 
 router = APIRouter()
 

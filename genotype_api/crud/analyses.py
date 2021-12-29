@@ -19,7 +19,6 @@ def get_analysis_type_sample(
 
 def delete_analysis(session: Session, analysis_id: int) -> Analysis:
     db_analysis = session.get(Analysis, analysis_id)
-    print(db_analysis)
     session.delete(db_analysis)
     session.commit()
     return db_analysis
