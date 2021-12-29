@@ -9,9 +9,10 @@ from sqlmodel import Session, select
 
 from genotype_api.crud.analyses import create_analysis, get_analysis_type_sample
 from genotype_api.crud.samples import create_sample
-from genotype_api.crud.plates import create_plate
+from genotype_api.crud.plates import create_plate, get_plate
 from genotype_api.database import get_session
 from genotype_api.excel import GenotypeAnalysis
+from genotype_api.files import check_file
 from genotype_api.models import (
     Plate,
     PlateReadWithAnalyses,
@@ -24,42 +25,50 @@ from genotype_api.models import (
 router = APIRouter()
 
 
-@router.post("/plate", response_model=Plate)
-def upload_plate(file: UploadFile = File(...), session: Session = Depends(get_session)):
-    file_name: Path = Path(file.filename)
-    if not file_name.name.endswith(".xlsx"):
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Please select an excel book for upload",
-        )
-    # Get the plate id from the standardized name of the plate
-    plate_id = file_name.name.split("_", 1)[0]
-    # Check if plate exists
-    db_plate = session.get(Plate, plate_id)
-    if db_plate:
-        raise HTTPException(status_code=400, detail="Plate already uploaded")
-    plate_obj = PlateCreate(plate_id=plate_id)
-
-    content = BytesIO(file.file.read())
-    excel_parser = GenotypeAnalysis(
-        excel_file=content, file_name=str(file_name), include_key="-CG-"
-    )
+def create_analyses_objects(session: Session, excel_parser: GenotypeAnalysis) -> List[Analysis]:
+    analyses = []
+    samples = []
     for analysis_obj in excel_parser.generate_analyses():
         db_analysis: Analysis = get_analysis_type_sample(
             session=session, sample_id=analysis_obj.sample_id, analysis_type="genotype"
         )
         if db_analysis:
+            print(db_analysis.id)
             raise HTTPException(status_code=400, detail="Analysis already exists")
         if not session.get(Sample, analysis_obj.sample_id):
             create_sample(session=session, sample=Sample(id=analysis_obj.sample_id))
-        plate_obj.analyses.append(create_analysis(session=session, analysis=analysis_obj))
+        analyses.append(create_analysis(session=session, analysis=analysis_obj))
+    return analyses
+
+
+def get_plate_id_from_file(file_name: Path) -> str:
+    # Get the plate id from the standardized name of the plate
+    return file_name.name.split("_", 1)[0]
+
+
+@router.post("/plate", response_model=Plate)
+def upload_plate(file: UploadFile = File(...), session: Session = Depends(get_session)):
+    file_name: Path = check_file(file_path=file.filename, extension=".xlsx")
+    plate_id: str = get_plate_id_from_file(file_name)
+    db_plate = session.get(Plate, plate_id)
+    if db_plate:
+        raise HTTPException(status_code=400, detail="Plate already uploaded")
+
+    excel_parser = GenotypeAnalysis(
+        excel_file=BytesIO(file.file.read()), file_name=str(file_name), include_key="-CG-"
+    )
+
+    plate_obj = PlateCreate(
+        plate_id=plate_id,
+        analyses=create_analyses_objects(session=session, excel_parser=excel_parser),
+    )
 
     return create_plate(session=session, plate=plate_obj)
 
 
 @router.post("/{plate_id}/sign-off", response_model=Plate)
 def sign_off_plate(
-    plate_id: str,
+    plate_id: int,
     method_document: str = Query(...),
     method_version: str = Query(...),
     session: Session = Depends(get_session),
@@ -69,9 +78,7 @@ def sign_off_plate(
     Add Depends with curent user
     """
 
-    plate = session.get(Plate, plate_id)
-    if not plate:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Plate not found")
+    plate: Plate = get_plate(session=session, plate_id=plate_id)
 
     # plate.user = current_user
     plate.signed_at = datetime.now()
@@ -84,17 +91,15 @@ def sign_off_plate(
 @router.get("/{plate_id}", response_model=PlateReadWithAnalyses)
 def read_plate(plate_id: int, session: Session = Depends(get_session)):
     """Display information about a plate."""
-    plate = session.get(Plate, plate_id)
-    if not plate:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Plate not found")
-    return plate
+
+    return get_plate(session=session, plate_id=plate_id)
 
 
 @router.get("/", response_model=List[PlateRead])
 def read_plates(
     skip: int = 0, limit: int = Query(default=100, lte=100), session: Session = Depends(get_session)
 ):
-    """Display information about a plate."""
+    """Display all plates"""
     plates: List[Plate] = session.exec(select(Plate).offset(skip).limit(limit)).all()
 
     return plates

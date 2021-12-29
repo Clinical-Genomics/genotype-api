@@ -1,14 +1,21 @@
 import logging
 from typing import Optional
 
+from fastapi import HTTPException, status
+
 from genotype_api.models import Plate, PlateCreate
 from sqlmodel import Session, select
 
 LOG = logging.getLogger(__name__)
 
 
-def get_plate(session: Session, plate_id: int) -> Optional[Plate]:
-    return session.get(Plate, plate_id)
+def get_plate(session: Session, plate_id: int) -> Plate:
+    """Get plate or raise 404"""
+
+    plate = session.get(Plate, plate_id)
+    if not plate:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Plate not found")
+    return plate
 
 
 def get_plate_by_plate_id(session: Session, plate_id: str) -> Optional[Plate]:
@@ -27,7 +34,7 @@ def create_plate(session: Session, plate: PlateCreate) -> Plate:
 
 
 def delete_plate(session: Session, plate_id: int) -> Optional[Plate]:
-    db_plate: Plate = get_plate(session=session, plate_id=plate_id)
+    db_plate: Plate = session.get(Plate, plate_id)
     if not db_plate:
         LOG.info("Could not find plate %s", plate_id)
         return None
