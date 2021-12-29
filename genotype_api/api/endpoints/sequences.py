@@ -5,12 +5,12 @@ from pathlib import Path
 from typing import List
 
 import genotype_api.crud.analyses
-import genotype_api.crud.samples
+from genotype_api.crud.samples import get_sample, create_sample
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from genotype_api.database import get_session
-from genotype_api.models import Analysis, SampleCreate
+from genotype_api.models import Analysis, Sample
 from genotype_api.vcf import SequenceAnalysis
-from sqlalchemy.orm import Session
+from sqlmodel import Session
 
 router = APIRouter()
 
@@ -33,12 +33,8 @@ def upload_vcf(file: UploadFile = File(...), session: Session = Depends(get_sess
         )
         if db_analysis:
             raise HTTPException(status_code=400, detail="Analysis already exists")
-        if not genotype_api.crud.samples.get_sample(
-            session=session, sample_id=analysis_obj.sample_id
-        ):
-            genotype_api.crud.samples.create_sample(
-                session=session, sample=SampleCreate(id=analysis_obj.sample_id)
-            )
+        if not get_sample(session=session, sample_id=analysis_obj.sample_id):
+            create_sample(session=session, sample=Sample(id=analysis_obj.sample_id))
         analyses.append(
             genotype_api.crud.analyses.create_analysis(session=session, analysis=analysis_obj)
         )

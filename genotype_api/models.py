@@ -120,7 +120,7 @@ class PlateBase(SQLModel):
 
 
 class Plate(PlateBase, table=True):
-    id: Optional[str] = Field(default=None, primary_key=True)
+    id: Optional[int] = Field(default=None, primary_key=True)
     user: Optional["User"] = Relationship(back_populates="plates")
     analyses: Optional[List["Analysis"]] = Relationship(back_populates="plate")
 
@@ -130,6 +130,7 @@ class PlateRead(PlateBase):
 
 
 class PlateCreate(PlateBase):
+    analyses: Optional[List[Analysis]] = []
     pass
 
 

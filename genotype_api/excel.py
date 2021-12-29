@@ -84,17 +84,18 @@ class GenotypeAnalysis:
                 LOG.warning("Could not parse sample from row %s", nr_row)
                 continue
 
-            analysis_obj: Analysis = Analysis(
-                type="genotype", source=self.source, sample_id=sample_id
+            sex = GenotypeAnalysis.parse_sex(row_values[self.sex_cols])
+            genotypes = [
+                GenotypeAnalysis.build_genotype(rs_id, ind_info[rs_id]) for rs_id in self.rs_numbers
+            ]
+
+            yield Analysis(
+                type="genotype",
+                source=self.source,
+                sample_id=sample_id,
+                sex=sex,
+                genotypes=genotypes,
             )
-            analysis_obj.sex = GenotypeAnalysis.parse_sex(row_values[self.sex_cols])
-
-            genotypes = []
-            for rs_id in self.rs_numbers:
-                genotypes.append(GenotypeAnalysis.build_genotype(rs_id, ind_info[rs_id]))
-            analysis_obj.genotypes = genotypes
-
-            yield analysis_obj
 
     @staticmethod
     def build_genotype(rs_id: str, row_value: str) -> Genotype:
