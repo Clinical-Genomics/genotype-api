@@ -1,38 +1,37 @@
 import logging
-from typing import List, Optional
+from typing import Optional
 
-from genotype_api.models import Plate
-from sqlalchemy.orm import Session
+from genotype_api.models import Plate, PlateCreate
+from sqlmodel import Session, select
 
 LOG = logging.getLogger(__name__)
 
 
-def get_plates(db: Session, skip: int = 0, limit: int = 100) -> List[Plate]:
-    return db.query(Plate).offset(skip).limit(limit).all()
+def get_plate(session: Session, plate_id: int) -> Optional[Plate]:
+    return session.get(Plate, plate_id)
 
 
-def get_plate(db: Session, plate_id: int) -> Optional[Plate]:
-    return db.query(Plate).filter(Plate.id == plate_id).first()
+def get_plate_by_plate_id(session: Session, plate_id: str) -> Optional[Plate]:
+    statement = select(Plate).where(Plate.plate_id == plate_id)
+    return session.exec(statement).first()
 
 
-def get_plate_by_plate_id(db: Session, plate_id: str) -> Optional[Plate]:
-    return db.query(Plate).filter(Plate.plate_id == plate_id).first()
+def create_plate(session: Session, plate: PlateCreate) -> Plate:
+    db_plate = Plate.from_orm(plate)
+    db_plate.analyses = plate.analyses  # not sure why from_orm wont pick up the analyses
+    session.add(db_plate)
+    session.commit()
+    session.refresh(db_plate)
+    LOG.info("Creating plate with id %s", db_plate.plate_id)
+    return db_plate
 
 
-def create_plate(db: Session, plate: Plate) -> Plate:
-    LOG.info("Creating plate with id %s", plate.plate_id)
-    db.add(plate)
-    db.commit()
-    db.refresh(plate)
-    return plate
-
-
-def delete_plate(db: Session, plate_id: int) -> Optional[Plate]:
-    db_plate = get_plate(db=db, plate_id=plate_id)
+def delete_plate(session: Session, plate_id: int) -> Optional[Plate]:
+    db_plate: Plate = get_plate(session=session, plate_id=plate_id)
     if not db_plate:
         LOG.info("Could not find plate %s", plate_id)
         return None
-    db.delete(db_plate)
-    db.commit()
+    session.delete(db_plate)
+    session.commit()
     LOG.info("Plate deleted")
     return db_plate
