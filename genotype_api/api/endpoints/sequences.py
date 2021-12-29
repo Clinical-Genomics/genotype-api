@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import List
 
 from genotype_api.crud.analyses import get_analysis_type_sample, create_analysis
-from genotype_api.crud.samples import get_sample, create_sample
+from genotype_api.crud.samples import create_sample
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from genotype_api.database import get_session
 from genotype_api.models import Analysis, Sample
@@ -40,7 +40,7 @@ def upload_sequence_analysis(file: UploadFile = File(...), session: Session = De
         )
         if db_analysis:
             raise HTTPException(status_code=400, detail="Analysis already exists")
-        if not get_sample(session=session, sample_id=analysis_obj.sample_id):
+        if not session.get(Sample, analysis_obj.sample_id):
             create_sample(session=session, sample=Sample(id=analysis_obj.sample_id))
         analyses.append(create_analysis(session=session, analysis=analysis_obj))
 

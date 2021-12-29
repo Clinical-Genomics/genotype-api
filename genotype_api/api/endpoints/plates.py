@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status,
 from sqlmodel import Session, select
 
 from genotype_api.crud.analyses import create_analysis, get_analysis_type_sample
-from genotype_api.crud.samples import get_sample, create_sample
+from genotype_api.crud.samples import create_sample
 from genotype_api.crud.plates import create_plate
 from genotype_api.database import get_session
 from genotype_api.excel import GenotypeAnalysis
@@ -50,7 +50,7 @@ def upload_plate(file: UploadFile = File(...), session: Session = Depends(get_se
         )
         if db_analysis:
             raise HTTPException(status_code=400, detail="Analysis already exists")
-        if not get_sample(session=session, sample_id=analysis_obj.sample_id):
+        if not session.get(Sample, analysis_obj.sample_id):
             create_sample(session=session, sample=Sample(id=analysis_obj.sample_id))
         plate_obj.analyses.append(create_analysis(session=session, analysis=analysis_obj))
 

@@ -1,5 +1,5 @@
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from genotype_api.database import get_session
 from genotype_api.models import Sample, SampleReadWithAnalysis, SampleRead
 from genotype_api.crud.samples import (
@@ -7,6 +7,7 @@ from genotype_api.crud.samples import (
     get_plate_samples,
     get_commented_samples,
     get_samples_like,
+    get_sample,
 )
 from sqlmodel import Session, select
 from sqlmodel.sql.expression import SelectOfScalar
@@ -16,10 +17,7 @@ router = APIRouter()
 
 @router.get("/{sample_id}", response_model=SampleReadWithAnalysis)
 def read_sample(sample_id: str, session: Session = Depends(get_session)):
-    sample = session.get(Sample, sample_id)
-    if not sample:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Sample not found")
-    return sample
+    return get_sample(session=session, sample_id=sample_id)
 
 
 @router.get("/", response_model=List[SampleReadWithAnalysis])
@@ -66,10 +64,9 @@ def update_sex(
     comment: str = Query(...),
     session: Session = Depends(get_session),
 ):
-    sample_in_db = session.get(Sample, sample_id)
-    if not sample_in_db:
-        raise HTTPException(status_code=404, detail="Sample not in db")
+    """Updating sex field on sample and sample analyses"""
 
+    sample_in_db: Sample = get_sample(session=session, sample_id=sample_id)
     sample_in_db.sex = sex
     sample_in_db.comment = comment
     for analysis in sample_in_db.analyses:
@@ -91,10 +88,9 @@ def update_status(
     comment: str = Query(...),
     session: Session = Depends(get_session),
 ):
-    sample_in_db = session.get(Sample, sample_id)
-    if not sample_in_db:
-        raise HTTPException(status_code=404, detail="Sample not in db")
+    """Updating status and comment field on sample"""
 
+    sample_in_db: Sample = get_sample(session=session, sample_id=sample_id)
     sample_in_db.status = status
     if sample_in_db.comment:
         comment = f"{sample_in_db.comment}\n\n{comment}"
@@ -107,9 +103,6 @@ def update_status(
 
 @router.delete("/{sample_id}", response_model=Sample)
 def delete_sample(sample_id: str, session: Session = Depends(get_session)):
-    """Delete sample."""
-    sample = session.get(Sample, sample_id)
-    session.delete(sample)
-    session.commit()
+    """Delete sample"""
 
-    return sample
+    return delete_sample(session=session, sample_id=sample_id)
