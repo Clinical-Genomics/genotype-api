@@ -64,8 +64,9 @@ def upload_plate(file: UploadFile = File(...), session: Session = Depends(get_se
     )
     analyses: List[Analysis] = list(excel_parser.generate_analyses())
     check_analyses_objects(session=session, analyses=analyses)
-    # samples: List[Sample] = create_analyses_sample_objects(session=session, analyses=analyses)
-    plate_obj = PlateCreate(plate_id=plate_id, analyses=analyses)
+    create_analyses_sample_objects(session=session, analyses=analyses)
+    plate_obj = PlateCreate(plate_id=plate_id)
+    plate_obj.analyses = analyses
     return create_plate(session=session, plate=plate_obj)
 
 

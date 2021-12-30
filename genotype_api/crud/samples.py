@@ -13,18 +13,12 @@ def get_sample(session: Session, sample_id: str) -> Sample:
     return sample
 
 
-def delete_sample(session: Session, sample_id: str) -> Sample:
-    """Delete sample if it exist in db"""
-
-    sample: Sample = session.get(Sample, sample_id)
-    session.delete(sample)
-    session.commit()
-    return sample
-
-
 def create_sample(session: Session, sample: Sample) -> Sample:
     """Adding a sample to db"""
 
+    sample_in_db = session.get(Sample, sample.id)
+    if sample_in_db:
+        raise HTTPException(status_code=400, detail="Sample already registered")
     session.add(sample)
     session.commit()
     session.refresh(sample)

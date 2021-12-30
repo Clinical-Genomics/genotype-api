@@ -2,6 +2,7 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from genotype_api.database import get_session
 from genotype_api.models import Sample, SampleReadWithAnalysis, SampleRead
+from genotype_api import crud
 from genotype_api.crud.samples import (
     get_incomplete_samples,
     get_plate_samples,
@@ -45,14 +46,7 @@ def read_samples(
 
 @router.post("/", response_model=SampleRead)
 def create_sample(sample: Sample, session: Session = Depends(get_session)):
-    sample_in_db = session.get(Sample, sample.id)
-    if sample_in_db:
-        raise HTTPException(status_code=400, detail="Sample already registered")
-    db_sample = Sample.from_orm(sample)
-    session.add(db_sample)
-    session.commit()
-    session.refresh(db_sample)
-    return db_sample
+    return crud.samples.create_sample(session=session, sample=sample)
 
 
 @router.put("/update-sex/{sample_id}", response_model=SampleRead)
@@ -104,5 +98,7 @@ def update_status(
 @router.delete("/{sample_id}", response_model=Sample)
 def delete_sample(sample_id: str, session: Session = Depends(get_session)):
     """Delete sample"""
-
-    return delete_sample(session=session, sample_id=sample_id)
+    sample: Sample = session.get(Sample, sample_id)
+    session.delete(sample)
+    session.commit()
+    return sample
