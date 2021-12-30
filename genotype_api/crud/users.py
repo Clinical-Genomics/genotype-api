@@ -1,19 +1,22 @@
 from typing import List, Optional
 
 from genotype_api.models import User, UserCreate
-from sqlalchemy.orm import Session
+from sqlmodel import select, Session
 
 
-def get_user(db: Session, user_id: int):
-    return db.query(User).filter(User.id == user_id).first()
+def get_user(session: Session, user_id: int):
+    statement = select(User).where(User.id == user_id)
+    return session.exec(statement).one()
 
 
-def get_user_by_email(db: Session, email: str) -> Optional[User]:
-    return db.query(User).filter(User.email == email).first()
+def get_user_by_email(session: Session, email: str) -> Optional[User]:
+    statement = select(User).where(User.email == email)
+    return session.exec(statement).one()
 
 
-def get_users(db: Session, skip: int = 0, limit: int = 100) -> List[User]:
-    return db.query(User).offset(skip).limit(limit).all()
+def get_users(session: Session, skip: int = 0, limit: int = 100) -> List[User]:
+    statement = select(User).offset(skip).limit(limit)
+    return session.exec(statement).all()
 
 
 def create_user(db: Session, user: UserCreate):

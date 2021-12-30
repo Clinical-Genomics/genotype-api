@@ -1,11 +1,15 @@
 from typing import List, Optional
 
-from genotype_api.models import Analysis, AnalysisRead
+from fastapi import HTTPException
+
+from genotype_api.constants import TYPES
+from genotype_api.models import Analysis
 from sqlmodel import Session, select
 
 
-def get_analysis(analysis_id: int, session: Session) -> Optional[Analysis]:
-    return session.get(Analysis, analysis_id)
+def get_analyses_from_plate(plate_id: int, session: Session) -> List[Analysis]:
+    statement = select(Analysis).where(Analysis.plate_id == plate_id)
+    return session.exec(statement).all()
 
 
 def get_analysis_type_sample(
@@ -17,9 +21,15 @@ def get_analysis_type_sample(
     return session.exec(statement).first()
 
 
+def get_analysis(session: Session, analysis_id: int) -> Analysis:
+    """Get analysis"""
+
+    statement = select(Analysis).where(Analysis.id == analysis_id)
+    return session.exec(statement).one()
+
+
 def delete_analysis(session: Session, analysis_id: int) -> Analysis:
     db_analysis = session.get(Analysis, analysis_id)
-    print(db_analysis)
     session.delete(db_analysis)
     session.commit()
     return db_analysis
@@ -30,3 +40,22 @@ def create_analysis(session: Session, analysis: Analysis) -> Analysis:
     session.commit()
     session.refresh(analysis)
     return analysis
+
+
+def create_analyses(session: Session, analyses: List[Analysis]) -> List[Analysis]:
+    for analysis in analyses:
+        session.add(analysis)
+    session.commit()
+    return analyses
+
+
+def check_analyses_objects(
+    session: Session, analyses: List[Analysis], analysis_type: TYPES
+) -> None:
+    """Raising 400 if any analysis in the list already exist in the database"""
+    for analysis_obj in analyses:
+        db_analysis: Analysis = get_analysis_type_sample(
+            session=session, sample_id=analysis_obj.sample_id, analysis_type=analysis_type
+        )
+        if db_analysis:
+            raise HTTPException(status_code=400, detail=f"Analysis already exists: {db_analysis}")

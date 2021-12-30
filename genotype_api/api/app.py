@@ -2,12 +2,19 @@
 Main functions for the genotype api
 
 """
-from fastapi import FastAPI, status
+from fastapi import FastAPI, status, Request
+from fastapi.responses import JSONResponse
 from genotype_api.database import create_db_and_tables
-from genotype_api.api.endpoints import samples, sequences, snps, users
+from genotype_api.api.endpoints import samples, snps, users
 from genotype_api.api.endpoints import plates, analyses
+from sqlalchemy.exc import NoResultFound
 
 app = FastAPI()
+
+
+@app.exception_handler(NoResultFound)
+async def not_found_exception_handler(request: Request, exc: NoResultFound):
+    return JSONResponse("Document not found", status_code=status.HTTP_404_NOT_FOUND)
 
 
 @app.get("/")
@@ -47,13 +54,6 @@ app.include_router(
     analyses.router,
     prefix="/analyses",
     tags=["analyses"],
-    responses={status.HTTP_404_NOT_FOUND: {"description": "Not found"}},
-)
-
-app.include_router(
-    sequences.router,
-    prefix="/sequences",
-    tags=["sequences"],
     responses={status.HTTP_404_NOT_FOUND: {"description": "Not found"}},
 )
 

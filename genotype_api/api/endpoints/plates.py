@@ -4,19 +4,23 @@ from io import BytesIO
 from pathlib import Path
 from typing import List
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status, Query
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, Query, status
+from fastapi.responses import JSONResponse
 from sqlmodel import Session, select
 
-from genotype_api.crud.analyses import create_analysis, get_analysis_type_sample
-from genotype_api.crud.samples import get_sample, create_sample
-from genotype_api.crud.plates import create_plate
+from genotype_api.crud.analyses import (
+    get_analyses_from_plate,
+    check_analyses_objects,
+)
+from genotype_api.crud.samples import create_analyses_sample_objects
+from genotype_api.crud.plates import create_plate, get_plate
 from genotype_api.database import get_session
 from genotype_api.excel import GenotypeAnalysis
+from genotype_api.files import check_file
 from genotype_api.models import (
     Plate,
     PlateReadWithAnalyses,
     PlateRead,
-    Sample,
     Analysis,
     PlateCreate,
 )
@@ -24,77 +28,65 @@ from genotype_api.models import (
 router = APIRouter()
 
 
+def get_plate_id_from_file(file_name: Path) -> str:
+    # Get the plate id from the standardized name of the plate
+    return file_name.name.split("_", 1)[0]
+
+
 @router.post("/plate", response_model=Plate)
 def upload_plate(file: UploadFile = File(...), session: Session = Depends(get_session)):
-    file_name: Path = Path(file.filename)
-    if not file_name.name.endswith(".xlsx"):
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Please select an excel book for upload",
-        )
-    # Get the plate id from the standardized name of the plate
-    plate_id = file_name.name.split("_", 1)[0]
-    # Check if plate exists
+    file_name: Path = check_file(file_path=file.filename, extension=".xlsx")
+    plate_id: str = get_plate_id_from_file(file_name)
     db_plate = session.get(Plate, plate_id)
     if db_plate:
         raise HTTPException(status_code=400, detail="Plate already uploaded")
-    plate_obj = PlateCreate(plate_id=plate_id)
 
-    content = BytesIO(file.file.read())
     excel_parser = GenotypeAnalysis(
-        excel_file=content, file_name=str(file_name), include_key="-CG-"
+        excel_file=BytesIO(file.file.read()), file_name=str(file_name), include_key="-CG-"
     )
-    for analysis_obj in excel_parser.generate_analyses():
-        db_analysis: Analysis = get_analysis_type_sample(
-            session=session, sample_id=analysis_obj.sample_id, analysis_type="genotype"
-        )
-        if db_analysis:
-            raise HTTPException(status_code=400, detail="Analysis already exists")
-        if not get_sample(session=session, sample_id=analysis_obj.sample_id):
-            create_sample(session=session, sample=Sample(id=analysis_obj.sample_id))
-        plate_obj.analyses.append(create_analysis(session=session, analysis=analysis_obj))
-
+    analyses: List[Analysis] = list(excel_parser.generate_analyses())
+    check_analyses_objects(session=session, analyses=analyses, analysis_type="genotype")
+    create_analyses_sample_objects(session=session, analyses=analyses)
+    plate_obj = PlateCreate(plate_id=plate_id)
+    plate_obj.analyses = analyses
     return create_plate(session=session, plate=plate_obj)
 
 
-@router.post("/{plate_id}/sign-off", response_model=Plate)
+@router.patch("/{plate_id}/sign-off", response_model=Plate)
 def sign_off_plate(
-    plate_id: str,
+    plate_id: int,
     method_document: str = Query(...),
     method_version: str = Query(...),
     session: Session = Depends(get_session),
 ):
     """Sign off a plate.
     This means that current User sign off that the plate is checked
-    Add Depends with curent user
+    Add Depends with current user
     """
 
-    plate = session.get(Plate, plate_id)
-    if not plate:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Plate not found")
+    plate: Plate = get_plate(session=session, plate_id=plate_id)
 
     # plate.user = current_user
     plate.signed_at = datetime.now()
     plate.method_document = method_document
     plate.method_version = method_version
     session.commit()
+    session.refresh(plate)
     return plate
 
 
 @router.get("/{plate_id}", response_model=PlateReadWithAnalyses)
 def read_plate(plate_id: int, session: Session = Depends(get_session)):
     """Display information about a plate."""
-    plate = session.get(Plate, plate_id)
-    if not plate:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Plate not found")
-    return plate
+
+    return get_plate(session=session, plate_id=plate_id)
 
 
 @router.get("/", response_model=List[PlateRead])
 def read_plates(
     skip: int = 0, limit: int = Query(default=100, lte=100), session: Session = Depends(get_session)
 ):
-    """Display information about a plate."""
+    """Display all plates"""
     plates: List[Plate] = session.exec(select(Plate).offset(skip).limit(limit)).all()
 
     return plates
@@ -104,7 +96,13 @@ def read_plates(
 def delete_plate(plate_id: int, session: Session = Depends(get_session)):
     """Delete plate."""
     plate = session.get(Plate, plate_id)
+    analyses: List[Analysis] = get_analyses_from_plate(session=session, plate_id=plate_id)
+    analyse_ids = [analyse.id for analyse in analyses]
+    for analysis in analyses:
+        session.delete(analysis)
     session.delete(plate)
     session.commit()
 
-    return plate
+    return JSONResponse(
+        f"Deleted plate: {plate_id} and analyses: {analyse_ids}", status_code=status.HTTP_200_OK
+    )

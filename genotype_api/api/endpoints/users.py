@@ -2,7 +2,9 @@
 
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
+
+from genotype_api.crud.users import get_user
 from genotype_api.database import get_session
 from genotype_api.models import User, UserRead, UserCreate, UserReadWithPlates
 from sqlmodel import Session, select
@@ -12,10 +14,7 @@ router = APIRouter()
 
 @router.get("/{user_id}", response_model=UserReadWithPlates)
 def read_user(user_id: int, session: Session = Depends(get_session)) -> User:
-    user = session.get(User, user_id)
-    if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    return user
+    return get_user(session=session, user_id=user_id)
 
 
 @router.get("/", response_model=List[UserRead])

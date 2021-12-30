@@ -1,22 +1,24 @@
-from typing import List, Optional
+from typing import List
 
-from genotype_api.models import Sample, SNP, Analysis
-from sqlmodel import Session, func
+from genotype_api.models import Sample, Analysis
+from sqlmodel import Session, func, select
 from sqlmodel.sql.expression import SelectOfScalar
+from fastapi import HTTPException
 
 
-def get_sample(session: Session, sample_id: str) -> Optional[Sample]:
-    return session.get(Sample, sample_id)
+def get_sample(session: Session, sample_id: str) -> Sample:
+    """Get sample or raise 404"""
+
+    statement = select(Sample).where(Sample.id == sample_id)
+    return session.exec(statement).one()
 
 
-def delete_sample(session: Session, sample_id: str) -> Sample:
-    db_sample = session.get(Sample, sample_id)
-    session.delete(db_sample)
-    session.commit()
-    return db_sample
+def create_sample(session: Session, sample: Sample) -> Sample:
+    """Adding a sample to db"""
 
-
-def create_sample(session: Session, sample: Sample):
+    sample_in_db = session.get(Sample, sample.id)
+    if sample_in_db:
+        raise HTTPException(status_code=400, detail="Sample already registered")
     session.add(sample)
     session.commit()
     session.refresh(sample)
@@ -24,6 +26,8 @@ def create_sample(session: Session, sample: Sample):
 
 
 def get_incomplete_samples(statement: SelectOfScalar) -> SelectOfScalar:
+    """Returning sample query statement for samples with les than two analyses"""
+
     # return statement.join(Analysis).where(func.count(Sample.analyses) < 2)
     return (
         statement.join(Analysis)
@@ -34,12 +38,21 @@ def get_incomplete_samples(statement: SelectOfScalar) -> SelectOfScalar:
 
 
 def get_plate_samples(statement: SelectOfScalar, plate_id: str) -> SelectOfScalar:
+    """Returning sample query statement for samples analysed on a specific plate"""
+
     return statement.join(Analysis).where(Analysis.plate_id == plate_id)
 
 
 def get_commented_samples(statement: SelectOfScalar) -> SelectOfScalar:
+    """Returning sample query statement for samples with no comment"""
+
     return statement.where(Sample.comment != None)
 
 
-def get_samples_like(statement: SelectOfScalar, query_string: str) -> SelectOfScalar:
-    return statement.where(Sample.id.like(f"%/{query_string}\_%"))
+def create_analyses_sample_objects(session: Session, analyses: List[Analysis]) -> List[Sample]:
+    """creating samples in an analysis if not already in db"""
+    return [
+        create_sample(session=session, sample=Sample(id=analysis_obj.sample_id))
+        for analysis_obj in analyses
+        if not session.get(Sample, analysis_obj.sample_id)
+    ]
