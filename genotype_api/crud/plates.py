@@ -1,8 +1,5 @@
 import logging
 from typing import Optional
-
-from fastapi import HTTPException, status
-
 from genotype_api.models import Plate, PlateCreate
 from sqlmodel import Session, select
 

@@ -1,9 +1,9 @@
-from typing import List, Optional, Literal
+from typing import List, Optional
 
 from fastapi import HTTPException
 
 from genotype_api.constants import TYPES
-from genotype_api.models import Analysis, AnalysisRead
+from genotype_api.models import Analysis
 from sqlmodel import Session, select
 
 

@@ -52,7 +52,7 @@ def upload_plate(file: UploadFile = File(...), session: Session = Depends(get_se
     return create_plate(session=session, plate=plate_obj)
 
 
-@router.post("/{plate_id}/sign-off", response_model=Plate)
+@router.patch("/{plate_id}/sign-off", response_model=Plate)
 def sign_off_plate(
     plate_id: int,
     method_document: str = Query(...),

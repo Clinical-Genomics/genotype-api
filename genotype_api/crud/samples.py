@@ -3,7 +3,7 @@ from typing import List
 from genotype_api.models import Sample, Analysis
 from sqlmodel import Session, func, select
 from sqlmodel.sql.expression import SelectOfScalar
-from fastapi import status, HTTPException
+from fastapi import HTTPException
 
 
 def get_sample(session: Session, sample_id: str) -> Sample:

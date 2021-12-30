@@ -2,7 +2,7 @@
 from pathlib import Path
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, status, Query, UploadFile, File
+from fastapi import APIRouter, Depends, status, Query, UploadFile, File
 from fastapi.responses import JSONResponse
 
 from genotype_api.crud.analyses import get_analysis, check_analyses_objects, create_analyses
