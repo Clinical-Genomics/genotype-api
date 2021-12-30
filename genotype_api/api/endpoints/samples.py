@@ -1,5 +1,6 @@
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, Query, status
+from fastapi.responses import JSONResponse
 from genotype_api.database import get_session
 from genotype_api.models import Sample, SampleReadWithAnalysis, SampleRead
 from genotype_api import crud
@@ -28,7 +29,6 @@ def read_samples(
     plate_id: Optional[str] = None,
     incomplete: Optional[bool] = False,
     commented: Optional[bool] = False,
-    query_string: Optional[str] = None,
     session: Session = Depends(get_session),
 ):
     statement: SelectOfScalar = select(Sample)
@@ -38,8 +38,6 @@ def read_samples(
         statement: SelectOfScalar = get_incomplete_samples(statement=statement)
     if commented:
         statement: SelectOfScalar = get_commented_samples(statement=statement)
-    if query_string:
-        statement: SelectOfScalar = get_samples_like(statement=statement, query_string=query_string)
     samples: List[Sample] = session.exec(statement.offset(skip).limit(limit)).all()
     return samples
 
@@ -49,20 +47,18 @@ def create_sample(sample: Sample, session: Session = Depends(get_session)):
     return crud.samples.create_sample(session=session, sample=sample)
 
 
-@router.put("/update-sex/{sample_id}", response_model=SampleRead)
+@router.patch("/{sample_id}/sex", response_model=SampleRead)
 def update_sex(
     sample_id: str,
     sex: str = Query(...),
     genotype_sex: Optional[str] = None,
     sequence_sex: Optional[str] = None,
-    comment: str = Query(...),
     session: Session = Depends(get_session),
 ):
     """Updating sex field on sample and sample analyses"""
 
     sample_in_db: Sample = get_sample(session=session, sample_id=sample_id)
     sample_in_db.sex = sex
-    sample_in_db.comment = comment
     for analysis in sample_in_db.analyses:
         if analysis.type == "genotype":
             analysis.sex = genotype_sex
@@ -75,20 +71,32 @@ def update_sex(
     return sample_in_db
 
 
-@router.put("/update-status/{sample_id}", response_model=SampleRead)
-def update_status(
+@router.patch("/{sample_id}/comment", response_model=SampleRead)
+def update_comment(
     sample_id: str,
-    status: str = Query(...),
     comment: str = Query(...),
     session: Session = Depends(get_session),
 ):
-    """Updating status and comment field on sample"""
+    """Updating comment field on sample"""
+
+    sample_in_db: Sample = get_sample(session=session, sample_id=sample_id)
+    sample_in_db.comment = comment
+    session.add(sample_in_db)
+    session.commit()
+    session.refresh(sample_in_db)
+    return sample_in_db
+
+
+@router.patch("/{sample_id}/status", response_model=SampleRead)
+def update_status(
+    sample_id: str,
+    status: str = Query(...),
+    session: Session = Depends(get_session),
+):
+    """Updating status field on sample"""
 
     sample_in_db: Sample = get_sample(session=session, sample_id=sample_id)
     sample_in_db.status = status
-    if sample_in_db.comment:
-        comment = f"{sample_in_db.comment}\n\n{comment}"
-    sample_in_db.comment = comment
     session.add(sample_in_db)
     session.commit()
     session.refresh(sample_in_db)
@@ -98,7 +106,7 @@ def update_status(
 @router.delete("/{sample_id}", response_model=Sample)
 def delete_sample(sample_id: str, session: Session = Depends(get_session)):
     """Delete sample"""
-    sample: Sample = session.get(Sample, sample_id)
+    sample: Sample = get_sample(session=session, sample_id=sample_id)
     session.delete(sample)
     session.commit()
-    return sample
+    return JSONResponse(f"Deleted sample: {sample_id}", status_code=status.HTTP_200_OK)
