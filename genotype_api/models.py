@@ -122,7 +122,9 @@ class PlateBase(SQLModel):
 class Plate(PlateBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     user: Optional["User"] = Relationship(back_populates="plates")
-    analyses: Optional[List["Analysis"]] = Relationship(back_populates="plate")
+    analyses: Optional[List["Analysis"]] = Relationship(
+        back_populates="plate", sa_relationship_kwargs={"cascade": "delete"}
+    )
 
 
 class PlateRead(PlateBase):

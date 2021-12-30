@@ -1,5 +1,7 @@
+from typing import List
+
 from genotype_api.models import Sample, Analysis
-from sqlmodel import Session, func
+from sqlmodel import Session, func, select
 from sqlmodel.sql.expression import SelectOfScalar
 from fastapi import status, HTTPException
 
@@ -7,10 +9,8 @@ from fastapi import status, HTTPException
 def get_sample(session: Session, sample_id: str) -> Sample:
     """Get sample or raise 404"""
 
-    sample = session.get(Sample, sample_id)
-    if not sample:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Sample not found")
-    return sample
+    statement = select(Sample).where(Sample.id == sample_id)
+    return session.exec(statement).one()
 
 
 def create_sample(session: Session, sample: Sample) -> Sample:
@@ -18,7 +18,9 @@ def create_sample(session: Session, sample: Sample) -> Sample:
 
     sample_in_db = session.get(Sample, sample.id)
     if sample_in_db:
-        raise HTTPException(status_code=400, detail="Sample already registered")
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Sample already registered"
+        )
     session.add(sample)
     session.commit()
     session.refresh(sample)
@@ -53,3 +55,12 @@ def get_samples_like(statement: SelectOfScalar, query_string: str) -> SelectOfSc
     """Returning sample id query filter statement. NOT WORKING"""
 
     return statement.where(Sample.id.like(f"%/{query_string}\_%"))
+
+
+def create_analyses_sample_objects(session: Session, analyses: List[Analysis]) -> List[Sample]:
+    """creating samples in an analysis if not already in db"""
+    return [
+        create_sample(session=session, sample=Sample(id=analysis_obj.sample_id))
+        for analysis_obj in analyses
+        if not session.get(Sample, analysis_obj.sample_id)
+    ]
