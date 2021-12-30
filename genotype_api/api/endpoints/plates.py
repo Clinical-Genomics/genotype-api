@@ -40,7 +40,7 @@ def check_analyses_objects(session: Session, analyses: List[Analysis]) -> None:
 
 def create_analyses_sample_objects(session: Session, analyses: List[Analysis]) -> List[Sample]:
     return [
-        Sample(id=analysis_obj.sample_id)
+        create_sample(session=session, sample=Sample(id=analysis_obj.sample_id))
         for analysis_obj in analyses
         if not session.get(Sample, analysis_obj.sample_id)
     ]
@@ -62,8 +62,10 @@ def upload_plate(file: UploadFile = File(...), session: Session = Depends(get_se
     excel_parser = GenotypeAnalysis(
         excel_file=BytesIO(file.file.read()), file_name=str(file_name), include_key="-CG-"
     )
-    analyses = list(excel_parser.generate_analyses())
+    analyses: List[Analysis] = list(excel_parser.generate_analyses())
     check_analyses_objects(session=session, analyses=analyses)
+    print(analyses)
+    print("jhköjhkljhkj")
     print(analyses)
     # samples: List[Sample] = create_analyses_sample_objects(session=session, analyses=analyses)
     plate_obj = PlateCreate(plate_id=plate_id, analyses=analyses)

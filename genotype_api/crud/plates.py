@@ -26,7 +26,7 @@ def get_plate_by_plate_id(session: Session, plate_id: str) -> Optional[Plate]:
 def create_plate(session: Session, plate: PlateCreate) -> Plate:
     db_plate = Plate.from_orm(plate)
     print("jkjkj")
-    db_plate.analyses = plate.analyses  # not sure why from_orm wont pick up the analyses
+    # db_plate.analyses = plate.analyses  # not sure why from_orm wont pick up the analyses
     session.add(db_plate)
     session.commit()
     session.refresh(db_plate)
