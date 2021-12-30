@@ -2,6 +2,7 @@ from typing import List, Optional, Literal
 
 from fastapi import HTTPException
 
+from genotype_api.constants import TYPES
 from genotype_api.models import Analysis, AnalysisRead
 from sqlmodel import Session, select
 
@@ -49,7 +50,7 @@ def create_analyses(session: Session, analyses: List[Analysis]) -> List[Analysis
 
 
 def check_analyses_objects(
-    session: Session, analyses: List[Analysis], analysis_type: Literal["genotype", "sequence"]
+    session: Session, analyses: List[Analysis], analysis_type: TYPES
 ) -> None:
     """Raising 400 if any analysis in the list already exist in the database"""
     for analysis_obj in analyses:

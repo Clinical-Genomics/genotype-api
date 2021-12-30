@@ -1,6 +1,8 @@
 from typing import List, Optional
 from fastapi import APIRouter, Depends, status, Query
 from fastapi.responses import JSONResponse
+
+from genotype_api.constants import STATUS, SEXES
 from genotype_api.database import get_session
 from genotype_api.models import Sample, SampleReadWithAnalysis, SampleRead
 from genotype_api import crud
@@ -49,9 +51,9 @@ def create_sample(sample: Sample, session: Session = Depends(get_session)):
 @router.patch("/{sample_id}/sex", response_model=SampleRead)
 def update_sex(
     sample_id: str,
-    sex: str = Query(...),
-    genotype_sex: Optional[str] = None,
-    sequence_sex: Optional[str] = None,
+    sex: SEXES = Query(...),
+    genotype_sex: Optional[SEXES] = None,
+    sequence_sex: Optional[SEXES] = None,
     session: Session = Depends(get_session),
 ):
     """Updating sex field on sample and sample analyses"""
@@ -89,7 +91,7 @@ def update_comment(
 @router.patch("/{sample_id}/status", response_model=SampleRead)
 def update_status(
     sample_id: str,
-    status: str = Query(...),
+    status: STATUS = Query(...),
     session: Session = Depends(get_session),
 ):
     """Updating status field on sample"""

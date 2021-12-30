@@ -13,8 +13,8 @@ app = FastAPI()
 
 
 @app.exception_handler(NoResultFound)
-def not_found_exception_handler(request: Request, exc: NoResultFound):
-    return JSONResponse("Sample not found", status_code=status.HTTP_404_NOT_FOUND)
+async def not_found_exception_handler(request: Request, exc: NoResultFound):
+    return JSONResponse("Document not found", status_code=status.HTTP_404_NOT_FOUND)
 
 
 @app.get("/")

@@ -10,12 +10,10 @@ LOG = logging.getLogger(__name__)
 
 
 def get_plate(session: Session, plate_id: int) -> Plate:
-    """Get plate or raise 404"""
+    """Get plate"""
 
-    plate = session.get(Plate, plate_id)
-    if not plate:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Plate not found")
-    return plate
+    statement = select(Plate).where(Plate.id == plate_id)
+    return session.exec(statement).one()
 
 
 def get_plate_by_plate_id(session: Session, plate_id: str) -> Optional[Plate]:
