@@ -4,7 +4,7 @@ from fastapi.responses import JSONResponse
 
 from genotype_api.constants import STATUS, SEXES
 from genotype_api.database import get_session
-from genotype_api.models import Sample, SampleReadWithAnalysis, SampleRead
+from genotype_api.models import Sample, SampleReadWithAnalysis, SampleRead, User
 from genotype_api import crud
 from genotype_api.crud.samples import (
     get_incomplete_samples,
@@ -15,11 +15,17 @@ from genotype_api.crud.samples import (
 from sqlmodel import Session, select
 from sqlmodel.sql.expression import SelectOfScalar
 
+from genotype_api.security import get_active_user
+
 router = APIRouter()
 
 
 @router.get("/{sample_id}", response_model=SampleReadWithAnalysis)
-def read_sample(sample_id: str, session: Session = Depends(get_session)):
+def read_sample(
+    sample_id: str,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_active_user),
+):
     return get_sample(session=session, sample_id=sample_id)
 
 
@@ -31,6 +37,7 @@ def read_samples(
     incomplete: Optional[bool] = False,
     commented: Optional[bool] = False,
     session: Session = Depends(get_session),
+    current_user: User = Depends(get_active_user),
 ):
     statement: SelectOfScalar = select(Sample)
     if plate_id:
@@ -44,7 +51,11 @@ def read_samples(
 
 
 @router.post("/", response_model=SampleRead)
-def create_sample(sample: Sample, session: Session = Depends(get_session)):
+def create_sample(
+    sample: Sample,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_active_user),
+):
     return crud.samples.create_sample(session=session, sample=sample)
 
 
@@ -55,6 +66,7 @@ def update_sex(
     genotype_sex: Optional[SEXES] = None,
     sequence_sex: Optional[SEXES] = None,
     session: Session = Depends(get_session),
+    current_user: User = Depends(get_active_user),
 ):
     """Updating sex field on sample and sample analyses"""
 
@@ -77,6 +89,7 @@ def update_comment(
     sample_id: str,
     comment: str = Query(...),
     session: Session = Depends(get_session),
+    current_user: User = Depends(get_active_user),
 ):
     """Updating comment field on sample"""
 
@@ -93,6 +106,7 @@ def update_status(
     sample_id: str,
     status: STATUS = Query(...),
     session: Session = Depends(get_session),
+    current_user: User = Depends(get_active_user),
 ):
     """Updating status field on sample"""
 
@@ -105,7 +119,11 @@ def update_status(
 
 
 @router.delete("/{sample_id}", response_model=Sample)
-def delete_sample(sample_id: str, session: Session = Depends(get_session)):
+def delete_sample(
+    sample_id: str,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_active_user),
+):
     """Delete sample and its Analyses"""
 
     sample: Sample = get_sample(session=session, sample_id=sample_id)

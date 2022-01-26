@@ -8,17 +8,22 @@ from fastapi.responses import JSONResponse
 from genotype_api.crud.analyses import get_analysis, check_analyses_objects, create_analyses
 from genotype_api.crud.samples import create_analyses_sample_objects
 from genotype_api.database import get_session
-from genotype_api.files import check_file
-from genotype_api.models import Analysis, AnalysisRead, AnalysisReadWithGenotype
+from genotype_api.file_parsing.files import check_file
+from genotype_api.models import Analysis, AnalysisRead, AnalysisReadWithGenotype, User
 from sqlmodel import Session, select
 
-from genotype_api.vcf import SequenceAnalysis
+from genotype_api.security import get_active_user
+from genotype_api.file_parsing.vcf import SequenceAnalysis
 
 router = APIRouter()
 
 
 @router.get("/{analysis_id}", response_model=AnalysisReadWithGenotype)
-def read_analysis(analysis_id: int, session: Session = Depends(get_session)):
+def read_analysis(
+    analysis_id: int,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_active_user),
+):
     """Return analysis."""
 
     return get_analysis(session=session, analysis_id=analysis_id)
@@ -29,6 +34,7 @@ def read_analyses(
     skip: int = 0,
     limit: int = Query(default=100, lte=100),
     session: Session = Depends(get_session),
+    current_user: User = Depends(get_active_user),
 ) -> List[Analysis]:
     """Return all analyses."""
     analyses: List[Analysis] = session.exec(select(Analysis).offset(skip).limit(limit)).all()
@@ -37,7 +43,11 @@ def read_analyses(
 
 
 @router.delete("/{analysis_id}")
-def delete_analysis(analysis_id: int, session: Session = Depends(get_session)):
+def delete_analysis(
+    analysis_id: int,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_active_user),
+):
     """Delete analysis based on analysis_id"""
     analysis = get_analysis(session=session, analysis_id=analysis_id)
     session.delete(analysis)
@@ -47,7 +57,11 @@ def delete_analysis(analysis_id: int, session: Session = Depends(get_session)):
 
 
 @router.post("/sequence", response_model=List[Analysis])
-def upload_sequence_analysis(file: UploadFile = File(...), session: Session = Depends(get_session)):
+def upload_sequence_analysis(
+    file: UploadFile = File(...),
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_active_user),
+):
     """Reading vcf file, creating and uploading sequence analyses and sample objects to db"""
 
     file_name: Path = check_file(file_path=file.filename, extension=".vcf")

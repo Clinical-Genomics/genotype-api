@@ -1,10 +1,15 @@
 from datetime import datetime
 from typing import Optional, List
 
-from pydantic import constr, EmailStr
+from pydantic import constr, EmailStr, BaseModel
 from sqlmodel import SQLModel, Field, Relationship
 
 from genotype_api.constants import TYPES, SEXES, STATUS
+
+
+class Token(BaseModel):
+    id_token: str
+    token_type: str
 
 
 class GenotypeBase(SQLModel):
@@ -92,9 +97,7 @@ class SNPRead(SNPBase):
 
 class UserBase(SQLModel):
     email: EmailStr = Field(index=True)
-    # google_id = Column(types.String(128), unique=True)
     name: str
-    avatar: Optional[str]
 
 
 class User(UserBase, table=True):
