@@ -1,9 +1,5 @@
 """Tests fpr the excel module"""
 
-from pathlib import Path
-
-from genotype_api.excel import GenotypeAnalysis
-
 """
 def test_read_excel(excel_file: Path, include_key: str):
     # GIVEN an excel file and a include key
