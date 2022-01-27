@@ -1,10 +1,14 @@
 import jwt
-from fastapi import HTTPException, Security
+from fastapi import HTTPException, Security, Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from sqlmodel import Session
 
 from starlette.requests import Request
+
+from genotype_api.database import get_session
 from genotype_api.models import User
 from genotype_api.config import security_settings
+from genotype_api.crud.users import get_user_by_email
 
 
 def decode_id_token(token: str):
@@ -45,8 +49,13 @@ class JWTBearer(HTTPBearer):
 jwt_scheme = JWTBearer()
 
 
-async def get_active_user(token: str = Security(jwt_scheme)):
+async def get_active_user(
+    token: str = Security(jwt_scheme),
+    session: Session = Depends(get_session),
+):
     """Dependency for secure endpoints"""
-    # if user.disabled:
-    # raise HTTPException(status_code=400, detail="Inactive user")
-    return User.parse_obj(decode_id_token(token))
+    user = User.parse_obj(decode_id_token(token))
+    db_user: User = get_user_by_email(session=session, email=user.email)
+    if not db_user:
+        raise HTTPException(status_code=400, detail="User not in DB")
+    return user
