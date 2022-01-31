@@ -53,9 +53,12 @@ class AnalysisCreate(AnalysisBase):
     pass
 
 
-class SampleBase(SQLModel):
+class SampleSlim(SQLModel):
     status: Optional[STATUS]
     comment: Optional[str]
+
+
+class SampleBase(SampleSlim):
     sex: Optional[SEXES]
     created_at: Optional[datetime] = datetime.now()
 
@@ -138,8 +141,12 @@ class UserReadWithPlates(UserRead):
     plates: Optional[List[Plate]] = []
 
 
+class AnalysisReadWithSample(AnalysisRead):
+    sample: Optional[SampleSlim]
+
+
 class PlateReadWithAnalyses(PlateRead):
-    analyses: Optional[List[Analysis]] = []
+    analyses: Optional[List[AnalysisReadWithSample]] = []
 
 
 class SampleReadWithAnalysis(SampleRead):
