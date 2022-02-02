@@ -19,4 +19,4 @@ numpy
 aiofiles
 sendmail-container
 python-dotenv
-pyjwt
+google
