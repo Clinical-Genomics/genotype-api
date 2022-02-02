@@ -11,7 +11,7 @@ def get_user(session: Session, user_id: int):
 
 def get_user_by_email(session: Session, email: str) -> Optional[User]:
     statement = select(User).where(User.email == email)
-    return session.exec(statement).one()
+    return session.exec(statement).first()
 
 
 def get_users(session: Session, skip: int = 0, limit: int = 100) -> List[User]:

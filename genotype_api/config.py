@@ -7,7 +7,7 @@ PACKAGE_ROOT: Path = GENOTYPE_PACKAGE.parent
 ENV_FILE: Path = PACKAGE_ROOT / ".env"
 
 
-class Settings(BaseSettings):
+class DBSettings(BaseSettings):
     """Settings for serving the genotype-api app"""
 
     db_uri: str = "sqlite:///database.db"
@@ -19,7 +19,16 @@ class Settings(BaseSettings):
         env_file = str(ENV_FILE)
 
 
-settings = Settings()
+class SecuritySettings(BaseSettings):
+    """Settings for serving the genotype-api app"""
+
+    client_id = ""
+    algorithm = ""
+
+    class Config:
+        env_file = str(ENV_FILE)
 
 
-print(settings.dict())
+security_settings = SecuritySettings()
+
+settings = DBSettings()

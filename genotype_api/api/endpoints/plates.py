@@ -15,15 +15,17 @@ from genotype_api.crud.analyses import (
 from genotype_api.crud.samples import create_analyses_sample_objects
 from genotype_api.crud.plates import create_plate, get_plate
 from genotype_api.database import get_session
-from genotype_api.excel import GenotypeAnalysis
-from genotype_api.files import check_file
+from genotype_api.file_parsing.excel import GenotypeAnalysis
+from genotype_api.file_parsing.files import check_file
 from genotype_api.models import (
     Plate,
     PlateReadWithAnalyses,
     PlateRead,
     Analysis,
     PlateCreate,
+    User,
 )
+from genotype_api.security import get_active_user
 
 router = APIRouter()
 
@@ -34,7 +36,11 @@ def get_plate_id_from_file(file_name: Path) -> str:
 
 
 @router.post("/plate", response_model=Plate)
-def upload_plate(file: UploadFile = File(...), session: Session = Depends(get_session)):
+def upload_plate(
+    file: UploadFile = File(...),
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_active_user),
+):
     file_name: Path = check_file(file_path=file.filename, extension=".xlsx")
     plate_id: str = get_plate_id_from_file(file_name)
     db_plate = session.get(Plate, plate_id)
@@ -58,6 +64,7 @@ def sign_off_plate(
     method_document: str = Query(...),
     method_version: str = Query(...),
     session: Session = Depends(get_session),
+    current_user: User = Depends(get_active_user),
 ):
     """Sign off a plate.
     This means that current User sign off that the plate is checked
@@ -76,7 +83,11 @@ def sign_off_plate(
 
 
 @router.get("/{plate_id}", response_model=PlateReadWithAnalyses)
-def read_plate(plate_id: int, session: Session = Depends(get_session)):
+def read_plate(
+    plate_id: int,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_active_user),
+):
     """Display information about a plate."""
 
     return get_plate(session=session, plate_id=plate_id)
@@ -84,7 +95,10 @@ def read_plate(plate_id: int, session: Session = Depends(get_session)):
 
 @router.get("/", response_model=List[PlateRead])
 def read_plates(
-    skip: int = 0, limit: int = Query(default=100, lte=100), session: Session = Depends(get_session)
+    skip: int = 0,
+    limit: int = Query(default=100, lte=100),
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_active_user),
 ):
     """Display all plates"""
     plates: List[Plate] = session.exec(select(Plate).offset(skip).limit(limit)).all()
@@ -93,7 +107,11 @@ def read_plates(
 
 
 @router.delete("/{plate_id}", response_model=Plate)
-def delete_plate(plate_id: int, session: Session = Depends(get_session)):
+def delete_plate(
+    plate_id: int,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_active_user),
+):
     """Delete plate."""
     plate = session.get(Plate, plate_id)
     analyses: List[Analysis] = get_analyses_from_plate(session=session, plate_id=plate_id)
