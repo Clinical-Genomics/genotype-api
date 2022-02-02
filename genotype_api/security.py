@@ -9,6 +9,7 @@ from genotype_api.database import get_session
 from genotype_api.models import User
 from genotype_api.config import security_settings
 from genotype_api.crud.users import get_user_by_email
+from genotype_api.security_dev import get_id_token, get_login_user
 
 
 def decode_id_token(token: str):
@@ -59,3 +60,10 @@ async def get_active_user(
     if not db_user:
         raise HTTPException(status_code=400, detail="User not in DB")
     return user
+
+
+async def get_user_final(
+    token_id: str = Depends(get_login_user),
+):
+    """Dependency for secure endpoints"""
+    return get_active_user(token=token_id)

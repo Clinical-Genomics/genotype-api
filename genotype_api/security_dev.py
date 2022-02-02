@@ -15,6 +15,7 @@ from genotype_api.crud.users import get_user_by_email
 from genotype_api.database import get_session
 from genotype_api.models import User
 from genotype_api.config import security_settings
+from genotype_api.models import User, Token
 
 
 class OAuth2AuthorizationCodeBearer(OAuth2):
@@ -91,3 +92,10 @@ async def get_login_active_user(current_user: User = Depends(get_login_user)):
     # if current_user.disabled:
     #    raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
+
+
+async def get_id_token(current_user: User = Depends(get_login_user)):
+    """For development"""
+    # if current_user.disabled:
+    #    raise HTTPException(status_code=400, detail="Inactive user")
+    return Token(id_token=create_id_token(current_user.dict()), token_type="bearer")
