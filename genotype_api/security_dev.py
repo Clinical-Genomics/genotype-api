@@ -95,7 +95,7 @@ async def get_login_active_user(current_user: User = Depends(get_login_user)):
 
 
 async def get_id_token(current_user: User = Depends(get_login_user)):
-    """For development"""
+    """For development etc"""
     # if current_user.disabled:
     #    raise HTTPException(status_code=400, detail="Inactive user")
     return Token(id_token=create_id_token(current_user.dict()), token_type="bearer")
