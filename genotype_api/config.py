@@ -28,6 +28,7 @@ class SecuritySettings(BaseSettings):
     token_url = ""
     secret_key = ""
     algorithm = ""
+    discovery_document = ""
 
     class Config:
         env_file = str(ENV_FILE)

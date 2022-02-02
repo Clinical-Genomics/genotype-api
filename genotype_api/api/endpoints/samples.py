@@ -15,7 +15,7 @@ from genotype_api.crud.samples import (
 from sqlmodel import Session, select
 from sqlmodel.sql.expression import SelectOfScalar
 
-from genotype_api.security import get_active_user, get_user_final
+from genotype_api.security import get_active_user
 
 router = APIRouter()
 
@@ -37,7 +37,7 @@ def read_samples(
     incomplete: Optional[bool] = False,
     commented: Optional[bool] = False,
     session: Session = Depends(get_session),
-    current_user: User = Depends(get_user_final),
+    current_user: User = Depends(get_active_user),
 ):
     statement: SelectOfScalar = select(Sample)
     if plate_id:

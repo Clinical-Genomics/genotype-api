@@ -1,4 +1,3 @@
-import jwt
 from fastapi import HTTPException, Security, Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlmodel import Session
@@ -9,16 +8,14 @@ from genotype_api.database import get_session
 from genotype_api.models import User
 from genotype_api.config import security_settings
 from genotype_api.crud.users import get_user_by_email
-from genotype_api.security_dev import get_id_token, get_login_user
+
+from google.oauth2 import id_token
+from google.auth.transport import requests
 
 
 def decode_id_token(token: str):
     try:
-        return jwt.decode(
-            token,
-            security_settings.secret_key,
-            algorithms=[security_settings.algorithm],
-        )
+        return id_token.verify_oauth2_token(token, requests.Request(), security_settings.client_id)
     except:
         return
 
@@ -39,7 +36,6 @@ class JWTBearer(HTTPBearer):
 
     def verify_jwt(self, jwtoken: str) -> bool:
         isTokenValid: bool = False
-
         try:
             payload = decode_id_token(jwtoken)
         except:
@@ -60,10 +56,3 @@ async def get_active_user(
     if not db_user:
         raise HTTPException(status_code=400, detail="User not in DB")
     return user
-
-
-async def get_user_final(
-    token_id: str = Depends(get_login_user),
-):
-    """Dependency for secure endpoints"""
-    return get_active_user(token=token_id)
