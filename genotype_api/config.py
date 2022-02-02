@@ -23,12 +23,7 @@ class SecuritySettings(BaseSettings):
     """Settings for serving the genotype-api app"""
 
     client_id = ""
-    client_secrets_json = ""
-    authorization_url = ""
-    token_url = ""
-    secret_key = ""
     algorithm = ""
-    discovery_document = ""
 
     class Config:
         env_file = str(ENV_FILE)
