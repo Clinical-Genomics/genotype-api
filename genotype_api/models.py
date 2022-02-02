@@ -7,11 +7,6 @@ from sqlmodel import SQLModel, Field, Relationship
 from genotype_api.constants import TYPES, SEXES, STATUS
 
 
-class Token(BaseModel):
-    id_token: str
-    token_type: str
-
-
 class GenotypeBase(SQLModel):
     rsnumber: Optional[constr(max_length=10)]
     analysis_id: Optional[int] = Field(default=None, foreign_key="analysis.id")
