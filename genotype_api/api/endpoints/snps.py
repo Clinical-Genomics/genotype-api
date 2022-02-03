@@ -22,7 +22,7 @@ def read_snps(
 
 
 @router.post("/", response_model=List[SNP])
-def upload_snps(
+async def upload_snps(
     snps_file: UploadFile,
     session: Session = Depends(get_session),
     current_user: User = Depends(get_active_user),
@@ -32,8 +32,9 @@ def upload_snps(
         raise HTTPException(status_code=400, detail="SNPs already uploaded")
     snps = []
     content = await snps_file.read()
+
     header = ["id", "ref", "chrom", "pos"]
-    for line in content.split("\n"):
+    for line in content.decode().split("\n"):
         if len(line) <= 10:
             continue
         snp = SNP(**dict(zip(header, line.split())))
