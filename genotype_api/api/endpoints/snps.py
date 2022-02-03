@@ -31,7 +31,7 @@ def upload_snps(
     if db_snps:
         raise HTTPException(status_code=400, detail="SNPs already uploaded")
     snps = []
-    content = snps_file.read()
+    content = await snps_file.read()
     header = ["id", "ref", "chrom", "pos"]
     for line in content.split("\n"):
         if len(line) <= 10:
