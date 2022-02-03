@@ -2,7 +2,7 @@
 from genotype_api.models import SNP, User
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, Query, File
+from fastapi import APIRouter, Depends, HTTPException, Query, File, UploadFile
 from genotype_api.database import get_session
 from sqlmodel import Session, delete, select
 
@@ -23,7 +23,7 @@ def read_snps(
 
 @router.post("/", response_model=List[SNP])
 def upload_snps(
-    snps_file: bytes = File(...),
+    snps_file: UploadFile,
     session: Session = Depends(get_session),
     current_user: User = Depends(get_active_user),
 ):
@@ -31,7 +31,7 @@ def upload_snps(
     if db_snps:
         raise HTTPException(status_code=400, detail="SNPs already uploaded")
     snps = []
-    content = snps_file.decode()
+    content = snps_file.read()
     header = ["id", "ref", "chrom", "pos"]
     for line in content.split("\n"):
         if len(line) <= 10:
