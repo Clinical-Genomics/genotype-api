@@ -23,7 +23,7 @@ def read_snps(
 
 @router.post("/", response_model=List[SNP])
 def upload_snps(
-    snps_file: UploadFile,
+    snps_file: bytes = File(...),
     session: Session = Depends(get_session),
     current_user: User = Depends(get_active_user),
 ):
@@ -31,7 +31,7 @@ def upload_snps(
     if db_snps:
         raise HTTPException(status_code=400, detail="SNPs already uploaded")
     snps = []
-    content = snps_file.read()
+    content = snps_file.decode()
     header = ["id", "ref", "chrom", "pos"]
     for line in content.split("\n"):
         if len(line) <= 10:
