@@ -10,16 +10,24 @@ install [poetry]
 
 ```
 git clone https://github.com/Clinical-Genomics/genotype-api
-poetry install
+cd genotype-api
+pip install -e . -r requirements.txt
 ```
 
 ## Usage
 
 ```
-uvicorn genotype_api.__main__:app --reload 
+uvicorn genotype_api.api.app:app --reload 
 ```
 
-Go to `127.0.0.1:8000/docs` and test the API
+Go to `http://localhost:8000/docs` and test the API
+
+
+## Authorization
+
+
+There is currently no working demo avalible. 
+To autorize you'l need to provide a valid ID-token.
 
 ## Description
 
@@ -28,14 +36,6 @@ After sample prep a small part of the DNA is sent to MAF where they do SNP calli
 The same samples get sequenced and genotyped inhouse and the result of this is uploaded in the VCF format via the `Upload Sequence`-endpoint.
 
 The two analyses for each sample are then compared to check for anomalies.
-
-## Test usage
-
-Start the server as described above. Go to the docs and upload the excel example in `tests/fixtures/excel/genotype.xlsx` to the upload plate endpoint. Then upload the `tests/fixtures/vcf/sequence.vcf` to the upload sequence endpoint.
-
-[genotype]: https://github.com/Clinical-Genomics/genotype
-[fastapi]: https://fastapi.tiangolo.com
-[poetry]: https://python-poetry.org/docs/#installation
 
 
 
