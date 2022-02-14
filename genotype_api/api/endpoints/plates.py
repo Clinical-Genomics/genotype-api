@@ -14,6 +14,7 @@ from genotype_api.crud.analyses import (
 )
 from genotype_api.crud.samples import create_analyses_sample_objects
 from genotype_api.crud.plates import create_plate, get_plate
+from genotype_api.crud.users import get_user_by_email
 from genotype_api.database import get_session
 from genotype_api.file_parsing.excel import GenotypeAnalysis
 from genotype_api.file_parsing.files import check_file
@@ -72,8 +73,8 @@ def sign_off_plate(
     """
 
     plate: Plate = get_plate(session=session, plate_id=plate_id)
-
-    # plate.user = current_user
+    db_user = get_user_by_email(session=session, email=current_user.email)
+    plate.signed_by = db_user.id
     plate.signed_at = datetime.now()
     plate.method_document = method_document
     plate.method_version = method_version
