@@ -24,6 +24,7 @@ from genotype_api.models import (
     Analysis,
     PlateCreate,
     User,
+    PlateReadWithUser,
 )
 from genotype_api.security import get_active_user
 
@@ -93,7 +94,7 @@ def read_plate(
     return get_plate(session=session, plate_id=plate_id)
 
 
-@router.get("/", response_model=List[PlateRead])
+@router.get("/", response_model=List[PlateReadWithUser])
 def read_plates(
     skip: int = 0,
     limit: int = Query(default=100, lte=100),
