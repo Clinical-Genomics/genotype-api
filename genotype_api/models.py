@@ -147,6 +147,10 @@ class PlateReadWithAnalyses(PlateRead):
     analyses: Optional[List[AnalysisReadWithSample]] = []
 
 
+class PlateReadWithUser(PlateRead):
+    user: Optional[UserRead]
+
+
 class SampleReadWithAnalysis(SampleRead):
     analyses: Optional[List[AnalysisRead]] = []
 
