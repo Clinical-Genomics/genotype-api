@@ -148,7 +148,7 @@ class PlateReadWithAnalyses(PlateRead):
 
 
 class PlateReadWithUser(PlateRead):
-    user: Optional[User]
+    user: Optional[UserRead]
 
 
 class SampleReadWithAnalysis(SampleRead):
