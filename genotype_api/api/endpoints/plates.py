@@ -5,7 +5,6 @@ from pathlib import Path
 from typing import List
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, Query, status
-from fastapi.responses import JSONResponse
 from sqlmodel import Session, select
 
 from genotype_api.crud.analyses import (
@@ -21,7 +20,6 @@ from genotype_api.file_parsing.files import check_file
 from genotype_api.models import (
     Plate,
     PlateReadWithAnalyses,
-    PlateRead,
     Analysis,
     PlateCreate,
     User,
@@ -37,6 +35,9 @@ def get_plate_id_from_file(file_name: Path) -> str:
     return file_name.name.split("_", 1)[0]
 
 
+from fastapi.responses import JSONResponse
+
+
 @router.post("/plate", response_model=Plate)
 def upload_plate(
     file: UploadFile = File(...),
@@ -47,7 +48,9 @@ def upload_plate(
     plate_id: str = get_plate_id_from_file(file_name)
     db_plate = session.get(Plate, plate_id)
     if db_plate:
-        raise HTTPException(status_code=400, detail="Plate already uploaded")
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail=f"Plate already uploaded: {db_plate}"
+        )
 
     excel_parser = GenotypeAnalysis(
         excel_file=BytesIO(file.file.read()), file_name=str(file_name), include_key="-CG-"

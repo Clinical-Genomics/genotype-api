@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from fastapi import HTTPException
+from fastapi import HTTPException, status
 
 from genotype_api.constants import TYPES
 from genotype_api.models import Analysis
@@ -58,4 +58,7 @@ def check_analyses_objects(
             session=session, sample_id=analysis_obj.sample_id, analysis_type=analysis_type
         )
         if db_analysis:
-            raise HTTPException(status_code=400, detail=f"Analysis already exists: {db_analysis}")
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=f"Analysis already exists: {db_analysis}",
+            )
