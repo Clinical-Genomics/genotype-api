@@ -60,5 +60,5 @@ def check_analyses_objects(
         if db_analysis:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
-                detail=f"Analysis already exists: {db_analysis}",
+                detail=db_analysis.plate_id,
             )
