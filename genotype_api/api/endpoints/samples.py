@@ -2,8 +2,10 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, status, Query
 from fastapi.responses import JSONResponse
 
-from genotype_api.constants import STATUS, SEXES
+from genotype_api.constants import STATUS, SEXES, CUTOFS
+from genotype_api.crud.analyses import get_analysis_type_sample
 from genotype_api.database import get_session
+from genotype_api.match import check_sample
 from genotype_api.models import Sample, SampleReadWithAnalysis, SampleRead, User
 from genotype_api import crud
 from genotype_api.crud.samples import (
@@ -116,6 +118,26 @@ def update_status(
     session.commit()
     session.refresh(sample_in_db)
     return sample_in_db
+
+
+@router.patch("/{sample_id}/check", response_model=SampleRead)
+def check(
+    sample_id: str,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_active_user),
+):
+    """Check samples."""
+
+    sample: Sample = get_sample(session=session, sample_id=sample_id)
+    print(sample.genotype_analysis)
+    results = check_sample(sample=sample)
+    print(results)
+    sample.status = "fail" if "fail" in results.values() else "pass"
+
+    session.add(sample)
+    session.commit()
+    session.refresh(sample)
+    return sample
 
 
 @router.delete("/{sample_id}", response_model=Sample)

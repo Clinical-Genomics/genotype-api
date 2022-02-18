@@ -1,7 +1,9 @@
 from datetime import datetime
-from typing import Optional, List
+from typing import Optional, List, Dict
+from collections import Counter
 
-from pydantic import constr, EmailStr, BaseModel
+
+from pydantic import constr, EmailStr, BaseModel, validator
 from sqlmodel import SQLModel, Field, Relationship
 
 from genotype_api.constants import TYPES, SEXES, STATUS
@@ -18,6 +20,17 @@ class Genotype(GenotypeBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
 
     analysis: Optional["Analysis"] = Relationship(back_populates="genotypes")
+
+    @property
+    def alleles(self) -> List[str]:
+        """Return sorted because we are not dealing with phased data."""
+
+        return sorted([self.allele_1, self.allele_2])
+
+    @property
+    def is_ok(self) -> bool:
+        """Check that the allele determination is ok."""
+        return "0" not in self.alleles
 
 
 class GenotypeRead(GenotypeBase):
@@ -44,6 +57,11 @@ class Analysis(AnalysisBase, table=True):
     plate: Optional[List["Plate"]] = Relationship(back_populates="analyses")
     genotypes: Optional[List["Genotype"]] = Relationship(back_populates="analysis")
 
+    def check_no_calls(self) -> Dict[str, int]:
+        """Check that genotypes look ok."""
+        calls = ["known" if genotype.is_ok else "unknown" for genotype in self.genotypes]
+        return Counter(calls)
+
 
 class AnalysisRead(AnalysisBase):
     id: int
@@ -67,6 +85,26 @@ class Sample(SampleBase, table=True):
     id: Optional[constr(max_length=32)] = Field(default=None, primary_key=True)
 
     analyses: Optional[List["Analysis"]] = Relationship(back_populates="sample")
+
+    @property
+    def genotype_analysis(self) -> Optional[Analysis]:
+        """Return genotype analysis."""
+
+        for analysis in self.analyses:
+            if analysis.type == "genotype":
+                return analysis
+
+        return None
+
+    @property
+    def sequence_analysis(self) -> Optional[Analysis]:
+        """Return sequence analysis."""
+
+        for analysis in self.analyses:
+            if analysis.type == "sequence":
+                return analysis
+
+        return None
 
 
 class SampleRead(SampleBase):
