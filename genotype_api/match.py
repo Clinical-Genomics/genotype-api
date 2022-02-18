@@ -25,6 +25,8 @@ def compare_genotypes(genotype_1: Genotype, genotype_2: Genotype) -> str:
 def check_sex(
     sample: Sample, analysis_1: Analysis, analysis_2: Analysis
 ) -> Optional[Literal["fail", "pass"]]:
+    if sample.sex in ["unknown", None]:
+        return "fail"
     if not sample.sex == analysis_1.sex == analysis_2.sex:
         return "fail"
     return "pass"
@@ -51,7 +53,6 @@ def check_sample(sample: Sample):
     """Check a sample for inconsistencies."""
 
     assert len(sample.analyses) == 2, "must load both types of analyses"
-    assert sample.sex is not None, "sample must have expected sex or 'unknown'"
     return dict(
         sex=check_sex(
             sample=sample,

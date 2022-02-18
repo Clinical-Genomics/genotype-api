@@ -13,6 +13,7 @@ from genotype_api.crud.samples import (
     get_plate_samples,
     get_commented_samples,
     get_sample,
+    get_status_missing_samples,
 )
 from sqlmodel import Session, select
 from sqlmodel.sql.expression import SelectOfScalar
@@ -38,6 +39,7 @@ def read_samples(
     plate_id: Optional[str] = None,
     incomplete: Optional[bool] = False,
     commented: Optional[bool] = False,
+    status_missing: Optional[bool] = False,
     session: Session = Depends(get_session),
     current_user: User = Depends(get_active_user),
 ):
@@ -48,6 +50,8 @@ def read_samples(
         statement: SelectOfScalar = get_incomplete_samples(statement=statement)
     if commented:
         statement: SelectOfScalar = get_commented_samples(statement=statement)
+    if status_missing:
+        statement: SelectOfScalar = get_status_missing_samples(statement=statement)
     samples: List[Sample] = session.exec(statement.offset(skip).limit(limit)).all()
     return samples
 
@@ -126,12 +130,10 @@ def check(
     session: Session = Depends(get_session),
     current_user: User = Depends(get_active_user),
 ):
-    """Check samples."""
+    """Check sample."""
 
     sample: Sample = get_sample(session=session, sample_id=sample_id)
-    print(sample.genotype_analysis)
     results = check_sample(sample=sample)
-    print(results)
     sample.status = "fail" if "fail" in results.values() else "pass"
 
     session.add(sample)

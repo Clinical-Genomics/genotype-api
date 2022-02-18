@@ -49,6 +49,12 @@ def get_commented_samples(statement: SelectOfScalar) -> SelectOfScalar:
     return statement.where(Sample.comment != None)
 
 
+def get_status_missing_samples(statement: SelectOfScalar) -> SelectOfScalar:
+    """Returning sample query statement for samples with no comment"""
+
+    return statement.where(Sample.status == None)
+
+
 def create_analyses_sample_objects(session: Session, analyses: List[Analysis]) -> List[Sample]:
     """creating samples in an analysis if not already in db"""
     return [
