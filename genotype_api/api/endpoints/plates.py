@@ -40,7 +40,7 @@ def get_plate_id_from_file(file_name: Path) -> str:
 from fastapi.responses import JSONResponse
 
 
-@router.post("/plate", response_model=Plate)
+@router.post("/plate", response_model=PlateReadWithAnalyses)
 def upload_plate(
     file: UploadFile = File(...),
     session: Session = Depends(get_session),
