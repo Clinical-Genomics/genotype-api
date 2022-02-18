@@ -37,7 +37,10 @@ def get_plate_id_from_file(file_name: Path) -> str:
     return file_name.name.split("_", 1)[0]
 
 
-@router.post("/plate", response_model=Plate)
+from fastapi.responses import JSONResponse
+
+
+@router.post("/plate", response_model=PlateReadWithAnalyses)
 def upload_plate(
     file: UploadFile = File(...),
     session: Session = Depends(get_session),
@@ -47,7 +50,7 @@ def upload_plate(
     plate_id: str = get_plate_id_from_file(file_name)
     db_plate = session.get(Plate, plate_id)
     if db_plate:
-        raise HTTPException(status_code=400, detail="Plate already uploaded")
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=db_plate.id)
 
     excel_parser = GenotypeAnalysis(
         excel_file=BytesIO(file.file.read()), file_name=str(file_name), include_key="-CG-"
