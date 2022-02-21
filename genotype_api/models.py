@@ -166,6 +166,7 @@ class Plate(PlateBase, table=True):
 
 class PlateRead(PlateBase):
     id: str
+    user: Optional[UserRead]
 
 
 class PlateCreate(PlateBase):
@@ -183,10 +184,6 @@ class AnalysisReadWithSample(AnalysisRead):
 
 class PlateReadWithAnalyses(PlateRead):
     analyses: Optional[List[AnalysisReadWithSample]] = []
-
-
-class PlateReadWithUser(PlateRead):
-    user: Optional[UserRead]
 
 
 class SampleReadWithAnalysis(SampleRead):
