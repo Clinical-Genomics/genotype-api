@@ -23,11 +23,13 @@ def compare_genotypes(genotype_1: Genotype, genotype_2: Genotype) -> str:
 
 
 def check_sex(
-    sample: Sample, analysis_1: Analysis, analysis_2: Analysis
+    sex_1: Optional[str], sex_2: Optional[str], sex_3: Optional[str]
 ) -> Optional[Literal["fail", "pass"]]:
-    if sample.sex in ["unknown", None]:
+    """Compare three sex strings"""
+
+    if sex_1 in ["unknown", None]:
         return "fail"
-    if not sample.sex == analysis_1.sex == analysis_2.sex:
+    if not sex_1 == sex_2 == sex_3:
         return "fail"
     return "pass"
 
@@ -55,9 +57,9 @@ def check_sample(sample: Sample):
     assert len(sample.analyses) == 2, "must load both types of analyses"
     return dict(
         sex=check_sex(
-            sample=sample,
-            analysis_1=sample.genotype_analysis,
-            analysis_2=sample.sequence_analysis,
+            sex_1=sample.sex,
+            sex_2=sample.genotype_analysis.sex,
+            sex_3=sample.sequence_analysis.sex,
         ),
         compare=check_snps(
             analysis_1=sample.genotype_analysis,

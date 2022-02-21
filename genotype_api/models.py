@@ -2,11 +2,11 @@ from datetime import datetime
 from typing import Optional, List, Dict
 from collections import Counter
 
-
-from pydantic import constr, EmailStr, BaseModel, validator
+from pydantic import constr, EmailStr, validator
 from sqlmodel import SQLModel, Field, Relationship
 
 from genotype_api.constants import TYPES, SEXES, STATUS
+from genotype_api.match import check_sex, check_snps, score_no_calls
 
 
 class GenotypeBase(SQLModel):
@@ -177,8 +177,27 @@ class UserReadWithPlates(UserRead):
     plates: Optional[List[Plate]] = []
 
 
+class SampleReadWithStatusDetails(SampleRead):
+    analyses: Optional[List[AnalysisRead]] = []
+    status_details: Optional[str]
+
+    @validator("status_details", always=True)
+    def set_status_details(cls, v, values: dict) -> str:
+        genotype_analysis: Analysis = values["genotype_analysis"]
+        sequence_analysis: Analysis = values["sequence_analysis"]
+        sample_sex = values["sex"]
+
+        sex_status = check_sex(sample_sex, genotype_analysis.sex, sequence_analysis.sex)
+        snp_status = check_snps(genotype_analysis, sequence_analysis)
+        no_calls_status = score_no_calls(genotype_analysis)
+        print(sex_status)
+        print(snp_status)
+        print(no_calls_status)
+        return snp_status
+
+
 class AnalysisReadWithSample(AnalysisRead):
-    sample: Optional[SampleSlim]
+    sample: Optional[SampleReadWithStatusDetails]
 
 
 class PlateReadWithAnalyses(PlateRead):
