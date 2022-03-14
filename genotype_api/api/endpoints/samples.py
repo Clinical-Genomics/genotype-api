@@ -109,7 +109,7 @@ def update_comment(
     return sample_in_db
 
 
-@router.patch("/{sample_id}/status", response_model=SampleRead)
+@router.put("/{sample_id}/status", response_model=SampleRead)
 def update_status(
     sample_id: str,
     status: STATUS = Query(...),
@@ -126,7 +126,7 @@ def update_status(
     return sample_in_db
 
 
-@router.put("/{sample_id}/status", response_model=SampleRead)
+@router.patch("/{sample_id}/status", response_model=SampleRead)
 def check(
     sample_id: str,
     session: Session = Depends(get_session),
