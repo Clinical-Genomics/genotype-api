@@ -14,7 +14,7 @@ from genotype_api.crud.samples import (
     get_plate_samples,
     get_commented_samples,
     get_sample,
-    get_status_missing_samples,
+    get_status_missing_samples, refresh_sample_status,
 )
 from sqlmodel import Session, select
 from sqlmodel.sql.expression import SelectOfScalar
@@ -89,6 +89,7 @@ def update_sex(
     session.add(sample_in_db)
     session.commit()
     session.refresh(sample_in_db)
+    sample_in_db: Sample = refresh_sample_status(session=session, sample=sample_in_db)
     return sample_in_db
 
 
