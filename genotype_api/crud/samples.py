@@ -70,7 +70,7 @@ def refresh_sample_status(sample: Sample, session: Session) -> Sample:
         sample.status = None
     else:
         results = check_sample(sample=sample)
-        sample.status = "fail" if "fail" in results.values() else "pass"
+        sample.status = "fail" if "fail" in results.dict().values() else "pass"
 
     session.add(sample)
     session.commit()

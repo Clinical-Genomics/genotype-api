@@ -4,10 +4,10 @@ from fastapi.responses import JSONResponse
 
 from starlette import status
 
-from genotype_api.constants import STATUS, SEXES
+from genotype_api.constants import SEXES
 from genotype_api.database import get_session
 from genotype_api.match import check_sample
-from genotype_api.models import Sample, SampleReadWithAnalysis, SampleRead, User
+from genotype_api.models import Sample, SampleReadWithAnalysis, SampleRead, User, StatusDetail
 from genotype_api import crud
 from genotype_api.crud.samples import (
     get_incomplete_samples,
@@ -21,7 +21,6 @@ from sqlmodel import Session, select
 from sqlmodel.sql.expression import SelectOfScalar
 
 from genotype_api.security import get_active_user
-
 
 router = APIRouter()
 
@@ -90,6 +89,7 @@ def update_sex(
     session.add(sample_in_db)
     session.commit()
     session.refresh(sample_in_db)
+    sample_in_db: Sample = refresh_sample_status(session=session, sample=sample_in_db)
     return sample_in_db
 
 
@@ -121,6 +121,16 @@ def check(
     sample: Sample = get_sample(session=session, sample_id=sample_id)
     sample: Sample = refresh_sample_status(session=session, sample=sample)
     return sample
+
+
+@router.get("/{sample_id}/status_detail", response_model=StatusDetail)
+def get_status_detail(
+    sample_id: str,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_active_user),
+):
+    sample: Sample = get_sample(session=session, sample_id=sample_id)
+    return check_sample(sample=sample)
 
 
 @router.delete("/{sample_id}", response_model=Sample)
