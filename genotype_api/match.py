@@ -57,7 +57,7 @@ def check_sample(sample: Sample) -> StatusDetail:
             analysis_1=sample.genotype_analysis,
             analysis_2=sample.sequence_analysis,
         ),
-        compare=check_snps(
+        snps=check_snps(
             analysis_1=sample.genotype_analysis,
             analysis_2=sample.sequence_analysis,
         ),

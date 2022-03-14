@@ -196,5 +196,5 @@ class AnalysisReadWithGenotype(AnalysisRead):
 
 class StatusDetail(BaseModel):
     sex: Optional[str]
-    compare: Optional[str]
+    snps: Optional[str]
     nocalls: Optional[str]
