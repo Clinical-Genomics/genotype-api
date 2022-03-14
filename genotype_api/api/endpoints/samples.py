@@ -14,7 +14,8 @@ from genotype_api.crud.samples import (
     get_plate_samples,
     get_commented_samples,
     get_sample,
-    get_status_missing_samples, refresh_sample_status,
+    get_status_missing_samples,
+    refresh_sample_status,
 )
 from sqlmodel import Session, select
 from sqlmodel.sql.expression import SelectOfScalar
@@ -26,23 +27,23 @@ router = APIRouter()
 
 @router.get("/{sample_id}", response_model=SampleReadWithAnalysis)
 def read_sample(
-        sample_id: str,
-        session: Session = Depends(get_session),
-        current_user: User = Depends(get_active_user),
+    sample_id: str,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_active_user),
 ):
     return get_sample(session=session, sample_id=sample_id)
 
 
 @router.get("/", response_model=List[SampleReadWithAnalysis])
 def read_samples(
-        skip: int = 0,
-        limit: int = Query(default=100, lte=100),
-        plate_id: Optional[str] = None,
-        incomplete: Optional[bool] = False,
-        commented: Optional[bool] = False,
-        status_missing: Optional[bool] = False,
-        session: Session = Depends(get_session),
-        current_user: User = Depends(get_active_user),
+    skip: int = 0,
+    limit: int = Query(default=100, lte=100),
+    plate_id: Optional[str] = None,
+    incomplete: Optional[bool] = False,
+    commented: Optional[bool] = False,
+    status_missing: Optional[bool] = False,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_active_user),
 ):
     statement: SelectOfScalar = select(Sample)
     if plate_id:
@@ -59,21 +60,21 @@ def read_samples(
 
 @router.post("/", response_model=SampleRead)
 def create_sample(
-        sample: Sample,
-        session: Session = Depends(get_session),
-        current_user: User = Depends(get_active_user),
+    sample: Sample,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_active_user),
 ):
     return crud.samples.create_sample(session=session, sample=sample)
 
 
 @router.put("/{sample_id}/sex", response_model=SampleRead)
 def update_sex(
-        sample_id: str,
-        sex: SEXES = Query(...),
-        genotype_sex: Optional[SEXES] = None,
-        sequence_sex: Optional[SEXES] = None,
-        session: Session = Depends(get_session),
-        current_user: User = Depends(get_active_user),
+    sample_id: str,
+    sex: SEXES = Query(...),
+    genotype_sex: Optional[SEXES] = None,
+    sequence_sex: Optional[SEXES] = None,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_active_user),
 ):
     """Updating sex field on sample and sample analyses"""
 
@@ -94,10 +95,10 @@ def update_sex(
 
 @router.put("/{sample_id}/comment", response_model=SampleRead)
 def update_comment(
-        sample_id: str,
-        comment: str = Query(...),
-        session: Session = Depends(get_session),
-        current_user: User = Depends(get_active_user),
+    sample_id: str,
+    comment: str = Query(...),
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_active_user),
 ):
     """Updating comment field on sample"""
 
@@ -111,9 +112,9 @@ def update_comment(
 
 @router.patch("/{sample_id}/status", response_model=SampleRead)
 def check(
-        sample_id: str,
-        session: Session = Depends(get_session),
-        current_user: User = Depends(get_active_user),
+    sample_id: str,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_active_user),
 ):
     """Check sample analyses and update sample status accordingly."""
 
@@ -123,18 +124,20 @@ def check(
 
 
 @router.get("/{sample_id}/status_detail", response_model=StatusDetail)
-def get_status_detail(sample_id: str,
-                      session: Session = Depends(get_session),
-                      current_user: User = Depends(get_active_user)):
+def get_status_detail(
+    sample_id: str,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_active_user),
+):
     sample: Sample = get_sample(session=session, sample_id=sample_id)
     return check_sample(sample=sample)
 
 
 @router.delete("/{sample_id}", response_model=Sample)
 def delete_sample(
-        sample_id: str,
-        session: Session = Depends(get_session),
-        current_user: User = Depends(get_active_user),
+    sample_id: str,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_active_user),
 ):
     """Delete sample and its Analyses"""
 
