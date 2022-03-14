@@ -5,7 +5,7 @@ from collections import Counter, namedtuple
 from typing import Dict, Literal, Optional
 
 from genotype_api.constants import CUTOFS, SEXES
-from genotype_api.models import Sample, Analysis, Genotype
+from genotype_api.models import Sample, Analysis, Genotype, StatusDetail
 
 log = logging.getLogger(__name__)
 Result = namedtuple("Result", ["match", "mismatch", "unknown"])
@@ -49,9 +49,9 @@ def score_no_calls(genotype_analysis: Analysis) -> Optional[Literal["fail", "pas
     return "fail" if calls["unknown"] >= CUTOFS.get("max_nocalls") else "pass"
 
 
-def check_sample(sample: Sample) -> dict:
+def check_sample(sample: Sample) -> StatusDetail:
     """Check a sample for inconsistencies."""
-    return dict(
+    return StatusDetail(
         sex=check_sex(
             sample=sample,
             analysis_1=sample.genotype_analysis,

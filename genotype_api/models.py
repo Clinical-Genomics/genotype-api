@@ -192,3 +192,8 @@ class SampleReadWithAnalysis(SampleRead):
 
 class AnalysisReadWithGenotype(AnalysisRead):
     genotypes: Optional[List[Genotype]] = []
+
+class StatusDetail(BaseModel):
+    sex: Optional[str]
+    compare: Optional[str]
+    nocalls: Optional[str]
