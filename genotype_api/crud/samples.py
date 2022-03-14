@@ -1,5 +1,6 @@
 from typing import List
 
+from genotype_api.match import check_sample
 from genotype_api.models import Sample, Analysis
 from sqlmodel import Session, func, select
 from sqlmodel.sql.expression import SelectOfScalar
@@ -62,3 +63,16 @@ def create_analyses_sample_objects(session: Session, analyses: List[Analysis]) -
         for analysis_obj in analyses
         if not session.get(Sample, analysis_obj.sample_id)
     ]
+
+
+def refresh_sample_status(sample: Sample, session: Session) -> Sample:
+    if len(sample.analyses) != 2:
+        sample.status = None
+    else:
+        results = check_sample(sample=sample)
+        sample.status = "fail" if "fail" in results.values() else "pass"
+
+    session.add(sample)
+    session.commit()
+    session.refresh(sample)
+    return sample
