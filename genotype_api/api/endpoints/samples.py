@@ -1,11 +1,10 @@
 from typing import List, Optional
-from fastapi import APIRouter, Depends, status, Query
+from fastapi import APIRouter, Depends, Query
 from fastapi.responses import JSONResponse
-from starlette.exceptions import HTTPException
+
 from starlette import status
 
-from genotype_api.constants import STATUS, SEXES, CUTOFS
-from genotype_api.crud.analyses import get_analysis_type_sample
+from genotype_api.constants import STATUS, SEXES
 from genotype_api.database import get_session
 from genotype_api.match import check_sample
 from genotype_api.models import Sample, SampleReadWithAnalysis, SampleRead, User
@@ -127,7 +126,7 @@ def update_status(
     return sample_in_db
 
 
-@router.patch("/{sample_id}/check", response_model=SampleRead)
+@router.put("/{sample_id}/status", response_model=SampleRead)
 def check(
     sample_id: str,
     session: Session = Depends(get_session),
@@ -136,13 +135,11 @@ def check(
     """Check sample."""
 
     sample: Sample = get_sample(session=session, sample_id=sample_id)
-    if not len(sample.analyses) == 2:
-        raise HTTPException(
-            detail="Both types of analyses must be loaded to check sample",
-            status_code=status.HTTP_400_BAD_REQUEST,
-        )
-    results = check_sample(sample=sample)
-    sample.status = "fail" if "fail" in results.values() else "pass"
+    if len(sample.analyses) != 2:
+        sample.status = None
+    else:
+        results = check_sample(sample=sample)
+        sample.status = "fail" if "fail" in results.values() else "pass"
 
     session.add(sample)
     session.commit()
