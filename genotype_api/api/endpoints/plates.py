@@ -11,7 +11,7 @@ from genotype_api.crud.analyses import (
     get_analyses_from_plate,
     check_analyses_objects,
 )
-from genotype_api.crud.samples import create_analyses_sample_objects
+from genotype_api.crud.samples import create_analyses_sample_objects, refresh_sample_status
 from genotype_api.crud.plates import create_plate, get_plate
 from genotype_api.crud.users import get_user_by_email
 from genotype_api.database import get_session
@@ -48,7 +48,10 @@ def upload_plate(
     plate_id: str = get_plate_id_from_file(file_name)
     db_plate = session.get(Plate, plate_id)
     if db_plate:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=db_plate.id)
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Plate with id {db_plate.id} already exists",
+        )
 
     excel_parser = GenotypeAnalysis(
         excel_file=BytesIO(file.file.read()), file_name=str(file_name), include_key="-CG-"
@@ -58,7 +61,11 @@ def upload_plate(
     create_analyses_sample_objects(session=session, analyses=analyses)
     plate_obj = PlateCreate(plate_id=plate_id)
     plate_obj.analyses = analyses
-    return create_plate(session=session, plate=plate_obj)
+    plate: Plate = create_plate(session=session, plate=plate_obj)
+    for analysis in plate.analyses:
+        refresh_sample_status(sample=analysis.sample, session=session)
+    session.refresh(plate)
+    return plate
 
 
 @router.patch("/{plate_id}/sign-off", response_model=Plate)

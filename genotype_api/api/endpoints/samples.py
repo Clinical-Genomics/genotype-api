@@ -4,7 +4,7 @@ from fastapi.responses import JSONResponse
 
 from starlette import status
 
-from genotype_api.constants import STATUS, SEXES
+from genotype_api.constants import SEXES
 from genotype_api.database import get_session
 from genotype_api.match import check_sample
 from genotype_api.models import Sample, SampleReadWithAnalysis, SampleRead, User
@@ -67,7 +67,7 @@ def create_sample(
     return crud.samples.create_sample(session=session, sample=sample)
 
 
-@router.patch("/{sample_id}/sex", response_model=SampleRead)
+@router.put("/{sample_id}/sex", response_model=SampleRead)
 def update_sex(
     sample_id: str,
     sex: SEXES = Query(...),
@@ -93,7 +93,7 @@ def update_sex(
     return sample_in_db
 
 
-@router.patch("/{sample_id}/comment", response_model=SampleRead)
+@router.put("/{sample_id}/comment", response_model=SampleRead)
 def update_comment(
     sample_id: str,
     comment: str = Query(...),
@@ -110,23 +110,6 @@ def update_comment(
     return sample_in_db
 
 
-@router.put("/{sample_id}/status", response_model=SampleRead)
-def update_status(
-    sample_id: str,
-    status: STATUS = Query(...),
-    session: Session = Depends(get_session),
-    current_user: User = Depends(get_active_user),
-):
-    """Set content of status field on sample"""
-
-    sample_in_db: Sample = get_sample(session=session, sample_id=sample_id)
-    sample_in_db.status = status
-    session.add(sample_in_db)
-    session.commit()
-    session.refresh(sample_in_db)
-    return sample_in_db
-
-
 @router.patch("/{sample_id}/status", response_model=SampleRead)
 def check(
     sample_id: str,
@@ -136,15 +119,7 @@ def check(
     """Check sample analyses and update sample status accordingly."""
 
     sample: Sample = get_sample(session=session, sample_id=sample_id)
-    if len(sample.analyses) != 2:
-        sample.status = None
-    else:
-        results = check_sample(sample=sample)
-        sample.status = "fail" if "fail" in results.values() else "pass"
-
-    session.add(sample)
-    session.commit()
-    session.refresh(sample)
+    sample: Sample = refresh_sample_status(session=session, sample=sample)
     return sample
 
 
