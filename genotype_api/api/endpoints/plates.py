@@ -5,7 +5,6 @@ from pathlib import Path
 from typing import List
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, Query, status
-from fastapi.responses import JSONResponse
 from sqlmodel import Session, select
 
 from genotype_api.crud.analyses import (
@@ -14,16 +13,17 @@ from genotype_api.crud.analyses import (
 )
 from genotype_api.crud.samples import create_analyses_sample_objects
 from genotype_api.crud.plates import create_plate, get_plate
+from genotype_api.crud.users import get_user_by_email
 from genotype_api.database import get_session
 from genotype_api.file_parsing.excel import GenotypeAnalysis
 from genotype_api.file_parsing.files import check_file
 from genotype_api.models import (
     Plate,
     PlateReadWithAnalyses,
-    PlateRead,
     Analysis,
     PlateCreate,
     User,
+    PlateRead,
 )
 from genotype_api.security import get_active_user
 
@@ -35,7 +35,10 @@ def get_plate_id_from_file(file_name: Path) -> str:
     return file_name.name.split("_", 1)[0]
 
 
-@router.post("/plate", response_model=Plate)
+from fastapi.responses import JSONResponse
+
+
+@router.post("/plate", response_model=PlateReadWithAnalyses)
 def upload_plate(
     file: UploadFile = File(...),
     session: Session = Depends(get_session),
@@ -45,7 +48,7 @@ def upload_plate(
     plate_id: str = get_plate_id_from_file(file_name)
     db_plate = session.get(Plate, plate_id)
     if db_plate:
-        raise HTTPException(status_code=400, detail="Plate already uploaded")
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=db_plate.id)
 
     excel_parser = GenotypeAnalysis(
         excel_file=BytesIO(file.file.read()), file_name=str(file_name), include_key="-CG-"
@@ -61,8 +64,8 @@ def upload_plate(
 @router.patch("/{plate_id}/sign-off", response_model=Plate)
 def sign_off_plate(
     plate_id: int,
-    method_document: str = Query(...),
-    method_version: str = Query(...),
+    method_document: int = Query(...),
+    method_version: int = Query(...),
     session: Session = Depends(get_session),
     current_user: User = Depends(get_active_user),
 ):
@@ -72,8 +75,8 @@ def sign_off_plate(
     """
 
     plate: Plate = get_plate(session=session, plate_id=plate_id)
-
-    # plate.user = current_user
+    db_user = get_user_by_email(session=session, email=current_user.email)
+    plate.signed_by = db_user.id
     plate.signed_at = datetime.now()
     plate.method_document = method_document
     plate.method_version = method_version
