@@ -5,8 +5,8 @@ from typing import List
 from fastapi import APIRouter, Depends, status, Query, UploadFile, File
 from fastapi.responses import JSONResponse
 
-from genotype_api.crud.analyses import get_analysis, check_analyses_objects, create_analyses
-from genotype_api.crud.samples import create_analyses_sample_objects
+from genotype_api.crud.analyses import get_analysis, check_analyses_objects, create_analysis
+from genotype_api.crud.samples import create_analyses_sample_objects, refresh_sample_status
 from genotype_api.database import get_session
 from genotype_api.file_parsing.files import check_file
 from genotype_api.models import Analysis, AnalysisRead, AnalysisReadWithGenotype, User
@@ -70,5 +70,7 @@ def upload_sequence_analysis(
     analyses: List[Analysis] = list(sequence_analysis.generate_analyses())
     check_analyses_objects(session=session, analyses=analyses, analysis_type="sequence")
     create_analyses_sample_objects(session=session, analyses=analyses)
-    create_analyses(session=session, analyses=analyses)
+    for analysis in analyses:
+        analysis: Analysis = create_analysis(session=session, analysis=analysis)
+        refresh_sample_status(session=session, sample=analysis.sample)
     return analyses
