@@ -14,7 +14,8 @@ from genotype_api.crud.samples import (
     get_plate_samples,
     get_commented_samples,
     get_sample,
-    get_status_missing_samples, refresh_sample_status,
+    get_status_missing_samples,
+    refresh_sample_status,
 )
 from sqlmodel import Session, select
 from sqlmodel.sql.expression import SelectOfScalar
