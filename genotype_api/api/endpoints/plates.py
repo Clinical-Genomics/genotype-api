@@ -48,7 +48,10 @@ def upload_plate(
     plate_id: str = get_plate_id_from_file(file_name)
     db_plate = session.get(Plate, plate_id)
     if db_plate:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=db_plate.id)
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Plate with id {db_plate.id} already exists",
+        )
 
     excel_parser = GenotypeAnalysis(
         excel_file=BytesIO(file.file.read()), file_name=str(file_name), include_key="-CG-"
@@ -61,6 +64,7 @@ def upload_plate(
     plate: Plate = create_plate(session=session, plate=plate_obj)
     for analysis in plate.analyses:
         refresh_sample_status(sample=analysis.sample, session=session)
+    session.refresh(plate)
     return plate
 
 
