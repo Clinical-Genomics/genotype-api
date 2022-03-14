@@ -49,10 +49,8 @@ def score_no_calls(genotype_analysis: Analysis) -> Optional[Literal["fail", "pas
     return "fail" if calls["unknown"] >= CUTOFS.get("max_nocalls") else "pass"
 
 
-def check_sample(sample: Sample):
+def check_sample(sample: Sample) -> dict:
     """Check a sample for inconsistencies."""
-
-    assert len(sample.analyses) == 2, "must load both types of analyses"
     return dict(
         sex=check_sex(
             sample=sample,

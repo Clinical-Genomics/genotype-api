@@ -1,9 +1,10 @@
 from typing import List, Optional
-from fastapi import APIRouter, Depends, status, Query
+from fastapi import APIRouter, Depends, Query
 from fastapi.responses import JSONResponse
 
-from genotype_api.constants import STATUS, SEXES, CUTOFS
-from genotype_api.crud.analyses import get_analysis_type_sample
+from starlette import status
+
+from genotype_api.constants import STATUS, SEXES
 from genotype_api.database import get_session
 from genotype_api.match import check_sample
 from genotype_api.models import Sample, SampleReadWithAnalysis, SampleRead, User
@@ -19,6 +20,7 @@ from sqlmodel import Session, select
 from sqlmodel.sql.expression import SelectOfScalar
 
 from genotype_api.security import get_active_user
+
 
 router = APIRouter()
 
@@ -107,14 +109,14 @@ def update_comment(
     return sample_in_db
 
 
-@router.patch("/{sample_id}/status", response_model=SampleRead)
+@router.put("/{sample_id}/status", response_model=SampleRead)
 def update_status(
     sample_id: str,
     status: STATUS = Query(...),
     session: Session = Depends(get_session),
     current_user: User = Depends(get_active_user),
 ):
-    """Updating status field on sample"""
+    """Set content of status field on sample"""
 
     sample_in_db: Sample = get_sample(session=session, sample_id=sample_id)
     sample_in_db.status = status
@@ -124,17 +126,20 @@ def update_status(
     return sample_in_db
 
 
-@router.patch("/{sample_id}/check", response_model=SampleRead)
+@router.patch("/{sample_id}/status", response_model=SampleRead)
 def check(
     sample_id: str,
     session: Session = Depends(get_session),
     current_user: User = Depends(get_active_user),
 ):
-    """Check sample."""
+    """Check sample analyses and update sample status accordingly."""
 
     sample: Sample = get_sample(session=session, sample_id=sample_id)
-    results = check_sample(sample=sample)
-    sample.status = "fail" if "fail" in results.values() else "pass"
+    if len(sample.analyses) != 2:
+        sample.status = None
+    else:
+        results = check_sample(sample=sample)
+        sample.status = "fail" if "fail" in results.values() else "pass"
 
     session.add(sample)
     session.commit()
