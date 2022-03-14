@@ -42,13 +42,6 @@ def create_analysis(session: Session, analysis: Analysis) -> Analysis:
     return analysis
 
 
-def create_analyses(session: Session, analyses: List[Analysis]) -> List[Analysis]:
-    for analysis in analyses:
-        session.add(analysis)
-    session.commit()
-    return analyses
-
-
 def check_analyses_objects(
     session: Session, analyses: List[Analysis], analysis_type: TYPES
 ) -> None:
