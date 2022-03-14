@@ -5,7 +5,6 @@ from pathlib import Path
 from typing import List
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, Query, status
-from fastapi.responses import JSONResponse
 from sqlmodel import Session, select
 
 from genotype_api.crud.analyses import (
@@ -21,11 +20,10 @@ from genotype_api.file_parsing.files import check_file
 from genotype_api.models import (
     Plate,
     PlateReadWithAnalyses,
-    PlateRead,
     Analysis,
     PlateCreate,
     User,
-    PlateReadWithUser,
+    PlateRead,
 )
 from genotype_api.security import get_active_user
 
@@ -98,7 +96,7 @@ def read_plate(
     return get_plate(session=session, plate_id=plate_id)
 
 
-@router.get("/", response_model=List[PlateReadWithUser])
+@router.get("/", response_model=List[PlateRead])
 def read_plates(
     skip: int = 0,
     limit: int = Query(default=100, lte=100),
