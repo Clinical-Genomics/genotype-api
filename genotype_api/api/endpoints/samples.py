@@ -1,6 +1,8 @@
 from typing import List, Optional
 from fastapi import APIRouter, Depends, status, Query
 from fastapi.responses import JSONResponse
+from starlette.exceptions import HTTPException
+from starlette import status
 
 from genotype_api.constants import STATUS, SEXES, CUTOFS
 from genotype_api.crud.analyses import get_analysis_type_sample
@@ -19,6 +21,7 @@ from sqlmodel import Session, select
 from sqlmodel.sql.expression import SelectOfScalar
 
 from genotype_api.security import get_active_user
+
 
 router = APIRouter()
 
@@ -133,6 +136,11 @@ def check(
     """Check sample."""
 
     sample: Sample = get_sample(session=session, sample_id=sample_id)
+    if not len(sample.analyses) == 2:
+        raise HTTPException(
+            detail="Both types of analyses must be loaded to check sample",
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
     results = check_sample(sample=sample)
     sample.status = "fail" if "fail" in results.values() else "pass"
 
