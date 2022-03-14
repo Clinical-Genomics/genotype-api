@@ -116,7 +116,7 @@ def update_status(
     session: Session = Depends(get_session),
     current_user: User = Depends(get_active_user),
 ):
-    """Updating status field on sample"""
+    """Set content of status field on sample"""
 
     sample_in_db: Sample = get_sample(session=session, sample_id=sample_id)
     sample_in_db.status = status
@@ -132,7 +132,7 @@ def check(
     session: Session = Depends(get_session),
     current_user: User = Depends(get_active_user),
 ):
-    """Check sample."""
+    """Check sample analyses and update sample status accordingly."""
 
     sample: Sample = get_sample(session=session, sample_id=sample_id)
     if len(sample.analyses) != 2:
