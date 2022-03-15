@@ -56,7 +56,7 @@ def change_user_email(
     session.add(user)
     session.commit()
     session.refresh(user)
-    return User
+    return user
 
 
 @router.get("/", response_model=List[UserRead])
