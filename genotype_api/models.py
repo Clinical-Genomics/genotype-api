@@ -141,7 +141,6 @@ class User(UserBase, table=True):
     plates: Optional[List["Plate"]] = Relationship(back_populates="user")
 
 
-
 class UserRead(UserBase):
     id: int
 

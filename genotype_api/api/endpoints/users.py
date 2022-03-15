@@ -26,7 +26,6 @@ def read_user(
     return get_user(session=session, user_id=user_id)
 
 
-
 @router.delete("/{user_id}")
 def delete_user(
     user_id: int,
@@ -41,6 +40,7 @@ def delete_user(
     session.commit()
     session.flush()
     return JSONResponse(content="User deleted successfully", status_code=status.HTTP_200_OK)
+
 
 @router.put("/{user_id}/email", response_model=UserReadWithPlates)
 def change_user_email(
