@@ -81,9 +81,9 @@ def update_sex(
     sample_in_db: Sample = get_sample(session=session, sample_id=sample_id)
     sample_in_db.sex = sex
     for analysis in sample_in_db.analyses:
-        if analysis.type == "genotype":
+        if genotype_sex and analysis.type == "genotype":
             analysis.sex = genotype_sex
-        elif analysis.type == "sequence":
+        elif sequence_sex and analysis.type == "sequence":
             analysis.sex = sequence_sex
         session.add(analysis)
     session.add(sample_in_db)
