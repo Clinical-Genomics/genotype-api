@@ -42,7 +42,7 @@ def delete_user(
     return JSONResponse(content="User deleted successfully", status_code=status.HTTP_200_OK)
 
 
-@router.put("/{user_id}/email", response_model=UserReadWithPlates)
+@router.put("/{user_id}/email", response_model=User)
 def change_user_email(
     user_id: int,
     email: EmailStr,
