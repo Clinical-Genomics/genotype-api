@@ -36,6 +36,11 @@ def delete_user(
     user: User = get_user(session=session, user_id=user_id)
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    if user.plates:
+        raise HTTPException(
+            status_code=status.HTTP_406_NOT_ACCEPTABLE,
+            detail="User previously signed plates, please archive instead",
+        )
     session.delete(user)
     session.commit()
     session.flush()
