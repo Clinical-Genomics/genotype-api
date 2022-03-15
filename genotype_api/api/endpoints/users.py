@@ -1,8 +1,11 @@
 """Routes for users"""
 
-from typing import List
+from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import EmailStr
+from starlette import status
+from starlette.responses import JSONResponse
 
 from genotype_api.crud.users import get_user
 from genotype_api.database import get_session
@@ -21,6 +24,39 @@ def read_user(
     current_user: User = Depends(get_active_user),
 ) -> User:
     return get_user(session=session, user_id=user_id)
+
+
+@router.delete("/{user_id}")
+def delete_user(
+    user_id: int,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_active_user),
+) -> JSONResponse:
+
+    user: User = get_user(session=session, user_id=user_id)
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    session.delete(user)
+    session.commit()
+    session.flush()
+    return JSONResponse(content="User deleted successfully", status_code=status.HTTP_200_OK)
+
+
+@router.put("/{user_id}/email", response_model=User)
+def change_user_email(
+    user_id: int,
+    email: EmailStr,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_active_user),
+) -> User:
+    user: User = get_user(session=session, user_id=user_id)
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    user.email = email
+    session.add(user)
+    session.commit()
+    session.refresh(user)
+    return user
 
 
 @router.get("/", response_model=List[UserRead])
@@ -42,7 +78,7 @@ def create_user(
 ):
     user_in_db: List[User] = session.exec(select(User).where(User.email == user.email)).all()
     if user_in_db:
-        raise HTTPException(status_code=400, detail="Email already registered")
+        raise HTTPException(status_code=409, detail="Email already registered")
     db_user = User.from_orm(user)
     session.add(db_user)
     session.commit()
