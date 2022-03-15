@@ -2,9 +2,10 @@
 from datetime import datetime
 from io import BytesIO
 from pathlib import Path
-from typing import List
+from typing import List, Optional, Literal
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, Query, status
+from sqlalchemy import desc, asc
 from sqlmodel import Session, select
 
 from genotype_api.crud.analyses import (
@@ -105,13 +106,18 @@ def read_plate(
 
 @router.get("/", response_model=List[PlateRead])
 def read_plates(
-    skip: int = 0,
-    limit: int = Query(default=100, lte=100),
+    order_by: Optional[Literal["created_at", "plate_id", "signed_at", "id"]] = "id",
+    sort_order: Optional[Literal["ascend", "descend"]] = "descend",
+    skip: Optional[int] = 0,
+    limit: Optional[int] = 100,
     session: Session = Depends(get_session),
     current_user: User = Depends(get_active_user),
 ):
     """Display all plates"""
-    plates: List[Plate] = session.exec(select(Plate).offset(skip).limit(limit)).all()
+    sort_func = desc if sort_order == "descend" else asc
+    plates: List[Plate] = session.exec(
+        select(Plate).order_by(sort_func(order_by)).offset(skip).limit(limit)
+    ).all()
 
     return plates
 
