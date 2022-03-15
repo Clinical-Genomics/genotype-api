@@ -26,7 +26,7 @@ def read_user(
 
 
 @router.delete("/{user_id}")
-def read_user(
+def delete_user(
     user_id: int,
     session: Session = Depends(get_session),
     current_user: User = Depends(get_active_user),
