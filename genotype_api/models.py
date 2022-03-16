@@ -133,7 +133,7 @@ class SNPRead(SNPBase):
 
 class UserBase(SQLModel):
     email: EmailStr = Field(index=True)
-    name: str
+    name: Optional[str] = ""
 
 
 class User(UserBase, table=True):
