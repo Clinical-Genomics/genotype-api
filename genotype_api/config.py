@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Literal
 
 from pydantic import BaseSettings
 
@@ -24,6 +25,7 @@ class SecuritySettings(BaseSettings):
 
     client_id = ""
     algorithm = ""
+    jwks_uri = "https://www.googleapis.com/oauth2/v3/certs"
 
     class Config:
         env_file = str(ENV_FILE)

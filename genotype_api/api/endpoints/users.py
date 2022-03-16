@@ -43,7 +43,6 @@ def delete_user(
         )
     session.delete(user)
     session.commit()
-    session.flush()
     return JSONResponse(content="User deleted successfully", status_code=status.HTTP_200_OK)
 
 

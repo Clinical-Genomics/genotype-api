@@ -1,6 +1,7 @@
 from fastapi import HTTPException, Security, Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlmodel import Session
+from starlette import status
 
 from starlette.requests import Request
 
@@ -8,14 +9,21 @@ from genotype_api.database import get_session
 from genotype_api.models import User
 from genotype_api.config import security_settings
 from genotype_api.crud.users import get_user_by_email
-
-from google.oauth2 import id_token
-from google.auth.transport import requests
+from jose import jwt
+import requests
 
 
 def decode_id_token(token: str):
     try:
-        return id_token.verify_oauth2_token(token, requests.Request(), security_settings.client_id)
+        return jwt.decode(
+            token,
+            key=requests.get(security_settings.jwks_uri).json(),
+            algorithms=[security_settings.algorithm],
+            audience=security_settings.client_id,
+            options={
+                "verify_at_hash": False,
+            },
+        )
     except:
         return
 
@@ -27,15 +35,20 @@ class JWTBearer(HTTPBearer):
     async def __call__(self, request: Request):
         credentials: HTTPAuthorizationCredentials = await super(JWTBearer, self).__call__(request)
         if not credentials:
-            raise HTTPException(status_code=403, detail="Invalid authorization code.")
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN, detail="Invalid authorization code."
+            )
         if credentials.scheme != "Bearer":
-            raise HTTPException(status_code=403, detail="Invalid authentication scheme.")
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN, detail="Invalid authentication scheme."
+            )
         if not self.verify_jwt(credentials.credentials):
-            raise HTTPException(status_code=403, detail="Invalid token or expired token.")
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN, detail="Invalid token or expired token."
+            )
         return credentials.credentials
 
     def verify_jwt(self, jwtoken: str) -> bool:
-        isTokenValid: bool = False
         try:
             payload = decode_id_token(jwtoken)
         except:
@@ -54,5 +67,5 @@ async def get_active_user(
     user = User.parse_obj(decode_id_token(token))
     db_user: User = get_user_by_email(session=session, email=user.email)
     if not db_user:
-        raise HTTPException(status_code=400, detail="User not in DB")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User not in DB")
     return user
