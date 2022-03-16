@@ -5,11 +5,17 @@ Main functions for the genotype api
 from fastapi import FastAPI, status, Request
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+
+from genotype_api.config import security_settings
 from genotype_api.database import create_db_and_tables
 from genotype_api.api.endpoints import samples, snps, users, plates, analyses
 from sqlalchemy.exc import NoResultFound
 
-app = FastAPI()
+app = FastAPI(
+    root_path=security_settings.api_root_path,
+    root_path_in_servers=True,
+    openapi_prefix=security_settings.api_root_path,
+)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],

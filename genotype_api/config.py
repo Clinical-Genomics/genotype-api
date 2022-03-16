@@ -26,6 +26,7 @@ class SecuritySettings(BaseSettings):
     client_id = ""
     algorithm = ""
     jwks_uri = "https://www.googleapis.com/oauth2/v3/certs"
+    api_root_path = "/"
 
     class Config:
         env_file = str(ENV_FILE)
