@@ -11,7 +11,7 @@ from genotype_api.database import create_db_and_tables
 from genotype_api.api.endpoints import samples, snps, users, plates, analyses
 from sqlalchemy.exc import NoResultFound
 
-app = FastAPI(root_path=security_settings.api_root_path)
+app = FastAPI(root_path=security_settings.api_root_path, root_path_in_servers=False)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
