@@ -14,6 +14,7 @@ from genotype_api.models import (
     User,
     StatusDetail,
     Analysis,
+    AnalysisReadWithGenotype,
 )
 from genotype_api import crud
 from genotype_api.crud.samples import (
@@ -130,7 +131,7 @@ def check(
     return sample
 
 
-@router.get("/{sample_id}/match_internal")
+@router.get("/{sample_id}/match_internal", response_model=AnalysisReadWithGenotype)
 def match_internal(
     sample_id: str,
     session: Session = Depends(get_session),

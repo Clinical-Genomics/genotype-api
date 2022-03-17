@@ -69,5 +69,5 @@ async def get_active_user(
     user = User.parse_obj(decode_id_token(token))
     db_user: User = get_user_by_email(session=session, email=user.email)
     if not db_user:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User not in DB")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User not in DB")
     return user
