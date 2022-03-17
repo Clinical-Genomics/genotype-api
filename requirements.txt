@@ -5,6 +5,7 @@ bump2version
 pymysql
 sqlmodel
 openpyxl
+pandas
 
 # server stuff
 passlib

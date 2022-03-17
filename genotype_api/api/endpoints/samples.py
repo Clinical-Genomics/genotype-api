@@ -15,6 +15,7 @@ from genotype_api.models import (
     StatusDetail,
     Analysis,
     AnalysisReadWithGenotype,
+    Genotype,
 )
 from genotype_api import crud
 from genotype_api.crud.samples import (
@@ -29,6 +30,8 @@ from sqlmodel import Session, select
 from sqlmodel.sql.expression import SelectOfScalar
 
 from genotype_api.security import get_active_user
+
+import pandas as pd
 
 router = APIRouter()
 
@@ -131,19 +134,21 @@ def check(
     return sample
 
 
-@router.get("/{sample_id}/match_internal", response_model=AnalysisReadWithGenotype)
+@router.get("/{sample_id}/match_internal", response_model=List[Genotype])
 def match_internal(
     sample_id: str,
     session: Session = Depends(get_session),
     current_user: User = Depends(get_active_user),
 ):
     """Match internal sample genotype against all other internal genotypes"""
-    analysis: Analysis = (
-        session.query(Analysis)
+    genotype_ckecked: List[Genotype] = (
+        session.query(Genotype)
+        .join(Analysis)
         .filter(Analysis.sample_id == sample_id, Analysis.type == "sequence")
-        .one()
+        .all()
     )
-    return analysis
+
+    return genotype_ckecked
 
 
 @router.get("/{sample_id}/match_external")
