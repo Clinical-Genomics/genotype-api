@@ -33,6 +33,7 @@ from genotype_api.security import get_active_user
 
 import pandas as pd
 
+
 router = APIRouter()
 
 
@@ -134,21 +135,24 @@ def check(
     return sample
 
 
-@router.get("/{sample_id}/match_internal", response_model=List[Genotype])
+@router.get("/{sample_id}/match_internal")
 def match_internal(
     sample_id: str,
     session: Session = Depends(get_session),
     current_user: User = Depends(get_active_user),
 ):
     """Match internal sample genotype against all other internal genotypes"""
-    genotype_ckecked: List[Genotype] = (
+    genotype_checked: List[Genotype] = (
         session.query(Genotype)
         .join(Analysis)
         .filter(Analysis.sample_id == sample_id, Analysis.type == "sequence")
+        .with_entities(
+            Genotype.analysis_id, Genotype.rsnumber, Genotype.allele_1, Genotype.allele_2
+        )
         .all()
     )
 
-    return genotype_ckecked
+    return genotype_checked
 
 
 @router.get("/{sample_id}/match_external")
