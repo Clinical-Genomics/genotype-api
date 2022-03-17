@@ -7,7 +7,14 @@ from starlette import status
 from genotype_api.constants import SEXES
 from genotype_api.database import get_session
 from genotype_api.match import check_sample
-from genotype_api.models import Sample, SampleReadWithAnalysis, SampleRead, User, StatusDetail
+from genotype_api.models import (
+    Sample,
+    SampleReadWithAnalysis,
+    SampleRead,
+    User,
+    StatusDetail,
+    Analysis,
+)
 from genotype_api import crud
 from genotype_api.crud.samples import (
     get_incomplete_samples,
@@ -121,6 +128,30 @@ def check(
     sample: Sample = get_sample(session=session, sample_id=sample_id)
     sample: Sample = refresh_sample_status(session=session, sample=sample)
     return sample
+
+
+@router.get("/{sample_id}/match_internal")
+def match_internal(
+    sample_id: str,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_active_user),
+):
+    """Match internal sample genotype against all other internal genotypes"""
+    analysis: Analysis = (
+        session.query(Analysis)
+        .filter(Analysis.sample_id == sample_id, Analysis.type == "sequence")
+        .one()
+    )
+    return analysis
+
+
+@router.get("/{sample_id}/match_external")
+def match_external(
+    sample_id: str,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_active_user),
+):
+    pass
 
 
 @router.get("/{sample_id}/status_detail", response_model=StatusDetail)
