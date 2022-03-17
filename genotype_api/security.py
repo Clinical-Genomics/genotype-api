@@ -1,3 +1,5 @@
+from typing import Optional
+
 from fastapi import HTTPException, Security, Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlmodel import Session
@@ -14,18 +16,19 @@ import requests
 
 
 def decode_id_token(token: str):
-    try:
-        return jwt.decode(
-            token,
-            key=requests.get(security_settings.jwks_uri).json(),
-            algorithms=[security_settings.algorithm],
-            audience=security_settings.client_id,
-            options={
-                "verify_at_hash": False,
-            },
-        )
-    except:
-        return
+
+    payload = jwt.decode(
+        token,
+        key=requests.get(security_settings.jwks_uri).json(),
+        algorithms=[security_settings.algorithm],
+        audience=security_settings.client_id,
+        options={
+            "verify_at_hash": False,
+        },
+    )
+    if not payload:
+        return jwt.get_unverified_claims(token)
+    return payload
 
 
 class JWTBearer(HTTPBearer):
@@ -42,18 +45,17 @@ class JWTBearer(HTTPBearer):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN, detail="Invalid authentication scheme."
             )
-        if not self.verify_jwt(credentials.credentials):
+        self.verify_jwt(credentials.credentials)
+
+        return credentials.credentials
+
+    def verify_jwt(self, jwtoken: str) -> Optional[dict]:
+        try:
+            return decode_id_token(jwtoken)
+        except Exception:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN, detail="Invalid token or expired token."
             )
-        return credentials.credentials
-
-    def verify_jwt(self, jwtoken: str) -> bool:
-        try:
-            payload = decode_id_token(jwtoken)
-        except:
-            payload = None
-        return payload
 
 
 jwt_scheme = JWTBearer()
