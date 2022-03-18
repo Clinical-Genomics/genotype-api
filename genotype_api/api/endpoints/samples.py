@@ -142,14 +142,28 @@ def match_internal(
     current_user: User = Depends(get_active_user),
 ):
     """Match internal sample genotype against all other internal genotypes"""
-    genotype_checked: List[Genotype] = (
-        session.query(Genotype)
-        .join(Analysis)
+    all_genotypes: Query = (
+        session.query(Analysis)
+        .join(Genotype)
         .filter(Analysis.sample_id != sample_id, Analysis.type == "sequence")
         .with_entities(
-            Genotype.analysis_id, Genotype.rsnumber, Genotype.allele_1, Genotype.allele_2
+            Analysis.sample_id,
+            Genotype.rsnumber,
+            Genotype.allele_1,
+            Genotype.allele_2,
         )
-        .all()
+    )
+    genotype_checked: Analysis = (
+        session.query(Analysis)
+        .join(Genotype)
+        .filter(Analysis.sample_id == sample_id, Analysis.type == "sequence")
+        .with_entities(
+            Analysis.sample_id,
+            Genotype.rsnumber,
+            Genotype.allele_1,
+            Genotype.allele_2,
+        )
+        .one()
     )
 
     return genotype_checked
