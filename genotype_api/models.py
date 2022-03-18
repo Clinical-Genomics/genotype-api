@@ -198,3 +198,14 @@ class StatusDetail(BaseModel):
     sex: Optional[str]
     snps: Optional[str]
     nocalls: Optional[str]
+
+
+class MatchCounts(BaseModel):
+    match: Optional[int] = 0
+    mismatch: Optional[int] = 0
+    unknown: Optional[int] = 0
+
+
+class MatchResult(BaseModel):
+    sample_id: str
+    match_results: MatchCounts

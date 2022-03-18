@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Literal
 from fastapi import APIRouter, Depends, Query
 from fastapi.responses import JSONResponse
 
@@ -6,8 +6,18 @@ from starlette import status
 
 from genotype_api.constants import SEXES
 from genotype_api.database import get_session
-from genotype_api.match import check_sample
-from genotype_api.models import Sample, SampleReadWithAnalysis, SampleRead, User, StatusDetail
+from genotype_api.match import check_sample, compare_genotypes
+from genotype_api.models import (
+    Sample,
+    SampleReadWithAnalysis,
+    SampleRead,
+    User,
+    StatusDetail,
+    Analysis,
+    MatchResult,
+    MatchCounts,
+)
+from collections import Counter
 from genotype_api import crud
 from genotype_api.crud.samples import (
     get_incomplete_samples,
@@ -21,6 +31,7 @@ from sqlmodel import Session, select
 from sqlmodel.sql.expression import SelectOfScalar
 
 from genotype_api.security import get_active_user
+
 
 router = APIRouter()
 
@@ -123,6 +134,38 @@ def check(
     return sample
 
 
+@router.get("/{sample_id}/match", response_model=List[MatchResult])
+def match(
+    sample_id: str,
+    analysis_type: Literal["genotype", "sequence"],
+    comparison_set: Literal["genotype", "sequence"],
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_active_user),
+) -> List[MatchResult]:
+    """Match sample genotype against all other genotypes"""
+    all_genotypes: Analysis = session.query(Analysis).filter(Analysis.type == comparison_set)
+    genotype_checked = (
+        session.query(Analysis).filter(
+            Analysis.sample_id == sample_id, Analysis.type == analysis_type
+        )
+    ).one()
+
+    match_results = []
+    for genotype in all_genotypes:
+        genotype_pairs = zip(genotype.genotypes, genotype_checked.genotypes)
+        results = (
+            compare_genotypes(genotype_1, genotype_2) for genotype_1, genotype_2 in genotype_pairs
+        )
+        count = Counter(results)
+        if count.get("match", 0) + count.get("unknown", 0) > 40:
+            match_results.append(
+                MatchResult(
+                    sample_id=genotype.sample_id, match_results=MatchCounts.parse_obj(count)
+                ),
+            )
+    return match_results
+
+
 @router.get("/{sample_id}/status_detail", response_model=StatusDetail)
 def get_status_detail(
     sample_id: str,
@@ -146,7 +189,4 @@ def delete_sample(
         session.delete(analysis)
     session.delete(sample)
     session.commit()
-    return JSONResponse(
-        f"Deleted sample: {sample_id} and analyses: {[analysis.id for analysis in sample.analyses]}",
-        status_code=status.HTTP_200_OK,
-    )
+    return JSONResponse("Deleted", status_code=status.HTTP_200_OK)
