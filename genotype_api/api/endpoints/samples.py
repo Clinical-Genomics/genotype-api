@@ -134,14 +134,14 @@ def check(
     return sample
 
 
-@router.get("/{sample_id}/match")
+@router.get("/{sample_id}/match", response_model=List[MatchResult])
 def match(
     sample_id: str,
     analysis_type: Literal["genotype", "sequence"],
     comparison_set: Literal["genotype", "sequence"],
     session: Session = Depends(get_session),
     current_user: User = Depends(get_active_user),
-) -> Optional[List[MatchResult]]:
+) -> List[MatchResult]:
     """Match sample genotype against all other genotypes"""
     all_genotypes: Analysis = session.query(Analysis).filter(Analysis.type == comparison_set)
     genotype_checked = (
