@@ -163,7 +163,7 @@ def match_internal(
             Genotype.allele_1,
             Genotype.allele_2,
         )
-        .one()
+        .all()
     )
 
     return genotype_checked
