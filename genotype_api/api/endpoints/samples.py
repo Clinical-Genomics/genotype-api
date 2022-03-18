@@ -155,7 +155,6 @@ def match_internal(
     )
     genotype_checked: Analysis = (
         session.query(Analysis)
-        .join(Genotype)
         .filter(Analysis.sample_id == sample_id, Analysis.type == "sequence")
         .with_entities(
             Analysis.sample_id,
