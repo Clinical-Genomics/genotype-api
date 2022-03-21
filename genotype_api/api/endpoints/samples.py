@@ -1,7 +1,7 @@
 from typing import List, Optional, Literal
 from fastapi import APIRouter, Depends, Query
 from fastapi.responses import JSONResponse
-
+from datetime import datetime, timedelta, date
 from starlette import status
 
 from genotype_api.constants import SEXES
@@ -141,11 +141,17 @@ def match(
     sample_id: str,
     analysis_type: Literal["genotype", "sequence"],
     comparison_set: Literal["genotype", "sequence"],
+    date_min: Optional[date] = date.today() - timedelta(days=65),
+    date_max: Optional[date] = date.today(),
     session: Session = Depends(get_session),
     current_user: User = Depends(get_active_user),
 ) -> List[MatchResult]:
     """Match sample genotype against all other genotypes"""
-    all_genotypes: Analysis = session.query(Analysis).filter(Analysis.type == comparison_set)
+    all_genotypes: Analysis = session.query(Analysis).filter(
+        Analysis.type == comparison_set,
+        Analysis.created_at > date_min,
+        Analysis.created_at < date_max,
+    )
     genotype_checked = (
         session.query(Analysis).filter(
             Analysis.sample_id == sample_id, Analysis.type == analysis_type
