@@ -141,12 +141,13 @@ def match(
     sample_id: str,
     analysis_type: Literal["genotype", "sequence"],
     comparison_set: Literal["genotype", "sequence"],
-    date_min: Optional[date] = date.today() - timedelta(days=65),
-    date_max: Optional[date] = date.today(),
+    date_min: Optional[date] = date.min,
+    date_max: Optional[date] = date.max,
     session: Session = Depends(get_session),
     current_user: User = Depends(get_active_user),
 ) -> List[MatchResult]:
     """Match sample genotype against all other genotypes"""
+
     all_genotypes: Analysis = session.query(Analysis).filter(
         Analysis.type == comparison_set,
         Analysis.created_at > date_min,
