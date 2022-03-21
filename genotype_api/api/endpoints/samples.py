@@ -65,7 +65,9 @@ def read_samples(
         statement: SelectOfScalar = get_commented_samples(statement=statement)
     if status_missing:
         statement: SelectOfScalar = get_status_missing_samples(statement=statement)
-    samples: List[Sample] = session.exec(statement.offset(skip).limit(limit)).all()
+    samples: List[Sample] = session.exec(
+        statement.order_by(Sample.created_at.desc()).offset(skip).limit(limit)
+    ).all()
     return samples
 
 
