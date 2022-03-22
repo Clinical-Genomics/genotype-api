@@ -10,7 +10,8 @@ from starlette.responses import JSONResponse
 from genotype_api.crud.users import get_user
 from genotype_api.database import get_session
 from genotype_api.models import User, UserRead, UserCreate, UserReadWithPlates
-from sqlmodel import Session, select
+from sqlmodel import Session
+from sqlalchemy import select
 
 from genotype_api.security import get_active_user
 

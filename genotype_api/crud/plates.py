@@ -1,7 +1,8 @@
 import logging
 from typing import Optional
 from genotype_api.models import Plate, PlateCreate
-from sqlmodel import Session, select
+from sqlmodel import Session
+from sqlalchemy import select
 
 LOG = logging.getLogger(__name__)
 

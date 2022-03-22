@@ -10,7 +10,8 @@ from genotype_api.crud.samples import create_analyses_sample_objects, refresh_sa
 from genotype_api.database import get_session
 from genotype_api.file_parsing.files import check_file
 from genotype_api.models import Analysis, AnalysisRead, AnalysisReadWithGenotype, User
-from sqlmodel import Session, select
+from sqlmodel import Session
+from sqlalchemy import select
 
 from genotype_api.security import get_active_user
 from genotype_api.file_parsing.vcf import SequenceAnalysis

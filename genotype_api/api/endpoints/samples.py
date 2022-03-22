@@ -27,7 +27,8 @@ from genotype_api.crud.samples import (
     get_status_missing_samples,
     refresh_sample_status,
 )
-from sqlmodel import Session, select
+from sqlmodel import Session
+from sqlalchemy import select
 from sqlmodel.sql.expression import SelectOfScalar
 
 from genotype_api.security import get_active_user

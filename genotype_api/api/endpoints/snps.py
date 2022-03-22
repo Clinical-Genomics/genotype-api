@@ -4,7 +4,8 @@ from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, Query, File, UploadFile
 from genotype_api.database import get_session
-from sqlmodel import Session, delete, select
+from sqlmodel import Session, delete
+from sqlalchemy import select
 
 from genotype_api.security import get_active_user
 

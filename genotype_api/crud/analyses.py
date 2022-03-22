@@ -4,7 +4,8 @@ from fastapi import HTTPException, status
 
 from genotype_api.constants import TYPES
 from genotype_api.models import Analysis
-from sqlmodel import Session, select
+from sqlmodel import Session
+from sqlalchemy import select
 
 
 def get_analyses_from_plate(plate_id: int, session: Session) -> List[Analysis]:

@@ -1,7 +1,8 @@
 from typing import List, Optional
 
 from genotype_api.models import User, UserCreate
-from sqlmodel import select, Session
+from sqlmodel import Session
+from sqlalchemy import select
 
 
 def get_user(session: Session, user_id: int):

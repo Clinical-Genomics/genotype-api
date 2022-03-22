@@ -6,7 +6,8 @@ from typing import List, Optional, Literal
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, Query, status
 from sqlalchemy import desc, asc
-from sqlmodel import Session, select
+from sqlmodel import Session
+from sqlalchemy import select
 
 from genotype_api.crud.analyses import (
     get_analyses_from_plate,

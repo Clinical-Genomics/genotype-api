@@ -2,7 +2,8 @@ from typing import List
 
 from genotype_api.match import check_sample
 from genotype_api.models import Sample, Analysis
-from sqlmodel import Session, func, select
+from sqlmodel import Session, func
+from sqlalchemy import select
 from sqlmodel.sql.expression import SelectOfScalar
 from fastapi import HTTPException
 
