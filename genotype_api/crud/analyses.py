@@ -5,6 +5,10 @@ from fastapi import HTTPException, status
 from genotype_api.constants import TYPES
 from genotype_api.models import Analysis
 from sqlmodel import Session, select
+from sqlmodel.sql.expression import Select, SelectOfScalar
+
+SelectOfScalar.inherit_cache = True
+Select.inherit_cache = True
 
 
 def get_analyses_from_plate(plate_id: int, session: Session) -> List[Analysis]:

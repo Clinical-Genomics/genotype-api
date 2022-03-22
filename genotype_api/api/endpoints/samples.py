@@ -28,9 +28,11 @@ from genotype_api.crud.samples import (
     refresh_sample_status,
 )
 from sqlmodel import Session, select
-from sqlmodel.sql.expression import SelectOfScalar
-
+from sqlmodel.sql.expression import Select, SelectOfScalar
 from genotype_api.security import get_active_user
+
+SelectOfScalar.inherit_cache = True
+Select.inherit_cache = True
 
 
 router = APIRouter()
@@ -182,6 +184,8 @@ def get_status_detail(
     current_user: User = Depends(get_active_user),
 ):
     sample: Sample = get_sample(session=session, sample_id=sample_id)
+    if len(sample.analyses) != 2:
+        return StatusDetail()
     return check_sample(sample=sample)
 
 

@@ -2,6 +2,10 @@ import logging
 from typing import Optional
 from genotype_api.models import Plate, PlateCreate
 from sqlmodel import Session, select
+from sqlmodel.sql.expression import Select, SelectOfScalar
+
+SelectOfScalar.inherit_cache = True
+Select.inherit_cache = True
 
 LOG = logging.getLogger(__name__)
 
@@ -11,11 +15,6 @@ def get_plate(session: Session, plate_id: int) -> Plate:
 
     statement = select(Plate).where(Plate.id == plate_id)
     return session.exec(statement).one()
-
-
-def get_plate_by_plate_id(session: Session, plate_id: str) -> Optional[Plate]:
-    statement = select(Plate).where(Plate.plate_id == plate_id)
-    return session.exec(statement).first()
 
 
 def create_plate(session: Session, plate: PlateCreate) -> Plate:
