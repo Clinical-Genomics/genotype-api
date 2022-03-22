@@ -17,11 +17,6 @@ def get_plate(session: Session, plate_id: int) -> Plate:
     return session.exec(statement).one()
 
 
-def get_plate_by_plate_id(session: Session, plate_id: str) -> Optional[Plate]:
-    statement = select(Plate).where(Plate.plate_id == plate_id)
-    return session.exec(statement).first()
-
-
 def create_plate(session: Session, plate: PlateCreate) -> Plate:
     db_plate = Plate.from_orm(plate)
     db_plate.analyses = plate.analyses  # not sure why from_orm wont pick up the analyses

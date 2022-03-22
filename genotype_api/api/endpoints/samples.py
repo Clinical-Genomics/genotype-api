@@ -184,6 +184,8 @@ def get_status_detail(
     current_user: User = Depends(get_active_user),
 ):
     sample: Sample = get_sample(session=session, sample_id=sample_id)
+    if len(sample.analyses) != 2:
+        return StatusDetail()
     return check_sample(sample=sample)
 
 
