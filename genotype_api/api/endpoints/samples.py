@@ -28,9 +28,11 @@ from genotype_api.crud.samples import (
     refresh_sample_status,
 )
 from sqlmodel import Session, select
-from sqlmodel.sql.expression import SelectOfScalar
-
+from sqlmodel.sql.expression import Select, SelectOfScalar
 from genotype_api.security import get_active_user
+
+SelectOfScalar.inherit_cache = True
+Select.inherit_cache = True
 
 
 router = APIRouter()

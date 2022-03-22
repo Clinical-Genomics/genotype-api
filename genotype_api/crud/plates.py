@@ -2,6 +2,10 @@ import logging
 from typing import Optional
 from genotype_api.models import Plate, PlateCreate
 from sqlmodel import Session, select
+from sqlmodel.sql.expression import Select, SelectOfScalar
+
+SelectOfScalar.inherit_cache = True
+Select.inherit_cache = True
 
 LOG = logging.getLogger(__name__)
 

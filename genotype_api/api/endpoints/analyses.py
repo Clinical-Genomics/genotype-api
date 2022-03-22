@@ -14,6 +14,10 @@ from sqlmodel import Session, select
 
 from genotype_api.security import get_active_user
 from genotype_api.file_parsing.vcf import SequenceAnalysis
+from sqlmodel.sql.expression import Select, SelectOfScalar
+
+SelectOfScalar.inherit_cache = True
+Select.inherit_cache = True
 
 router = APIRouter()
 

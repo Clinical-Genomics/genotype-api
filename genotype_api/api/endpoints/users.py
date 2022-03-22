@@ -13,6 +13,11 @@ from genotype_api.models import User, UserRead, UserCreate, UserReadWithPlates
 from sqlmodel import Session, select
 
 from genotype_api.security import get_active_user
+from sqlmodel.sql.expression import Select, SelectOfScalar
+
+SelectOfScalar.inherit_cache = True
+Select.inherit_cache = True
+
 
 router = APIRouter()
 

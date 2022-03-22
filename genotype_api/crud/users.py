@@ -2,6 +2,10 @@ from typing import List, Optional
 
 from genotype_api.models import User, UserCreate
 from sqlmodel import select, Session
+from sqlmodel.sql.expression import Select, SelectOfScalar
+
+SelectOfScalar.inherit_cache = True
+Select.inherit_cache = True
 
 
 def get_user(session: Session, user_id: int):

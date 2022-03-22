@@ -5,6 +5,10 @@ from genotype_api.models import Sample, Analysis
 from sqlmodel import Session, func, select
 from sqlmodel.sql.expression import SelectOfScalar
 from fastapi import HTTPException
+from sqlmodel.sql.expression import Select, SelectOfScalar
+
+SelectOfScalar.inherit_cache = True
+Select.inherit_cache = True
 
 
 def get_sample(session: Session, sample_id: str) -> Sample:
