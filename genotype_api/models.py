@@ -268,6 +268,7 @@ def check_snps(genotype_analysis, sequence_analysis):
         else "fail"
     )
     nocalls = "pass" if unknown <= CUTOFS.get("max_nocalls") else "fail"
+    failed_snps = [key for key, val in results.items() if val == "mismatch"]
 
     return {
         "unknown": unknown,
@@ -275,7 +276,7 @@ def check_snps(genotype_analysis, sequence_analysis):
         "mismatches": mismatches,
         "snps": snps,
         "nocalls": nocalls,
-        "failed_snps": [key for key, val in results.items() if val == "mismatch"],
+        "failed_snps": failed_snps,
     }
 
 
