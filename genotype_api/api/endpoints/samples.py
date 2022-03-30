@@ -44,7 +44,10 @@ def read_sample(
     session: Session = Depends(get_session),
     current_user: User = Depends(get_active_user),
 ):
-    return get_sample(session=session, sample_id=sample_id)
+    sample: Sample = get_sample(session=session, sample_id=sample_id)
+    if sample.analyses == 2 and not sample.status:
+        sample: Sample = refresh_sample_status(session=session, sample=sample)
+    return sample
 
 
 @router.get("/", response_model=List[SampleReadWithAnalysis])
@@ -125,16 +128,20 @@ def update_comment(
     return sample_in_db
 
 
-@router.patch("/{sample_id}/status", response_model=SampleRead)
-def check(
+@router.put("/{sample_id}/status", response_model=SampleRead)
+def set_sample_status(
     sample_id: str,
     session: Session = Depends(get_session),
+    status: Optional[Literal["pass", "fail", "cancel"]] = None,
     current_user: User = Depends(get_active_user),
 ):
     """Check sample analyses and update sample status accordingly."""
 
     sample: Sample = get_sample(session=session, sample_id=sample_id)
-    sample: Sample = refresh_sample_status(session=session, sample=sample)
+    sample.status = status
+    session.add(sample)
+    session.commit()
+    session.refresh(sample)
     return sample
 
 
