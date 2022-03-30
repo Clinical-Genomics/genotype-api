@@ -55,7 +55,4 @@ def check_analyses_objects(
             session=session, sample_id=analysis_obj.sample_id, analysis_type=analysis_type
         )
         if db_analysis:
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail=db_analysis.plate_id,
-            )
+            session.delete(db_analysis)
