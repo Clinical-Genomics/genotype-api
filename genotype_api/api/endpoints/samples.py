@@ -6,7 +6,7 @@ from starlette import status
 
 from genotype_api.constants import SEXES
 from genotype_api.database import get_session
-from genotype_api.match import check_sample, compare_genotypes
+from genotype_api.match import check_sample
 from genotype_api.models import (
     Sample,
     SampleReadWithAnalysis,
@@ -17,6 +17,7 @@ from genotype_api.models import (
     MatchResult,
     MatchCounts,
     SampleReadWithAnalysisDeep,
+    compare_genotypes,
 )
 from collections import Counter
 from genotype_api import crud
@@ -179,10 +180,10 @@ def match(
     match_results = []
     for genotype in all_genotypes:
         genotype_pairs = zip(genotype.genotypes, genotype_checked.genotypes)
-        results = (
+        results = dict(
             compare_genotypes(genotype_1, genotype_2) for genotype_1, genotype_2 in genotype_pairs
         )
-        count = Counter(results)
+        count = Counter([val for key, val in results.items()])
         if count.get("match", 0) + count.get("unknown", 0) > 40:
             match_results.append(
                 MatchResult(
