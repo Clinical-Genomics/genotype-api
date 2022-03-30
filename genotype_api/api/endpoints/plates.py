@@ -103,7 +103,18 @@ def sign_off_plate(
     "/{plate_id}",
     response_model=PlateReadWithAnalysisDetailSingle,
     response_model_by_alias=False,
-    response_model_exclude={"analyses": {"__all__": {"sample": {"__all__": {"analyses": True}}}}},
+    response_model_exclude={
+        "analyses": {
+            "__all__": {
+                "sample": {"analyses": True, "created_at": True, "sex": True, "id": True},
+                "source": True,
+                "created_at": True,
+                "type": True,
+                "plate_id": True,
+                "id": True,
+            }
+        }
+    },
 )
 def read_plate(
     plate_id: int,

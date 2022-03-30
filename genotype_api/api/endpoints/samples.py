@@ -16,6 +16,7 @@ from genotype_api.models import (
     Analysis,
     MatchResult,
     MatchCounts,
+    SampleReadWithAnalysisDeep,
 )
 from collections import Counter
 from genotype_api import crud
@@ -38,7 +39,14 @@ Select.inherit_cache = True
 router = APIRouter()
 
 
-@router.get("/{sample_id}", response_model=SampleReadWithAnalysis)
+@router.get(
+    "/{sample_id}",
+    response_model=SampleReadWithAnalysisDeep,
+    response_model_by_alias=False,
+    response_model_exclude={
+        "analyses": {"__all__": {"genotypes": True, "source": True, "created_at": True}}
+    },
+)
 def read_sample(
     sample_id: str,
     session: Session = Depends(get_session),

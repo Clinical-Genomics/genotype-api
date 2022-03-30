@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional, List, Dict
+from typing import Optional, List, Dict, Tuple
 from collections import Counter
 
 
@@ -28,6 +28,7 @@ class StatusDetail(BaseModel):
     matches: Optional[int] = 0
     mismatches: Optional[int] = 0
     unknown: Optional[int] = 0
+    failed_snps: Optional[List[str]] = []
 
 
 class GenotypeBase(SQLModel):
@@ -209,29 +210,55 @@ class AnalysisReadWithGenotype(AnalysisRead):
 
 class SampleReadWithAnalysisDeep(SampleRead):
     analyses: Optional[List[AnalysisReadWithGenotype]] = []
+    detail: Optional[StatusDetail]
+
+    @validator("detail")
+    def get_detail(cls, value, values) -> StatusDetail:
+        analyses = values.get("analyses")
+        if len(analyses) != 2:
+            return StatusDetail()
+        genotype_analysis = [analysis for analysis in analyses if analysis.type == "genotype"][0]
+        sequence_analysis = [analysis for analysis in analyses if analysis.type == "sequence"][0]
+        status = check_snps(
+            genotype_analysis=genotype_analysis, sequence_analysis=sequence_analysis
+        )
+        status.update(
+            {
+                "sex": check_sex(
+                    sample_sex=values.get("sex"),
+                    genotype_analysis=genotype_analysis,
+                    sequence_analysis=sequence_analysis,
+                )
+            }
+        )
+
+        return StatusDetail(**status)
+
+    class Config:
+        validate_all = True
 
 
 class AnalysisReadWithSample(AnalysisRead):
     sample: Optional[SampleSlim]
 
 
-def compare_genotypes(genotype_1: Genotype, genotype_2: Genotype) -> str:
+def compare_genotypes(genotype_1: Genotype, genotype_2: Genotype) -> Tuple[str, str]:
     """Compare two genotypes if they have the same alleles."""
 
     if "0" in genotype_1.alleles or "0" in genotype_2.alleles:
-        return "unknown"
+        return genotype_1.rsnumber, "unknown"
     elif genotype_1.alleles == genotype_2.alleles:
-        return "match"
+        return genotype_1.rsnumber, "match"
     else:
-        return "mismatch"
+        return genotype_1.rsnumber, "mismatch"
 
 
 def check_snps(genotype_analysis, sequence_analysis):
     genotype_pairs = zip(genotype_analysis.genotypes, sequence_analysis.genotypes)
-    results = (
+    results = dict(
         compare_genotypes(genotype_1, genotype_2) for genotype_1, genotype_2 in genotype_pairs
     )
-    count = Counter(results)
+    count = Counter([val for key, val in results.items()])
     unknown = count.get("unknown", 0)
     matches = count.get("match", 0)
     mismatches = count.get("mismatch", 0)
@@ -248,6 +275,7 @@ def check_snps(genotype_analysis, sequence_analysis):
         "mismatches": mismatches,
         "snps": snps,
         "nocalls": nocalls,
+        "failed_snps": [key for key, val in results.items() if val == "mismatch"],
     }
 
 
@@ -261,36 +289,6 @@ def check_sex(sample_sex, genotype_analysis, sequence_analysis):
 
 class AnalysisReadWithSampleDeep(AnalysisRead):
     sample: Optional[SampleReadWithAnalysisDeep]
-    detail: Optional[StatusDetail]
-
-    @validator("detail")
-    def get_detail(cls, value, values) -> StatusDetail:
-        sample = values.get("sample")
-        if len(sample.analyses) != 2:
-            return StatusDetail()
-        genotype_analysis = [
-            analysis for analysis in sample.analyses if analysis.type == "genotype"
-        ][0]
-        sequence_analysis = [
-            analysis for analysis in sample.analyses if analysis.type == "sequence"
-        ][0]
-        status = check_snps(
-            genotype_analysis=genotype_analysis, sequence_analysis=sequence_analysis
-        )
-        status.update(
-            {
-                "sex": check_sex(
-                    sample_sex=sample.sex,
-                    genotype_analysis=genotype_analysis,
-                    sequence_analysis=sequence_analysis,
-                )
-            }
-        )
-
-        return StatusDetail(**status)
-
-    class Config:
-        validate_all = True
 
 
 class PlateReadWithAnalyses(PlateRead):
