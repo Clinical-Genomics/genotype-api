@@ -9,6 +9,17 @@ from sqlmodel import SQLModel, Field, Relationship
 from genotype_api.constants import TYPES, SEXES, STATUS
 
 
+class StatusCounts(BaseModel):
+    total: int = Field(0, nullable=True)
+    failed: int = Field(0, alias="STATUS.FAIL", nullable=True)
+    passed: int = Field(0, alias="STATUS.PASS", nullable=True)
+    cancelled: int = Field(0, alias="STATUS.CANCEL", nullable=True)
+    unknown: int = Field(0, alias="None", nullable=True)
+
+    class Config:
+        allow_population_by_field_name = True
+
+
 class GenotypeBase(SQLModel):
     rsnumber: Optional[constr(max_length=10)]
     analysis_id: Optional[int] = Field(default=None, foreign_key="analysis.id")
@@ -184,6 +195,21 @@ class AnalysisReadWithSample(AnalysisRead):
 
 class PlateReadWithAnalyses(PlateRead):
     analyses: Optional[List[AnalysisReadWithSample]] = []
+
+
+class PlateReadWithAnalysisDetail(PlateRead):
+    analyses: Optional[List[AnalysisReadWithSample]] = []
+    detail: Optional[StatusCounts]
+
+    @validator("detail")
+    def check_detail(cls, value, values):
+        analyses = values.get("analyses")
+        statuses = [str(analysis.sample.status) for analysis in analyses]
+        status_counts = Counter(statuses)
+        return StatusCounts(**status_counts, total=len(analyses))
+
+    class Config:
+        validate_all = True
 
 
 class SampleReadWithAnalysis(SampleRead):
