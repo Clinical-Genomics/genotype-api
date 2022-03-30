@@ -98,7 +98,11 @@ def sign_off_plate(
     return plate
 
 
-@router.get("/{plate_id}", response_model=PlateReadWithAnalyses)
+@router.get(
+    "/{plate_id}",
+    response_model=PlateReadWithAnalysisDetail,
+    response_model_by_alias=False,
+)
 def read_plate(
     plate_id: int,
     session: Session = Depends(get_session),
