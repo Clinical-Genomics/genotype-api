@@ -20,4 +20,4 @@ class STATUS(str, Enum):
     CANCEL = "cancel"
 
 
-CUTOFS = dict(max_nocalls=2, max_mismatch=4, min_matches=2)
+CUTOFS = dict(max_nocalls=15, max_mismatch=3, min_matches=35)

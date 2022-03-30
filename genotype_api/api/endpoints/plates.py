@@ -25,6 +25,7 @@ from genotype_api.models import (
     PlateCreate,
     User,
     PlateRead,
+    PlateReadWithAnalysisDetail,
 )
 from genotype_api.security import get_active_user
 from sqlmodel.sql.expression import Select, SelectOfScalar
@@ -97,7 +98,11 @@ def sign_off_plate(
     return plate
 
 
-@router.get("/{plate_id}", response_model=PlateReadWithAnalyses)
+@router.get(
+    "/{plate_id}",
+    response_model=PlateReadWithAnalysisDetail,
+    response_model_by_alias=False,
+)
 def read_plate(
     plate_id: int,
     session: Session = Depends(get_session),
@@ -108,18 +113,23 @@ def read_plate(
     return get_plate(session=session, plate_id=plate_id)
 
 
-@router.get("/", response_model=List[PlateRead])
-def read_plates(
+@router.get(
+    "/",
+    response_model=List[PlateReadWithAnalysisDetail],
+    response_model_exclude={"analyses"},
+    response_model_by_alias=False,
+)
+async def read_plates(
     order_by: Optional[Literal["created_at", "plate_id", "signed_at", "id"]] = "id",
     sort_order: Optional[Literal["ascend", "descend"]] = "descend",
     skip: Optional[int] = 0,
-    limit: Optional[int] = 100,
+    limit: Optional[int] = 10,
     session: Session = Depends(get_session),
     current_user: User = Depends(get_active_user),
 ):
     """Display all plates"""
     sort_func = desc if sort_order == "descend" else asc
-    plates: List[Plate] = session.exec(
+    plates: List[PlateReadWithAnalysisDetail] = session.exec(
         select(Plate).order_by(sort_func(order_by)).offset(skip).limit(limit)
     ).all()
 

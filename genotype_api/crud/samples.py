@@ -22,7 +22,7 @@ def create_sample(session: Session, sample: Sample) -> Sample:
 
     sample_in_db = session.get(Sample, sample.id)
     if sample_in_db:
-        raise HTTPException(status_code=400, detail="Sample already registered")
+        raise HTTPException(status_code=409, detail="Sample already registered")
     session.add(sample)
     session.commit()
     session.refresh(sample)
