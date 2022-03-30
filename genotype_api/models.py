@@ -150,6 +150,7 @@ class UserCreate(UserBase):
 
 
 class PlateBase(SQLModel):
+
     created_at: Optional[datetime] = datetime.now()
     plate_id: constr(max_length=16)
     signed_by: Optional[int] = Field(default=None, foreign_key="user.id")
@@ -171,7 +172,6 @@ class PlateRead(PlateBase):
 
 class PlateCreate(PlateBase):
     analyses: Optional[List[Analysis]] = []
-    pass
 
 
 class UserReadWithPlates(UserRead):
