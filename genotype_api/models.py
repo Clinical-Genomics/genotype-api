@@ -15,6 +15,7 @@ class StatusCounts(BaseModel):
     passed: int = Field(0, alias="STATUS.PASS", nullable=True)
     cancelled: int = Field(0, alias="STATUS.CANCEL", nullable=True)
     unknown: int = Field(0, alias="None", nullable=True)
+    commented: int = Field(0, nullable=True)
 
     class Config:
         allow_population_by_field_name = True
@@ -205,8 +206,9 @@ class PlateReadWithAnalysisDetail(PlateRead):
     def check_detail(cls, value, values):
         analyses = values.get("analyses")
         statuses = [str(analysis.sample.status) for analysis in analyses]
+        commented = sum(1 for analysis in analyses if analysis.sample.comment)
         status_counts = Counter(statuses)
-        return StatusCounts(**status_counts, total=len(analyses))
+        return StatusCounts(**status_counts, total=len(analyses), commented=commented)
 
     class Config:
         validate_all = True
