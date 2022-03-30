@@ -5,21 +5,10 @@ from collections import Counter, namedtuple
 from typing import Dict, Literal, Optional
 
 from genotype_api.constants import CUTOFS, SEXES
-from genotype_api.models import Sample, Analysis, Genotype, StatusDetail
+from genotype_api.models import Sample, Analysis, Genotype, StatusDetail, compare_genotypes
 
 log = logging.getLogger(__name__)
 Result = namedtuple("Result", ["match", "mismatch", "unknown"])
-
-
-def compare_genotypes(genotype_1: Genotype, genotype_2: Genotype) -> str:
-    """Compare two genotypes if they have the same alleles."""
-
-    if "0" in genotype_1.alleles or "0" in genotype_2.alleles:
-        return "unknown"
-    elif genotype_1.alleles == genotype_2.alleles:
-        return "match"
-    else:
-        return "mismatch"
 
 
 def check_sex(
@@ -32,7 +21,7 @@ def check_sex(
     return "pass"
 
 
-def check_snps(analysis_1: Analysis, analysis_2: Analysis) -> Optional[Literal["fail", "pass"]]:
+def check_snps(analysis_1: Analysis, analysis_2: Analysis) -> str:
     genotype_pairs = zip(analysis_1.genotypes, analysis_2.genotypes)
     results = (
         compare_genotypes(genotype_1, genotype_2) for genotype_1, genotype_2 in genotype_pairs
@@ -43,7 +32,7 @@ def check_snps(analysis_1: Analysis, analysis_2: Analysis) -> Optional[Literal["
     return "pass" if enough_matches and ok_mismatches else "fail"
 
 
-def score_no_calls(genotype_analysis: Analysis) -> Optional[Literal["fail", "pass"]]:
+def score_no_calls(genotype_analysis: Analysis) -> str:
     """score no calls."""
     calls = genotype_analysis.check_no_calls()
     return "fail" if calls["unknown"] >= CUTOFS.get("max_nocalls") else "pass"
