@@ -1,12 +1,12 @@
 from datetime import datetime
-from typing import Optional, List, Dict
+from typing import Optional, List, Dict, Tuple
 from collections import Counter
 
 
 from pydantic import constr, EmailStr, BaseModel, validator
 from sqlmodel import SQLModel, Field, Relationship
 
-from genotype_api.constants import TYPES, SEXES, STATUS
+from genotype_api.constants import TYPES, SEXES, STATUS, CUTOFS
 
 
 class StatusCounts(BaseModel):
@@ -19,6 +19,16 @@ class StatusCounts(BaseModel):
 
     class Config:
         allow_population_by_field_name = True
+
+
+class StatusDetail(BaseModel):
+    sex: Optional[str]
+    snps: Optional[str]
+    nocalls: Optional[str]
+    matches: Optional[int] = 0
+    mismatches: Optional[int] = 0
+    unknown: Optional[int] = 0
+    failed_snps: Optional[List[str]] = []
 
 
 class GenotypeBase(SQLModel):
@@ -190,8 +200,96 @@ class UserReadWithPlates(UserRead):
     plates: Optional[List[Plate]] = []
 
 
+class SampleReadWithAnalysis(SampleRead):
+    analyses: Optional[List[AnalysisRead]] = []
+
+
+class AnalysisReadWithGenotype(AnalysisRead):
+    genotypes: Optional[List[Genotype]] = []
+
+
+class SampleReadWithAnalysisDeep(SampleRead):
+    analyses: Optional[List[AnalysisReadWithGenotype]] = []
+    detail: Optional[StatusDetail]
+
+    @validator("detail")
+    def get_detail(cls, value, values) -> StatusDetail:
+        analyses = values.get("analyses")
+        if len(analyses) != 2:
+            return StatusDetail()
+        genotype_analysis = [analysis for analysis in analyses if analysis.type == "genotype"][0]
+        sequence_analysis = [analysis for analysis in analyses if analysis.type == "sequence"][0]
+        status = check_snps(
+            genotype_analysis=genotype_analysis, sequence_analysis=sequence_analysis
+        )
+        status.update(
+            {
+                "sex": check_sex(
+                    sample_sex=values.get("sex"),
+                    genotype_analysis=genotype_analysis,
+                    sequence_analysis=sequence_analysis,
+                )
+            }
+        )
+
+        return StatusDetail(**status)
+
+    class Config:
+        validate_all = True
+
+
 class AnalysisReadWithSample(AnalysisRead):
     sample: Optional[SampleSlim]
+
+
+def compare_genotypes(genotype_1: Genotype, genotype_2: Genotype) -> Tuple[str, str]:
+    """Compare two genotypes if they have the same alleles."""
+
+    if "0" in genotype_1.alleles or "0" in genotype_2.alleles:
+        return genotype_1.rsnumber, "unknown"
+    elif genotype_1.alleles == genotype_2.alleles:
+        return genotype_1.rsnumber, "match"
+    else:
+        return genotype_1.rsnumber, "mismatch"
+
+
+def check_snps(genotype_analysis, sequence_analysis):
+    genotype_pairs = zip(genotype_analysis.genotypes, sequence_analysis.genotypes)
+    results = dict(
+        compare_genotypes(genotype_1, genotype_2) for genotype_1, genotype_2 in genotype_pairs
+    )
+    count = Counter([val for key, val in results.items()])
+    unknown = count.get("unknown", 0)
+    matches = count.get("match", 0)
+    mismatches = count.get("mismatch", 0)
+    snps = (
+        "pass"
+        if all([matches >= CUTOFS.get("min_matches") and mismatches <= CUTOFS.get("max_mismatch")])
+        else "fail"
+    )
+    nocalls = "pass" if unknown <= CUTOFS.get("max_nocalls") else "fail"
+    failed_snps = [key for key, val in results.items() if val == "mismatch"]
+
+    return {
+        "unknown": unknown,
+        "matches": matches,
+        "mismatches": mismatches,
+        "snps": snps,
+        "nocalls": nocalls,
+        "failed_snps": failed_snps,
+    }
+
+
+def check_sex(sample_sex, genotype_analysis, sequence_analysis):
+    if sample_sex in ["unknown", None]:
+        return "fail"
+    elif genotype_analysis.sex == sequence_analysis.sex == sample_sex:
+        return "pass"
+    return "fail"
+
+
+class AnalysisReadWithSampleDeep(AnalysisRead):
+    sample: Optional[SampleReadWithAnalysisDeep]
 
 
 class PlateReadWithAnalyses(PlateRead):
@@ -214,18 +312,20 @@ class PlateReadWithAnalysisDetail(PlateRead):
         validate_all = True
 
 
-class SampleReadWithAnalysis(SampleRead):
-    analyses: Optional[List[AnalysisRead]] = []
+class PlateReadWithAnalysisDetailSingle(PlateRead):
+    analyses: Optional[List[AnalysisReadWithSample]] = []
+    detail: Optional[StatusCounts]
 
+    @validator("detail")
+    def check_detail(cls, value, values):
+        analyses = values.get("analyses")
+        statuses = [str(analysis.sample.status) for analysis in analyses]
+        commented = sum(1 for analysis in analyses if analysis.sample.comment)
+        status_counts = Counter(statuses)
+        return StatusCounts(**status_counts, total=len(analyses), commented=commented)
 
-class AnalysisReadWithGenotype(AnalysisRead):
-    genotypes: Optional[List[Genotype]] = []
-
-
-class StatusDetail(BaseModel):
-    sex: Optional[str]
-    snps: Optional[str]
-    nocalls: Optional[str]
+    class Config:
+        validate_all = True
 
 
 class MatchCounts(BaseModel):

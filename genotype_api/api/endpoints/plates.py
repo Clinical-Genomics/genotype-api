@@ -26,6 +26,7 @@ from genotype_api.models import (
     User,
     PlateRead,
     PlateReadWithAnalysisDetail,
+    PlateReadWithAnalysisDetailSingle,
 )
 from genotype_api.security import get_active_user
 from sqlmodel.sql.expression import Select, SelectOfScalar
@@ -100,8 +101,20 @@ def sign_off_plate(
 
 @router.get(
     "/{plate_id}",
-    response_model=PlateReadWithAnalysisDetail,
+    response_model=PlateReadWithAnalysisDetailSingle,
     response_model_by_alias=False,
+    response_model_exclude={
+        "analyses": {
+            "__all__": {
+                "sample": {"analyses": True, "created_at": True, "sex": True, "id": True},
+                "source": True,
+                "created_at": True,
+                "type": True,
+                "plate_id": True,
+                "id": True,
+            }
+        }
+    },
 )
 def read_plate(
     plate_id: int,
@@ -110,7 +123,7 @@ def read_plate(
 ):
     """Display information about a plate."""
 
-    return get_plate(session=session, plate_id=plate_id)
+    return PlateReadWithAnalysisDetailSingle.from_orm(get_plate(session=session, plate_id=plate_id))
 
 
 @router.get(

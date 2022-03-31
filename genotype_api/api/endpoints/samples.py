@@ -6,7 +6,7 @@ from starlette import status
 
 from genotype_api.constants import SEXES
 from genotype_api.database import get_session
-from genotype_api.match import check_sample, compare_genotypes
+from genotype_api.match import check_sample
 from genotype_api.models import (
     Sample,
     SampleReadWithAnalysis,
@@ -16,6 +16,8 @@ from genotype_api.models import (
     Analysis,
     MatchResult,
     MatchCounts,
+    SampleReadWithAnalysisDeep,
+    compare_genotypes,
 )
 from collections import Counter
 from genotype_api import crud
@@ -38,7 +40,14 @@ Select.inherit_cache = True
 router = APIRouter()
 
 
-@router.get("/{sample_id}", response_model=SampleReadWithAnalysis)
+@router.get(
+    "/{sample_id}",
+    response_model=SampleReadWithAnalysisDeep,
+    response_model_by_alias=False,
+    response_model_exclude={
+        "analyses": {"__all__": {"genotypes": True, "source": True, "created_at": True}}
+    },
+)
 def read_sample(
     sample_id: str,
     session: Session = Depends(get_session),
@@ -50,10 +59,17 @@ def read_sample(
     return sample
 
 
-@router.get("/", response_model=List[SampleReadWithAnalysis])
+@router.get(
+    "/",
+    response_model=List[SampleReadWithAnalysisDeep],
+    response_model_by_alias=False,
+    response_model_exclude={
+        "analyses": {"__all__": {"genotypes": True, "source": True, "created_at": True}}
+    },
+)
 def read_samples(
     skip: int = 0,
-    limit: int = Query(default=100, lte=100),
+    limit: int = Query(default=10, lte=10),
     plate_id: Optional[str] = None,
     incomplete: Optional[bool] = False,
     commented: Optional[bool] = False,
@@ -171,10 +187,10 @@ def match(
     match_results = []
     for genotype in all_genotypes:
         genotype_pairs = zip(genotype.genotypes, genotype_checked.genotypes)
-        results = (
+        results = dict(
             compare_genotypes(genotype_1, genotype_2) for genotype_1, genotype_2 in genotype_pairs
         )
-        count = Counter(results)
+        count = Counter([val for key, val in results.items()])
         if count.get("match", 0) + count.get("unknown", 0) > 40:
             match_results.append(
                 MatchResult(
