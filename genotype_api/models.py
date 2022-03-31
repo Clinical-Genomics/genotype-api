@@ -313,7 +313,7 @@ class PlateReadWithAnalysisDetail(PlateRead):
 
 
 class PlateReadWithAnalysisDetailSingle(PlateRead):
-    analyses: Optional[List[AnalysisReadWithSampleDeep]] = []
+    analyses: Optional[List[AnalysisReadWithSample]] = []
     detail: Optional[StatusCounts]
 
     @validator("detail")
