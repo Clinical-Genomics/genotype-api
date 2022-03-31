@@ -44,9 +44,7 @@ router = APIRouter()
     "/{sample_id}",
     response_model=SampleReadWithAnalysisDeep,
     response_model_by_alias=False,
-    response_model_exclude={
-        "analyses": {"__all__": {"genotypes": True, "source": True, "created_at": True}}
-    },
+    response_model_exclude={"analyses": {"__all__": {"genotypes": True, "created_at": True}}},
 )
 def read_sample(
     sample_id: str,
@@ -59,10 +57,15 @@ def read_sample(
     return sample
 
 
-@router.get("/", response_model=List[SampleReadWithAnalysis])
+@router.get(
+    "/",
+    response_model=List[SampleReadWithAnalysisDeep],
+    response_model_by_alias=False,
+    response_model_exclude={"analyses": {"__all__": {"genotypes": True, "created_at": True}}},
+)
 def read_samples(
     skip: int = 0,
-    limit: int = Query(default=100, lte=100),
+    limit: int = Query(default=10, lte=10),
     plate_id: Optional[str] = None,
     incomplete: Optional[bool] = False,
     commented: Optional[bool] = False,
