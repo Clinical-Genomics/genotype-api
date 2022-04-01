@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional, List, Dict, Tuple
+from typing import Optional, List, Dict, Tuple, Type, Any
 from collections import Counter
 
 
@@ -9,7 +9,7 @@ from sqlmodel import SQLModel, Field, Relationship
 from genotype_api.constants import TYPES, SEXES, STATUS, CUTOFS
 
 
-class StatusCounts(BaseModel):
+class PlateStatusCounts(BaseModel):
     total: int = Field(0, nullable=True)
     failed: int = Field(0, alias="STATUS.FAIL", nullable=True)
     passed: int = Field(0, alias="STATUS.PASS", nullable=True)
@@ -21,14 +21,46 @@ class StatusCounts(BaseModel):
         allow_population_by_field_name = True
 
 
-class StatusDetail(BaseModel):
+class SampleDetailStats(BaseModel):
+    matches: Optional[int]
+    mismatches: Optional[int]
+    unknown: Optional[int]
+
+
+class SampleDetailStatus(BaseModel):
     sex: Optional[str]
     snps: Optional[str]
     nocalls: Optional[str]
-    matches: Optional[int] = 0
-    mismatches: Optional[int] = 0
-    unknown: Optional[int] = 0
-    failed_snps: Optional[List[str]] = []
+
+
+class SampleDetail(BaseModel):
+    sex: Optional[str]
+    snps: Optional[str]
+    nocalls: Optional[str]
+    matches: Optional[int]
+    mismatches: Optional[int]
+    unknown: Optional[int]
+    failed_snps: Optional[List[str]]
+
+    stats: Optional[SampleDetailStats]
+    status: Optional[SampleDetailStatus]
+
+    @validator("stats")
+    def validate_stats(cls, value, values) -> SampleDetailStats:
+        matches = values.get("matches")
+        mismatches = values.get("mismatches")
+        unknown = values.get("unknown")
+        return SampleDetailStats(matches=matches, mismatches=mismatches, unknown=unknown)
+
+    @validator("status")
+    def validate_status(cls, value, values) -> SampleDetailStatus:
+        sex = values.get("sex")
+        snps = values.get("snps")
+        nocalls = values.get("nocalls")
+        return SampleDetailStatus(sex=sex, snps=snps, nocalls=nocalls)
+
+    class Config:
+        validate_all = True
 
 
 class GenotypeBase(SQLModel):
@@ -210,29 +242,25 @@ class AnalysisReadWithGenotype(AnalysisRead):
 
 class SampleReadWithAnalysisDeep(SampleRead):
     analyses: Optional[List[AnalysisReadWithGenotype]] = []
-    detail: Optional[StatusDetail]
+    detail: Optional[SampleDetail]
 
     @validator("detail")
-    def get_detail(cls, value, values) -> StatusDetail:
+    def get_detail(cls, value, values) -> SampleDetail:
         analyses = values.get("analyses")
         if len(analyses) != 2:
-            return StatusDetail()
+            return SampleDetail()
         genotype_analysis = [analysis for analysis in analyses if analysis.type == "genotype"][0]
         sequence_analysis = [analysis for analysis in analyses if analysis.type == "sequence"][0]
         status = check_snps(
             genotype_analysis=genotype_analysis, sequence_analysis=sequence_analysis
         )
-        status.update(
-            {
-                "sex": check_sex(
-                    sample_sex=values.get("sex"),
-                    genotype_analysis=genotype_analysis,
-                    sequence_analysis=sequence_analysis,
-                )
-            }
+        sex = check_sex(
+            sample_sex=values.get("sex"),
+            genotype_analysis=genotype_analysis,
+            sequence_analysis=sequence_analysis,
         )
 
-        return StatusDetail(**status)
+        return SampleDetail(**status, sex=sex)
 
     class Config:
         validate_all = True
@@ -298,7 +326,7 @@ class PlateReadWithAnalyses(PlateRead):
 
 class PlateReadWithAnalysisDetail(PlateRead):
     analyses: Optional[List[AnalysisReadWithSample]] = []
-    detail: Optional[StatusCounts]
+    detail: Optional[PlateStatusCounts]
 
     @validator("detail")
     def check_detail(cls, value, values):
@@ -306,7 +334,7 @@ class PlateReadWithAnalysisDetail(PlateRead):
         statuses = [str(analysis.sample.status) for analysis in analyses]
         commented = sum(1 for analysis in analyses if analysis.sample.comment)
         status_counts = Counter(statuses)
-        return StatusCounts(**status_counts, total=len(analyses), commented=commented)
+        return PlateStatusCounts(**status_counts, total=len(analyses), commented=commented)
 
     class Config:
         validate_all = True
@@ -314,7 +342,7 @@ class PlateReadWithAnalysisDetail(PlateRead):
 
 class PlateReadWithAnalysisDetailSingle(PlateRead):
     analyses: Optional[List[AnalysisReadWithSample]] = []
-    detail: Optional[StatusCounts]
+    detail: Optional[PlateStatusCounts]
 
     @validator("detail")
     def check_detail(cls, value, values):
@@ -322,7 +350,7 @@ class PlateReadWithAnalysisDetailSingle(PlateRead):
         statuses = [str(analysis.sample.status) for analysis in analyses]
         commented = sum(1 for analysis in analyses if analysis.sample.comment)
         status_counts = Counter(statuses)
-        return StatusCounts(**status_counts, total=len(analyses), commented=commented)
+        return PlateStatusCounts(**status_counts, total=len(analyses), commented=commented)
 
     class Config:
         validate_all = True

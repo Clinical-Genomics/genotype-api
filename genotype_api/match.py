@@ -3,7 +3,7 @@
 import logging
 from genotype_api.models import (
     Sample,
-    StatusDetail,
+    SampleDetail,
     check_sex,
     check_snps,
 )
@@ -11,7 +11,7 @@ from genotype_api.models import (
 log = logging.getLogger(__name__)
 
 
-def check_sample(sample: Sample) -> StatusDetail:
+def check_sample(sample: Sample) -> SampleDetail:
     """Check a sample for inconsistencies."""
     status = check_snps(
         genotype_analysis=sample.genotype_analysis,
@@ -26,4 +26,4 @@ def check_sample(sample: Sample) -> StatusDetail:
             )
         }
     )
-    return StatusDetail(**status)
+    return SampleDetail(**status)
