@@ -12,7 +12,7 @@ from genotype_api.models import (
     SampleReadWithAnalysis,
     SampleRead,
     User,
-    StatusDetail,
+    SampleDetail,
     Analysis,
     MatchResult,
     MatchCounts,
@@ -200,7 +200,7 @@ def match(
     return match_results
 
 
-@router.get("/{sample_id}/status_detail", response_model=StatusDetail)
+@router.get("/{sample_id}/status_detail", response_model=SampleDetail)
 def get_status_detail(
     sample_id: str,
     session: Session = Depends(get_session),
@@ -208,7 +208,7 @@ def get_status_detail(
 ):
     sample: Sample = get_sample(session=session, sample_id=sample_id)
     if len(sample.analyses) != 2:
-        return StatusDetail()
+        return SampleDetail()
     return check_sample(sample=sample)
 
 

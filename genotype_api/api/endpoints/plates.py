@@ -142,7 +142,7 @@ async def read_plates(
 ):
     """Display all plates"""
     sort_func = desc if sort_order == "descend" else asc
-    plates: List[PlateReadWithAnalysisDetail] = session.exec(
+    plates: List[Plate] = session.exec(
         select(Plate).order_by(sort_func(order_by)).offset(skip).limit(limit)
     ).all()
 
