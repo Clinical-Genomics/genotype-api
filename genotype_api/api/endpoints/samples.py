@@ -45,7 +45,15 @@ router = APIRouter()
     response_model=SampleReadWithAnalysisDeep,
     response_model_by_alias=False,
     response_model_exclude={
-        "analyses": {"__all__": {"genotypes": True, "source": True, "created_at": True}}
+        "analyses": {"__all__": {"genotypes": True, "source": True, "created_at": True}},
+        "detail": {
+            "sex": True,
+            "nocalls": True,
+            "snps": True,
+            "matches": True,
+            "mismatches": True,
+            "unknown": True,
+        },
     },
 )
 def read_sample(
@@ -64,7 +72,15 @@ def read_sample(
     response_model=List[SampleReadWithAnalysisDeep],
     response_model_by_alias=False,
     response_model_exclude={
-        "analyses": {"__all__": {"genotypes": True, "source": True, "created_at": True}}
+        "analyses": {"__all__": {"genotypes": True, "source": True, "created_at": True}},
+        "detail": {
+            "sex": True,
+            "nocalls": True,
+            "snps": True,
+            "matches": True,
+            "mismatches": True,
+            "unknown": True,
+        },
     },
 )
 def read_samples(
@@ -200,7 +216,12 @@ def match(
     return match_results
 
 
-@router.get("/{sample_id}/status_detail", response_model=SampleDetail)
+@router.get(
+    "/{sample_id}/status_detail",
+    response_model=SampleDetail,
+    deprecated=True,
+    response_model_include={"sex": True, "nocalls": True, "snps": True},
+)
 def get_status_detail(
     sample_id: str,
     session: Session = Depends(get_session),
