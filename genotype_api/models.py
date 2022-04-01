@@ -22,28 +22,28 @@ class PlateStatusCounts(BaseModel):
 
 
 class SampleDetailStats(BaseModel):
-    matches: Optional[int] = 0
-    mismatches: Optional[int] = 0
-    unknown: Optional[int] = 0
+    matches: Optional[int]
+    mismatches: Optional[int]
+    unknown: Optional[int]
 
 
 class SampleDetailStatus(BaseModel):
-    sex: Optional[str] = None
-    snps: Optional[str] = None
-    nocalls: Optional[str] = None
+    sex: Optional[str]
+    snps: Optional[str]
+    nocalls: Optional[str]
 
 
 class SampleDetail(BaseModel):
-    sex: Optional[str] = None
-    snps: Optional[str] = None
-    nocalls: Optional[str] = None
-    matches: Optional[int] = 0
-    mismatches: Optional[int] = 0
-    unknown: Optional[int] = 0
-    failed_snps: Optional[List[str]] = []
+    sex: Optional[str]
+    snps: Optional[str]
+    nocalls: Optional[str]
+    matches: Optional[int]
+    mismatches: Optional[int]
+    unknown: Optional[int]
+    failed_snps: Optional[List[str]]
 
-    stats: Optional[SampleDetailStats] = SampleDetailStats()
-    status: Optional[SampleDetailStatus] = SampleDetailStatus()
+    stats: Optional[SampleDetailStats]
+    status: Optional[SampleDetailStatus]
 
     @validator("stats")
     def validate_stats(cls, value, values) -> SampleDetailStats:
@@ -263,7 +263,6 @@ class SampleReadWithAnalysisDeep(SampleRead):
                 )
             }
         )
-
         return SampleDetail(**status)
 
     class Config:
