@@ -254,16 +254,13 @@ class SampleReadWithAnalysisDeep(SampleRead):
         status = check_snps(
             genotype_analysis=genotype_analysis, sequence_analysis=sequence_analysis
         )
-        status.update(
-            {
-                "sex": check_sex(
-                    sample_sex=values.get("sex"),
-                    genotype_analysis=genotype_analysis,
-                    sequence_analysis=sequence_analysis,
-                )
-            }
+        sex = check_sex(
+            sample_sex=values.get("sex"),
+            genotype_analysis=genotype_analysis,
+            sequence_analysis=sequence_analysis,
         )
-        return SampleDetail(**status)
+
+        return SampleDetail(**status, sex=sex)
 
     class Config:
         validate_all = True
