@@ -62,7 +62,7 @@ def read_sample(
     current_user: User = Depends(get_active_user),
 ):
     sample: Sample = get_sample(session=session, sample_id=sample_id)
-    if sample.analyses == 2 and not sample.status:
+    if len(sample.analyses) == 2 and not sample.status:
         sample: Sample = refresh_sample_status(session=session, sample=sample)
     return sample
 
