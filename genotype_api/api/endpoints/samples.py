@@ -191,8 +191,8 @@ def match(
 
     all_genotypes: Analysis = session.query(Analysis).filter(
         Analysis.type == comparison_set,
-        Analysis.created_at >= date_min,
-        Analysis.created_at <= date_max,
+        Analysis.created_at > date_min - timedelta(days=1),
+        Analysis.created_at < date_max + timedelta(days=1),
     )
     genotype_checked = (
         session.query(Analysis).filter(
