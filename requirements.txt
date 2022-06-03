@@ -5,6 +5,7 @@ bump2version
 pymysql
 sqlmodel
 openpyxl
+SQLAlchemy==1.4.30
 
 # server stuff
 passlib
