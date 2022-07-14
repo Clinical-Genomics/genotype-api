@@ -317,6 +317,7 @@ def check_sex(sample_sex, genotype_analysis, sequence_analysis):
         return "fail"
     return "pass"
 
+
 class AnalysisReadWithSampleDeep(AnalysisRead):
     sample: Optional[SampleReadWithAnalysisDeep]
 
