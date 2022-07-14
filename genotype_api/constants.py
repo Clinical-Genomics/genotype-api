@@ -9,7 +9,7 @@ class TYPES(str, Enum):
 
 
 class SEXES(str, Enum):
-    MAIL = "male"
+    MALE = "male"
     FEMALE = "female"
     UNKNOWN = "unknown"
 
