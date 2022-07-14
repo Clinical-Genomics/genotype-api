@@ -312,8 +312,8 @@ def check_sex(sample_sex, genotype_analysis, sequence_analysis):
     """Check if any source disagrees on the sex"""
     if not sample_sex or genotype_analysis.sex == SEXES.UNKNOWN:
         return "fail"
-    sexes = [genotype_analysis.sex, sequence_analysis.sex, sample_sex]
-    return SEXES.MALE not in sexes or SEXES.FEMALE not in sexes
+    sexes = {genotype_analysis.sex, sequence_analysis.sex, sample_sex}
+    return not {SEXES.MALE, SEXES.FEMALE}.issubset(sexes)
 
 
 class AnalysisReadWithSampleDeep(AnalysisRead):
