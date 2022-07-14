@@ -313,8 +313,9 @@ def check_sex(sample_sex, genotype_analysis, sequence_analysis):
     if not sample_sex or genotype_analysis.sex == SEXES.UNKNOWN:
         return "fail"
     sexes = {genotype_analysis.sex, sequence_analysis.sex, sample_sex}
-    return not {SEXES.MALE, SEXES.FEMALE}.issubset(sexes)
-
+    if {SEXES.MALE, SEXES.FEMALE}.issubset(sexes):
+        return "fail"
+    return "pass"
 
 class AnalysisReadWithSampleDeep(AnalysisRead):
     sample: Optional[SampleReadWithAnalysisDeep]
