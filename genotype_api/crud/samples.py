@@ -17,6 +17,10 @@ def get_sample(session: Session, sample_id: str) -> Sample:
     return session.exec(statement).one()
 
 
+def get_samples(statement: SelectOfScalar, enquiry: str) -> SelectOfScalar:
+    return statement.where(enquiry in Sample.id)
+
+
 def create_sample(session: Session, sample: Sample) -> Sample:
     """Adding a sample to db"""
 
@@ -59,7 +63,9 @@ def get_status_missing_samples(statement: SelectOfScalar) -> SelectOfScalar:
     return statement.where(Sample.status == None)
 
 
-def create_analyses_sample_objects(session: Session, analyses: List[Analysis]) -> List[Sample]:
+def create_analyses_sample_objects(
+    session: Session, analyses: List[Analysis]
+) -> List[Sample]:
     """creating samples in an analysis if not already in db"""
     return [
         create_sample(session=session, sample=Sample(id=analysis_obj.sample_id))
