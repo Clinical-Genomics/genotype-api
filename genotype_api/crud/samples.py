@@ -18,7 +18,7 @@ def get_sample(session: Session, sample_id: str) -> Sample:
 
 
 def get_samples(statement: SelectOfScalar, enquiry: str) -> SelectOfScalar:
-    return statement.where(enquiry in Sample.id)
+    return statement.where(Sample.id.contains(enquiry))
 
 
 def create_sample(session: Session, sample: Sample) -> Sample:
