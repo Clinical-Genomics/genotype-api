@@ -97,7 +97,7 @@ def read_samples(
 ):
     statement: SelectOfScalar = select(Sample)
     if enquiry:
-        statement: SelectOfScalar = get_samples(statement=statement,enquiry=enquiry)
+        statement: SelectOfScalar = get_samples(statement=statement, enquiry=enquiry)
     if plate_id:
         statement: SelectOfScalar = get_plate_samples(statement=statement, plate_id=plate_id)
     if incomplete:
