@@ -63,9 +63,7 @@ def get_status_missing_samples(statement: SelectOfScalar) -> SelectOfScalar:
     return statement.where(Sample.status == None)
 
 
-def create_analyses_sample_objects(
-    session: Session, analyses: List[Analysis]
-) -> List[Sample]:
+def create_analyses_sample_objects(session: Session, analyses: List[Analysis]) -> List[Sample]:
     """creating samples in an analysis if not already in db"""
     return [
         create_sample(session=session, sample=Sample(id=analysis_obj.sample_id))
