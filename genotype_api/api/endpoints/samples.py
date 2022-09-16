@@ -94,7 +94,8 @@ def read_samples(
     status_missing: Optional[bool] = False,
     session: Session = Depends(get_session),
     current_user: User = Depends(get_active_user),
-):
+) -> List[Sample]:
+    """Returns a list of samples matching the provided filters."""
     statement: SelectOfScalar = select(Sample)
     if enquiry:
         statement: SelectOfScalar = get_samples(statement=statement, enquiry=enquiry)
@@ -106,10 +107,9 @@ def read_samples(
         statement: SelectOfScalar = get_commented_samples(statement=statement)
     if status_missing:
         statement: SelectOfScalar = get_status_missing_samples(statement=statement)
-    samples: List[Sample] = session.exec(
+    return session.exec(
         statement.order_by(Sample.created_at.desc()).offset(skip).limit(limit)
     ).all()
-    return samples
 
 
 @router.post("/", response_model=SampleRead)

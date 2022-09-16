@@ -18,6 +18,7 @@ def get_sample(session: Session, sample_id: str) -> Sample:
 
 
 def get_samples(statement: SelectOfScalar, enquiry: str) -> SelectOfScalar:
+    """Gets samples where the sample id contains the enquiry."""
     return statement.where(Sample.id.contains(enquiry))
 
 
@@ -34,7 +35,7 @@ def create_sample(session: Session, sample: Sample) -> Sample:
 
 
 def get_incomplete_samples(statement: SelectOfScalar) -> SelectOfScalar:
-    """Returning sample query statement for samples with les than two analyses"""
+    """Returning sample query statement for samples with less than two analyses."""
 
     # return statement.join(Analysis).where(func.count(Sample.analyses) < 2)
     return (
