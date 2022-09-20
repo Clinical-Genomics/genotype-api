@@ -87,7 +87,7 @@ def read_sample(
 def read_samples(
     skip: int = 0,
     limit: int = Query(default=10, lte=10),
-    enquiry: Optional[str] = None,
+    sample_id: Optional[str] = None,
     plate_id: Optional[str] = None,
     incomplete: Optional[bool] = False,
     commented: Optional[bool] = False,
@@ -97,8 +97,8 @@ def read_samples(
 ) -> List[Sample]:
     """Returns a list of samples matching the provided filters."""
     statement: SelectOfScalar = select(Sample)
-    if enquiry:
-        statement: SelectOfScalar = get_samples(statement=statement, enquiry=enquiry)
+    if sample_id:
+        statement: SelectOfScalar = get_samples(statement=statement, sample_id=sample_id)
     if plate_id:
         statement: SelectOfScalar = get_plate_samples(statement=statement, plate_id=plate_id)
     if incomplete:
