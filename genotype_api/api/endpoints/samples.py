@@ -28,6 +28,7 @@ from genotype_api.crud.samples import (
     get_sample,
     get_status_missing_samples,
     refresh_sample_status,
+    get_samples,
 )
 from sqlmodel import Session, select
 from sqlmodel.sql.expression import Select, SelectOfScalar
@@ -86,14 +87,18 @@ def read_sample(
 def read_samples(
     skip: int = 0,
     limit: int = Query(default=10, lte=10),
+    sample_id: Optional[str] = None,
     plate_id: Optional[str] = None,
     incomplete: Optional[bool] = False,
     commented: Optional[bool] = False,
     status_missing: Optional[bool] = False,
     session: Session = Depends(get_session),
     current_user: User = Depends(get_active_user),
-):
+) -> List[Sample]:
+    """Returns a list of samples matching the provided filters."""
     statement: SelectOfScalar = select(Sample)
+    if sample_id:
+        statement: SelectOfScalar = get_samples(statement=statement, sample_id=sample_id)
     if plate_id:
         statement: SelectOfScalar = get_plate_samples(statement=statement, plate_id=plate_id)
     if incomplete:
@@ -102,10 +107,9 @@ def read_samples(
         statement: SelectOfScalar = get_commented_samples(statement=statement)
     if status_missing:
         statement: SelectOfScalar = get_status_missing_samples(statement=statement)
-    samples: List[Sample] = session.exec(
+    return session.exec(
         statement.order_by(Sample.created_at.desc()).offset(skip).limit(limit)
     ).all()
-    return samples
 
 
 @router.post("/", response_model=SampleRead)
