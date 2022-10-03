@@ -130,7 +130,7 @@ def update_sex(
     session: Session = Depends(get_session),
     current_user: User = Depends(get_active_user),
 ):
-    """Updating sex field on sample and sample analyses"""
+    """Updating sex field on sample and sample analyses."""
 
     sample_in_db: Sample = get_sample(session=session, sample_id=sample_id)
     sample_in_db.sex = sex
@@ -154,7 +154,7 @@ def update_comment(
     session: Session = Depends(get_session),
     current_user: User = Depends(get_active_user),
 ):
-    """Updating comment field on sample"""
+    """Updating comment field on sample."""
 
     sample_in_db: Sample = get_sample(session=session, sample_id=sample_id)
     sample_in_db.comment = comment
@@ -191,7 +191,7 @@ def match(
     session: Session = Depends(get_session),
     current_user: User = Depends(get_active_user),
 ) -> List[MatchResult]:
-    """Match sample genotype against all other genotypes"""
+    """Match sample genotype against all other genotypes."""
 
     all_genotypes: Analysis = session.query(Analysis).filter(
         Analysis.type == comparison_set,
@@ -243,7 +243,7 @@ def delete_sample(
     session: Session = Depends(get_session),
     current_user: User = Depends(get_active_user),
 ):
-    """Delete sample and its Analyses"""
+    """Delete sample and its Analyses."""
 
     sample: Sample = get_sample(session=session, sample_id=sample_id)
     for analysis in sample.analyses:
