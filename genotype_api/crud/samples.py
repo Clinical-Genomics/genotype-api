@@ -37,10 +37,8 @@ def create_sample(session: Session, sample: Sample) -> Sample:
 def get_incomplete_samples(statement: SelectOfScalar) -> SelectOfScalar:
     """Returning sample query statement for samples with less than two analyses."""
 
-    # return statement.join(Analysis).where(func.count(Sample.analyses) < 2)
     return (
-        statement.join(Analysis)
-        .group_by(Analysis.sample_id)
+        statement.group_by(Analysis.sample_id)
         .order_by(Analysis.created_at)
         .having(func.count(Analysis.sample_id) < 2)
     )
@@ -48,8 +46,7 @@ def get_incomplete_samples(statement: SelectOfScalar) -> SelectOfScalar:
 
 def get_plate_samples(statement: SelectOfScalar, plate_id: str) -> SelectOfScalar:
     """Returning sample query statement for samples analysed on a specific plate"""
-
-    return statement.join(Analysis).where(Analysis.plate_id == plate_id)
+    return statement.where(Analysis.plate_id == plate_id)
 
 
 def get_commented_samples(statement: SelectOfScalar) -> SelectOfScalar:
