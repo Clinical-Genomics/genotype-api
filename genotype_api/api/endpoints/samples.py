@@ -96,7 +96,7 @@ def read_samples(
     current_user: User = Depends(get_active_user),
 ) -> List[Sample]:
     """Returns a list of samples matching the provided filters."""
-    statement: SelectOfScalar = select(Sample).join(Analysis)
+    statement: SelectOfScalar = select(Sample).distinct().join(Analysis)
     if sample_id:
         statement: SelectOfScalar = get_samples(statement=statement, sample_id=sample_id)
     if plate_id:
