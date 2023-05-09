@@ -37,7 +37,6 @@ def delete_user(
     session: Session = Depends(get_session),
     current_user: User = Depends(get_active_user),
 ) -> JSONResponse:
-
     user: User = get_user(session=session, user_id=user_id)
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")

@@ -16,7 +16,6 @@ fileConfig(config.config_file_name)
 
 # add your model's MetaData object here
 # for 'autogenerate' support
-from genotype_api.models import BaseModel
 
 target_metadata = SQLModel.metadata
 

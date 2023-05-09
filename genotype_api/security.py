@@ -16,7 +16,6 @@ import requests
 
 
 def decode_id_token(token: str):
-
     payload = jwt.decode(
         token,
         key=requests.get(security_settings.jwks_uri).json(),
