@@ -208,8 +208,8 @@ class PlateBase(SQLModel):
     plate_id: constr(max_length=16)
     signed_by: Optional[int] = Field(default=None, foreign_key="user.id")
     signed_at: Optional[datetime]
-    method_document: Optional[int] = 1477
-    method_version: Optional[int]
+    method_document: Optional[str] = "1477"
+    method_version: Optional[str]
 
 
 class Plate(PlateBase, table=True):

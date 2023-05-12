@@ -78,8 +78,8 @@ def upload_plate(
 @router.patch("/{plate_id}/sign-off", response_model=Plate)
 def sign_off_plate(
     plate_id: int,
-    method_document: int = Query(...),
-    method_version: int = Query(...),
+    method_document: str = Query(...),
+    method_version: str = Query(...),
     session: Session = Depends(get_session),
     current_user: User = Depends(get_active_user),
 ):
