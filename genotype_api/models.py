@@ -4,6 +4,7 @@ from collections import Counter
 
 
 from pydantic import constr, EmailStr, BaseModel, validator
+from sqlalchemy import Index
 from sqlmodel import SQLModel, Field, Relationship
 
 from genotype_api.constants import TYPES, SEXES, STATUS, CUTOFS
@@ -71,6 +72,8 @@ class GenotypeBase(SQLModel):
 
 
 class Genotype(GenotypeBase, table=True):
+    __tablename__ = "genotype"
+    __table_args__ = (Index("_analysis_rsnumber", "analysis_id", "rsnumber", unique=True),)
     id: Optional[int] = Field(default=None, primary_key=True)
 
     analysis: Optional["Analysis"] = Relationship(back_populates="genotypes")
@@ -105,6 +108,8 @@ class AnalysisBase(SQLModel):
 
 
 class Analysis(AnalysisBase, table=True):
+    __tablename__ = "analysis"
+    __table_args__ = (Index("_sample_type", "sample_id", "type", unique=True),)
     id: Optional[int] = Field(default=None, primary_key=True)
 
     sample: Optional["Sample"] = Relationship(back_populates="analyses")
@@ -136,6 +141,7 @@ class SampleBase(SampleSlim):
 
 
 class Sample(SampleBase, table=True):
+    __tablename__ = "sample"
     id: Optional[constr(max_length=32)] = Field(default=None, primary_key=True)
 
     analyses: Optional[List["Analysis"]] = Relationship(back_populates="sample")
@@ -176,6 +182,7 @@ class SNPBase(SQLModel):
 
 
 class SNP(SNPBase, table=True):
+    __tablename__ = "snp"
     """Represent a SNP position under investigation."""
 
     id: Optional[constr(max_length=32)] = Field(default=None, primary_key=True)
@@ -186,11 +193,12 @@ class SNPRead(SNPBase):
 
 
 class UserBase(SQLModel):
-    email: EmailStr = Field(index=True)
+    email: EmailStr = Field(index=True, unique=True)
     name: Optional[str] = ""
 
 
 class User(UserBase, table=True):
+    __tablename__ = "user"
     id: Optional[int] = Field(default=None, primary_key=True)
     plates: Optional[List["Plate"]] = Relationship(back_populates="user")
 
@@ -205,7 +213,7 @@ class UserCreate(UserBase):
 
 class PlateBase(SQLModel):
     created_at: Optional[datetime] = datetime.now()
-    plate_id: constr(max_length=16)
+    plate_id: str = Field(index=True, const=constr(max_length=16), unique=True)
     signed_by: Optional[int] = Field(default=None, foreign_key="user.id")
     signed_at: Optional[datetime]
     method_document: Optional[str] = "1477"
@@ -213,6 +221,7 @@ class PlateBase(SQLModel):
 
 
 class Plate(PlateBase, table=True):
+    __tablename__ = "plate"
     id: Optional[int] = Field(default=None, primary_key=True)
     user: Optional["User"] = Relationship(back_populates="plates")
     analyses: Optional[List["Analysis"]] = Relationship(back_populates="plate")
