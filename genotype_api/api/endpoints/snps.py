@@ -50,7 +50,8 @@ async def upload_snps(
 
 @router.delete("/")
 def delete_snps(
-    session: Session = Depends(get_session), current_user: User = Depends(get_active_user)
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_active_user),
 ):
     """Delete all SNPs"""
 

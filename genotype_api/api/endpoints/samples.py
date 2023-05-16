@@ -214,7 +214,8 @@ def match(
         if count.get("match", 0) + count.get("unknown", 0) > 40:
             match_results.append(
                 MatchResult(
-                    sample_id=genotype.sample_id, match_results=MatchCounts.parse_obj(count)
+                    sample_id=genotype.sample_id,
+                    match_results=MatchCounts.parse_obj(count),
                 ),
             )
     return match_results

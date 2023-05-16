@@ -38,11 +38,13 @@ class JWTBearer(HTTPBearer):
         credentials: HTTPAuthorizationCredentials = await super(JWTBearer, self).__call__(request)
         if not credentials:
             raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN, detail="Invalid authorization code."
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Invalid authorization code.",
             )
         if credentials.scheme != "Bearer":
             raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN, detail="Invalid authentication scheme."
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Invalid authentication scheme.",
             )
         self.verify_jwt(credentials.credentials)
 
@@ -53,7 +55,8 @@ class JWTBearer(HTTPBearer):
             return decode_id_token(jwtoken)
         except Exception:
             raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN, detail="Invalid token or expired token."
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Invalid token or expired token.",
             )
 
 

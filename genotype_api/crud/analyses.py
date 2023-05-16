@@ -52,7 +52,9 @@ def check_analyses_objects(
     """Raising 400 if any analysis in the list already exist in the database"""
     for analysis_obj in analyses:
         db_analysis: Analysis = get_analysis_type_sample(
-            session=session, sample_id=analysis_obj.sample_id, analysis_type=analysis_type
+            session=session,
+            sample_id=analysis_obj.sample_id,
+            analysis_type=analysis_type,
         )
         if db_analysis:
             session.delete(db_analysis)
