@@ -1,13 +1,12 @@
-from datetime import datetime
-from typing import Optional, List, Dict, Tuple, Type, Any
 from collections import Counter
+from datetime import datetime
+from typing import Any, Dict, List, Optional, Tuple, Type
 
-
-from pydantic import constr, EmailStr, BaseModel, validator
+from pydantic import BaseModel, EmailStr, constr, validator
 from sqlalchemy import Index
-from sqlmodel import SQLModel, Field, Relationship
+from sqlmodel import Field, Relationship, SQLModel
 
-from genotype_api.constants import TYPES, SEXES, STATUS, CUTOFS
+from genotype_api.constants import CUTOFS, SEXES, STATUS, TYPES
 
 
 class PlateStatusCounts(BaseModel):
@@ -216,7 +215,7 @@ class PlateBase(SQLModel):
     plate_id: constr(max_length=16) = Field(index=True, unique=True)
     signed_by: Optional[int] = Field(default=None, foreign_key="user.id")
     signed_at: Optional[datetime]
-    method_document: Optional[str] = "1477"
+    method_document: Optional[str]
     method_version: Optional[str]
 
 
