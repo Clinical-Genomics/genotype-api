@@ -213,7 +213,7 @@ class UserCreate(UserBase):
 
 class PlateBase(SQLModel):
     created_at: Optional[datetime] = datetime.now()
-    plate_id: str = Field(index=True, const=constr(max_length=16), unique=True)
+    plate_id: constr(max_length=16) = Field(index=True, unique=True)
     signed_by: Optional[int] = Field(default=None, foreign_key="user.id")
     signed_at: Optional[datetime]
     method_document: Optional[str] = "1477"
