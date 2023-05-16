@@ -54,7 +54,9 @@ class SequenceAnalysis:
             gt_info: Genotype
             for gt_info in variant_object.genotypes:
                 db_genotype = DBGenotype(
-                    rsnumber=variant_object.id, allele_1=gt_info.allele_1, allele_2=gt_info.allele_2
+                    rsnumber=variant_object.id,
+                    allele_1=gt_info.allele_1,
+                    allele_2=gt_info.allele_2,
                 )
                 analyses[gt_info.sample_id].genotypes.append(db_genotype)
         return [analysis for analysis in analyses.values()]

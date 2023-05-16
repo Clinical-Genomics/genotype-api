@@ -12,7 +12,10 @@ from genotype_api.crud.analyses import (
     get_analyses_from_plate,
     check_analyses_objects,
 )
-from genotype_api.crud.samples import create_analyses_sample_objects, refresh_sample_status
+from genotype_api.crud.samples import (
+    create_analyses_sample_objects,
+    refresh_sample_status,
+)
 from genotype_api.crud.plates import create_plate, get_plate
 from genotype_api.crud.users import get_user_by_email
 from genotype_api.database import get_session
@@ -61,7 +64,9 @@ def upload_plate(
         )
 
     excel_parser = GenotypeAnalysis(
-        excel_file=BytesIO(file.file.read()), file_name=str(file_name), include_key="-CG-"
+        excel_file=BytesIO(file.file.read()),
+        file_name=str(file_name),
+        include_key="-CG-",
     )
     analyses: List[Analysis] = list(excel_parser.generate_analyses())
     check_analyses_objects(session=session, analyses=analyses, analysis_type="genotype")
@@ -106,7 +111,12 @@ def sign_off_plate(
     response_model_exclude={
         "analyses": {
             "__all__": {
-                "sample": {"analyses": True, "created_at": True, "sex": True, "id": True},
+                "sample": {
+                    "analyses": True,
+                    "created_at": True,
+                    "sex": True,
+                    "id": True,
+                },
                 "source": True,
                 "created_at": True,
                 "type": True,
@@ -165,5 +175,6 @@ def delete_plate(
     session.commit()
 
     return JSONResponse(
-        f"Deleted plate: {plate_id} and analyses: {analyse_ids}", status_code=status.HTTP_200_OK
+        f"Deleted plate: {plate_id} and analyses: {analyse_ids}",
+        status_code=status.HTTP_200_OK,
     )
