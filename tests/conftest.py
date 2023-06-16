@@ -27,3 +27,8 @@ def fixture_include_key() -> str:
 def fixture_sample_name() -> str:
     """Return a sample name"""
     return "sample"
+
+@pytest.fixture(name="sample_id")
+def fixture_sample_id() -> str:
+    """Return a sample name"""
+    return "sample_id"
