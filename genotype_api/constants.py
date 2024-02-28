@@ -1,4 +1,5 @@
 """Constants used over the package"""
+
 from enum import Enum
 from pydantic import BaseModel
 

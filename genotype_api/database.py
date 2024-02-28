@@ -1,4 +1,5 @@
 """Hold the database information"""
+
 from sqlmodel import Session, SQLModel, create_engine
 
 from genotype_api.config import settings

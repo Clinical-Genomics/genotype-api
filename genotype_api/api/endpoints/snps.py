@@ -1,4 +1,5 @@
 """Routes for the snps"""
+
 from genotype_api.models import SNP, User
 from typing import List
 
