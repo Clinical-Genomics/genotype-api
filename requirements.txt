@@ -18,6 +18,5 @@ python-jose[cryptography]
 bcrypt
 numpy
 aiofiles
-sendmail-container==0.2.0
 python-dotenv
 google-auth
