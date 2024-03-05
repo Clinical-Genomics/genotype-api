@@ -18,6 +18,7 @@ pydantic==1.10.14
 pymysql
 python-dotenv
 python-jose[cryptography]
+python-multipart
 pyyaml
 requests
 sqlmodel
