@@ -1,4 +1,5 @@
 """Routes for analysis"""
+
 from pathlib import Path
 from typing import List
 

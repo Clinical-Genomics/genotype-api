@@ -2,6 +2,7 @@
 Main functions for the genotype api
 
 """
+
 from fastapi import FastAPI, status, Request
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware

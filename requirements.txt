@@ -1,5 +1,3 @@
-
-# server stuff
 SQLAlchemy==1.4.30
 aiofiles
 bcrypt
