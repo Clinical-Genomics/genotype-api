@@ -1,6 +1,5 @@
 FROM docker.io/library/python:3.11-slim-bullseye as base
 
-LABEL base_image="python:3.11-slim"
 LABEL about.home="https://github.com/Clinical-Genomics/genotype-api"
 LABEL about.tags="CG Core database and API"
 
