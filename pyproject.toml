@@ -1,0 +1,47 @@
+[tool.poetry]
+name = "genotype-api"
+version = "2.0.7"
+description = "Genotype is a tool to validate integrity and sex of samples."
+authors = ["Your Name <you@example.com>"]
+license = "MIT License"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+sqlalchemy = ">=2.0.0"
+aiofiles = "^23.2.1"
+bcrypt = "^4.1.2"
+bump2version = "^1.0.1"
+click = "^8.1.7"
+coloredlogs = "^15.0.1"
+email-validator = "^2.1.1"
+fastapi = "0.75.0"
+google-auth = "^2.28.1"
+gunicorn = "^21.2.0"
+httptools = "^0.6.1"
+numpy = "^1.26.4"
+openpyxl = "^3.1.2"
+passlib = "^1.7.4"
+pydantic = "1.10.14"
+pymysql = "^1.1.0"
+python-dotenv = "^1.0.1"
+python-jose = {extras = ["cryptography"], version = "^3.3.0"}
+python-multipart = "^0.0.9"
+pyyaml = "^6.0.1"
+requests = "^2.31.0"
+sqlmodel = "^0.0.16"
+uvicorn = "^0.27.1"
+uvloop = "^0.19.0"
+
+
+[tool.poetry.group.dev.dependencies]
+bump2version = "^1.0.1"
+coveralls = "^3.3.1"
+pre-commit = "^3.6.2"
+pylint = "^3.1.0"
+pytest-cov = "^4.1.0"
+pytest = ">=5.2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

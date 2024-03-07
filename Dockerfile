@@ -21,10 +21,10 @@ WORKDIR /home/worker/app
 COPY . /home/worker/app
 
 # Install app requirements
-RUN pip install -r requirements.txt
+RUN pip install poetry
+RUN poetry config virtualenvs.create false \
+  && poetry install
 
-# Install app
-RUN pip install -e .
 
 CMD gunicorn \
     --workers=$GUNICORN_WORKERS \
