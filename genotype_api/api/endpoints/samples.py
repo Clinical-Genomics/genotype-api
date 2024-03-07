@@ -1,33 +1,34 @@
 from typing import List, Optional, Literal
 from fastapi import APIRouter, Depends, Query
 from fastapi.responses import JSONResponse
-from datetime import datetime, timedelta, date
+from datetime import timedelta, date
 from starlette import status
 
+import genotype_api.database.crud.create
 from genotype_api.constants import SEXES
 from genotype_api.database import get_session
 from genotype_api.match import check_sample
 from genotype_api.models import (
-    Sample,
-    SampleReadWithAnalysis,
-    SampleRead,
-    User,
     SampleDetail,
-    Analysis,
     MatchResult,
     MatchCounts,
+)
+from genotype_api.database.models.models import (
+    Analysis,
+    Sample,
+    SampleRead,
+    User,
     SampleReadWithAnalysisDeep,
     compare_genotypes,
 )
 from collections import Counter
-from genotype_api import crud
-from genotype_api.crud.samples import (
+from genotype_api.database.crud.update import refresh_sample_status
+from genotype_api.database.crud.read import (
     get_incomplete_samples,
     get_plate_samples,
     get_commented_samples,
-    get_sample,
     get_status_missing_samples,
-    refresh_sample_status,
+    get_sample,
     get_samples,
 )
 from sqlmodel import Session, select
@@ -118,7 +119,7 @@ def create_sample(
     session: Session = Depends(get_session),
     current_user: User = Depends(get_active_user),
 ):
-    return crud.samples.create_sample(session=session, sample=sample)
+    return genotype_api.database.database.crud.create.create_sample(session=session, sample=sample)
 
 
 @router.put("/{sample_id}/sex", response_model=SampleRead)

@@ -8,9 +8,9 @@ from starlette import status
 from starlette.requests import Request
 
 from genotype_api.database import get_session
-from genotype_api.models import User
+from genotype_api.database.models.models import User
 from genotype_api.config import security_settings
-from genotype_api.crud.users import get_user_by_email
+from genotype_api.database.crud.read import get_user_by_email
 from jose import jwt
 import requests
 

@@ -1,15 +1,15 @@
 """Routes for users"""
 
-from typing import List, Optional
+from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import EmailStr
 from starlette import status
 from starlette.responses import JSONResponse
 
-from genotype_api.crud.users import get_user
+from genotype_api.database.crud.read import get_user
 from genotype_api.database import get_session
-from genotype_api.models import User, UserRead, UserCreate, UserReadWithPlates
+from genotype_api.database.models.models import User, UserRead, UserCreate, UserReadWithPlates
 from sqlmodel import Session, select
 
 from genotype_api.security import get_active_user

@@ -6,18 +6,17 @@ from typing import List
 from fastapi import APIRouter, Depends, status, Query, UploadFile, File
 from fastapi.responses import JSONResponse
 
-from genotype_api.crud.analyses import (
-    get_analysis,
-    check_analyses_objects,
-    create_analysis,
-)
-from genotype_api.crud.samples import (
-    create_analyses_sample_objects,
-    refresh_sample_status,
-)
+from genotype_api.database.crud.read import get_analysis, check_analyses_objects
+from genotype_api.database.crud.create import create_analysis, create_analyses_sample_objects
+from genotype_api.database.crud.update import refresh_sample_status
 from genotype_api.database import get_session
 from genotype_api.file_parsing.files import check_file
-from genotype_api.models import Analysis, AnalysisRead, AnalysisReadWithGenotype, User
+from genotype_api.database.models.models import (
+    Analysis,
+    AnalysisRead,
+    User,
+    AnalysisReadWithGenotype,
+)
 from sqlmodel import Session, select
 
 from genotype_api.security import get_active_user
