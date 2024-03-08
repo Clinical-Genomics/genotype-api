@@ -1,12 +1,12 @@
 import logging
-list[, Optional
+from typing import Optional
 
 from sqlalchemy import func
 from sqlmodel import Session, select
+from sqlmodel.sql.expression import Select, SelectOfScalar
 
 from genotype_api.constants import TYPES
-from genotype_api.database.models.models import Analysis, Sample, User, Plate
-from sqlmodel.sql.expression import Select, SelectOfScalar
+from genotype_api.database.models.models import Analysis, Plate, Sample, User
 
 SelectOfScalar.inherit_cache = True
 Select.inherit_cache = True
