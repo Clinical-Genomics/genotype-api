@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "genotype-api"
-version = "2.0.7"
+version = "2.0.8"
 description = "Genotype is a tool to validate integrity and sex of samples."
 authors = ["Your Name <you@example.com>"]
 license = "MIT License"
