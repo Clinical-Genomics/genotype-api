@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Optional
 
 from pydantic import BaseModel, validator
 from sqlmodel import Field
@@ -35,7 +35,7 @@ class SampleDetail(BaseModel):
     matches: Optional[int]
     mismatches: Optional[int]
     unknown: Optional[int]
-    failed_snps: Optional[List[str]]
+    failed_snps: Optional[list[str]]
 
     stats: Optional[SampleDetailStats]
     status: Optional[SampleDetailStatus]

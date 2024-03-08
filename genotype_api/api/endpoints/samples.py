@@ -1,4 +1,4 @@
-from typing import List, Optional, Literal
+from typing import Optional, Literal
 from fastapi import APIRouter, Depends, Query
 from fastapi.responses import JSONResponse
 from datetime import timedelta, date
@@ -71,7 +71,7 @@ def read_sample(
 
 @router.get(
     "/",
-    response_model=List[SampleReadWithAnalysisDeep],
+    response_model=list[SampleReadWithAnalysisDeep],
     response_model_by_alias=False,
     response_model_exclude={
         "analyses": {"__all__": {"genotypes": True, "source": True, "created_at": True}},
@@ -95,7 +95,7 @@ def read_samples(
     status_missing: Optional[bool] = False,
     session: Session = Depends(get_session),
     current_user: User = Depends(get_active_user),
-) -> List[Sample]:
+) -> list[Sample]:
     """Returns a list of samples matching the provided filters."""
     statement: SelectOfScalar = select(Sample).distinct().join(Analysis)
     if sample_id:
@@ -182,7 +182,7 @@ def set_sample_status(
     return sample
 
 
-@router.get("/{sample_id}/match", response_model=List[MatchResult])
+@router.get("/{sample_id}/match", response_model=list[MatchResult])
 def match(
     sample_id: str,
     analysis_type: Literal["genotype", "sequence"],
@@ -191,7 +191,7 @@ def match(
     date_max: Optional[date] = date.max,
     session: Session = Depends(get_session),
     current_user: User = Depends(get_active_user),
-) -> List[MatchResult]:
+) -> list[MatchResult]:
     """Match sample genotype against all other genotypes."""
 
     all_genotypes: Analysis = session.query(Analysis).filter(

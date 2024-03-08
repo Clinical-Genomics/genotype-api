@@ -1,5 +1,4 @@
 import logging
-from typing import List
 
 from fastapi import HTTPException
 from sqlmodel import Session
@@ -49,7 +48,7 @@ def create_sample(session: Session, sample: Sample) -> Sample:
     return sample
 
 
-def create_analyses_sample_objects(session: Session, analyses: List[Analysis]) -> List[Sample]:
+def create_analyses_sample_objects(session: Session, analyses: list[Analysis]) -> list[Sample]:
     """creating samples in an analysis if not already in db."""
     return [
         create_sample(session=session, sample=Sample(id=analysis_obj.sample_id))

@@ -3,7 +3,7 @@
 from datetime import datetime
 from io import BytesIO
 from pathlib import Path
-from typing import List, Optional, Literal
+from typing import Optional, Literal
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, Query, status
 from sqlalchemy import desc, asc
@@ -66,7 +66,7 @@ def upload_plate(
         file_name=str(file_name),
         include_key="-CG-",
     )
-    analyses: List[Analysis] = list(excel_parser.generate_analyses())
+    analyses: list[Analysis] = list(excel_parser.generate_analyses())
     check_analyses_objects(session=session, analyses=analyses, analysis_type="genotype")
     create_analyses_sample_objects(session=session, analyses=analyses)
     plate_obj = PlateCreate(plate_id=plate_id)
@@ -136,7 +136,7 @@ def read_plate(
 
 @router.get(
     "/",
-    response_model=List[PlateReadWithAnalysisDetail],
+    response_model=list[PlateReadWithAnalysisDetail],
     response_model_exclude={"analyses"},
     response_model_by_alias=False,
 )
@@ -150,7 +150,7 @@ async def read_plates(
 ):
     """Display all plates"""
     sort_func = desc if sort_order == "descend" else asc
-    plates: List[Plate] = session.exec(
+    plates: list[Plate] = session.exec(
         select(Plate).order_by(sort_func(order_by)).offset(skip).limit(limit)
     ).all()
 
@@ -165,7 +165,7 @@ def delete_plate(
 ):
     """Delete plate."""
     plate = session.get(Plate, plate_id)
-    analyses: List[Analysis] = get_analyses_from_plate(session=session, plate_id=plate_id)
+    analyses: list[Analysis] = get_analyses_from_plate(session=session, plate_id=plate_id)
     analyse_ids = [analyse.id for analyse in analyses]
     for analysis in analyses:
         session.delete(analysis)

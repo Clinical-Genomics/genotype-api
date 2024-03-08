@@ -2,7 +2,7 @@
 
 import logging
 from pathlib import Path
-from typing import ByteString, Iterable, List, Optional
+from typing import ByteString, Iterable, Optional
 
 import openpyxl
 from genotype_api.exceptions import SexConflictError
@@ -31,20 +31,20 @@ class GenotypeAnalysis:
         self.wb: Workbook = openpyxl.load_workbook(filename=excel_file)
         self.include_key: Optional[str] = include_key
         self.work_sheet: Worksheet = self.find_sheet(excel_db=self.wb)
-        self.header_row: List[str] = self.get_header_cols(self.work_sheet)
+        self.header_row: list[str] = self.get_header_cols(self.work_sheet)
         self.snp_start: int = GenotypeAnalysis.find_column(self.header_row, pattern="rs")
         self.sex_start: int = GenotypeAnalysis.find_column(self.header_row, pattern="ZF_")
         self.sex_cols: slice = slice(self.sex_start, self.sex_start + 3)
-        self.rs_numbers: List[str] = self.header_row[self.snp_start :]
+        self.rs_numbers: list[str] = self.header_row[self.snp_start :]
 
     @staticmethod
-    def get_header_cols(sheet: Worksheet) -> List[str]:
+    def get_header_cols(sheet: Worksheet) -> list[str]:
         return [col.value for col in sheet[1]]
 
     @staticmethod
     def find_sheet(excel_db: Workbook, sheet_nr: int = -1) -> Worksheet:
         """Fetch the sheet nr from the database"""
-        work_sheets: List[str] = excel_db.sheetnames
+        work_sheets: list[str] = excel_db.sheetnames
         sheet_name: str = work_sheets[sheet_nr]
         LOG.info("Using sheet named %s", sheet_name)
         sheet = excel_db[sheet_name]
@@ -52,7 +52,7 @@ class GenotypeAnalysis:
         return sheet
 
     @staticmethod
-    def find_column(header_row: List[str], pattern="rs") -> int:
+    def find_column(header_row: list[str], pattern="rs") -> int:
         """Find the first column in a row that matches a pattern."""
         LOG.debug("Fetching column with %s", pattern)
         for index, column in enumerate(header_row):
@@ -73,7 +73,7 @@ class GenotypeAnalysis:
     def generate_analyses(self) -> Iterable[Analysis]:
         """Loop over the rows and create one analysis for each individual"""
         nr_row: int
-        row: List[str]
+        row: list[str]
         for nr_row, row in enumerate(self.work_sheet.iter_rows()):
             if nr_row == 0:
                 continue
@@ -104,7 +104,7 @@ class GenotypeAnalysis:
         return Genotype(rsnumber=rs_id, allele_1=alleles[0], allele_2=alleles[1])
 
     @staticmethod
-    def parse_sex(sex_cells: List[str]) -> str:
+    def parse_sex(sex_cells: list[str]) -> str:
         """Parse the sex prediction from a sample row."""
         predictions = set()
         # first marker

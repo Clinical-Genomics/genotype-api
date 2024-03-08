@@ -1,5 +1,5 @@
 import logging
-from typing import List, Optional
+list[, Optional
 
 from sqlalchemy import func
 from sqlmodel import Session, select
@@ -14,7 +14,7 @@ Select.inherit_cache = True
 LOG = logging.getLogger(__name__)
 
 
-def get_analyses_from_plate(plate_id: int, session: Session) -> List[Analysis]:
+def get_analyses_from_plate(plate_id: int, session: Session) -> list[Analysis]:
     statement = select(Analysis).where(Analysis.plate_id == plate_id)
     return session.exec(statement).all()
 
@@ -91,13 +91,13 @@ def get_user_by_email(session: Session, email: str) -> Optional[User]:
     return session.exec(statement).first()
 
 
-def get_users(session: Session, skip: int = 0, limit: int = 100) -> List[User]:
+def get_users(session: Session, skip: int = 0, limit: int = 100) -> list[User]:
     statement = select(User).offset(skip).limit(limit)
     return session.exec(statement).all()
 
 
 def check_analyses_objects(
-    session: Session, analyses: List[Analysis], analysis_type: TYPES
+    session: Session, analyses: list[Analysis], analysis_type: TYPES
 ) -> None:
     """Raising 400 if any analysis in the list already exist in the database"""
     for analysis_obj in analyses:

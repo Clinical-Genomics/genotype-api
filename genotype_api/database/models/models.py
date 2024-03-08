@@ -1,6 +1,6 @@
 from collections import Counter
 from datetime import datetime
-from typing import Optional, List, Dict, Tuple
+from typing import Optional
 
 from pydantic import constr, EmailStr, validator
 from sqlalchemy import Index
@@ -25,7 +25,7 @@ class Genotype(GenotypeBase, table=True):
     analysis: Optional["Analysis"] = Relationship(back_populates="genotypes")
 
     @property
-    def alleles(self) -> List[str]:
+    def alleles(self) -> list[str]:
         """Return sorted because we are not dealing with phased data."""
 
         return sorted([self.allele_1, self.allele_2])
@@ -59,10 +59,10 @@ class Analysis(AnalysisBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
 
     sample: Optional["Sample"] = Relationship(back_populates="analyses")
-    plate: Optional[List["Plate"]] = Relationship(back_populates="analyses")
-    genotypes: Optional[List["Genotype"]] = Relationship(back_populates="analysis")
+    plate: Optional[list["Plate"]] = Relationship(back_populates="analyses")
+    genotypes: Optional[list["Genotype"]] = Relationship(back_populates="analysis")
 
-    def check_no_calls(self) -> Dict[str, int]:
+    def check_no_calls(self) -> dict[str, int]:
         """Check that genotypes look ok."""
         calls = ["known" if genotype.is_ok else "unknown" for genotype in self.genotypes]
         return Counter(calls)
@@ -90,7 +90,7 @@ class Sample(SampleBase, table=True):
     __tablename__ = "sample"
     id: Optional[constr(max_length=32)] = Field(default=None, primary_key=True)
 
-    analyses: Optional[List["Analysis"]] = Relationship(back_populates="sample")
+    analyses: Optional[list["Analysis"]] = Relationship(back_populates="sample")
 
     @property
     def genotype_analysis(self) -> Optional[Analysis]:
@@ -146,7 +146,7 @@ class UserBase(SQLModel):
 class User(UserBase, table=True):
     __tablename__ = "user"
     id: Optional[int] = Field(default=None, primary_key=True)
-    plates: Optional[List["Plate"]] = Relationship(back_populates="user")
+    plates: Optional[list["Plate"]] = Relationship(back_populates="user")
 
 
 class UserRead(UserBase):
@@ -170,7 +170,7 @@ class Plate(PlateBase, table=True):
     __tablename__ = "plate"
     id: Optional[int] = Field(default=None, primary_key=True)
     user: Optional["User"] = Relationship(back_populates="plates")
-    analyses: Optional[List["Analysis"]] = Relationship(back_populates="plate")
+    analyses: Optional[list["Analysis"]] = Relationship(back_populates="plate")
 
 
 class PlateRead(PlateBase):
@@ -179,23 +179,23 @@ class PlateRead(PlateBase):
 
 
 class PlateCreate(PlateBase):
-    analyses: Optional[List[Analysis]] = []
+    analyses: Optional[list[Analysis]] = []
 
 
 class UserReadWithPlates(UserRead):
-    plates: Optional[List[Plate]] = []
+    plates: Optional[list[Plate]] = []
 
 
 class SampleReadWithAnalysis(SampleRead):
-    analyses: Optional[List[AnalysisRead]] = []
+    analyses: Optional[list[AnalysisRead]] = []
 
 
 class AnalysisReadWithGenotype(AnalysisRead):
-    genotypes: Optional[List[Genotype]] = []
+    genotypes: Optional[list[Genotype]] = []
 
 
 class SampleReadWithAnalysisDeep(SampleRead):
-    analyses: Optional[List[AnalysisReadWithGenotype]] = []
+    analyses: Optional[list[AnalysisReadWithGenotype]] = []
     detail: Optional[SampleDetail]
 
     @validator("detail")
@@ -224,7 +224,7 @@ class AnalysisReadWithSample(AnalysisRead):
     sample: Optional[SampleSlim]
 
 
-def compare_genotypes(genotype_1: Genotype, genotype_2: Genotype) -> Tuple[str, str]:
+def compare_genotypes(genotype_1: Genotype, genotype_2: Genotype) -> tuple[str, str]:
     """Compare two genotypes if they have the same alleles."""
 
     if "0" in genotype_1.alleles or "0" in genotype_2.alleles:
@@ -240,11 +240,11 @@ class AnalysisReadWithSampleDeep(AnalysisRead):
 
 
 class PlateReadWithAnalyses(PlateRead):
-    analyses: Optional[List[AnalysisReadWithSample]] = []
+    analyses: Optional[list[AnalysisReadWithSample]] = []
 
 
 class PlateReadWithAnalysisDetail(PlateRead):
-    analyses: Optional[List[AnalysisReadWithSample]] = []
+    analyses: Optional[list[AnalysisReadWithSample]] = []
     detail: Optional[PlateStatusCounts]
 
     @validator("detail")
@@ -260,7 +260,7 @@ class PlateReadWithAnalysisDetail(PlateRead):
 
 
 class PlateReadWithAnalysisDetailSingle(PlateRead):
-    analyses: Optional[List[AnalysisReadWithSample]] = []
+    analyses: Optional[list[AnalysisReadWithSample]] = []
     detail: Optional[PlateStatusCounts]
 
     @validator("detail")
