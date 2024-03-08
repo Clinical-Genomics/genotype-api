@@ -1,4 +1,4 @@
-SQLAlchemy==1.4.30
+SQLAlchemy>=2.0.0
 aiofiles
 bcrypt
 bump2version
