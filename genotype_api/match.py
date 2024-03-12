@@ -2,11 +2,9 @@
 
 import logging
 from genotype_api.models import (
-    Sample,
     SampleDetail,
-    check_sex,
-    check_snps,
 )
+from genotype_api.database.models import Sample, check_snps, check_sex
 
 log = logging.getLogger(__name__)
 

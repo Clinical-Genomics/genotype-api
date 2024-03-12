@@ -2,7 +2,7 @@
 
 from typing import Dict, Iterable, List, TextIO
 
-from genotype_api.models import Analysis, Genotype as DBGenotype
+from genotype_api.database.models import Genotype as DBGenotype, Analysis
 from pydantic import BaseModel
 
 

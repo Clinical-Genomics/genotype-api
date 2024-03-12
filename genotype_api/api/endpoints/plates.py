@@ -9,26 +9,23 @@ from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, Query, 
 from sqlalchemy import desc, asc
 from sqlmodel import Session, select
 
-from genotype_api.crud.analyses import (
+from genotype_api.database.crud.read import (
     get_analyses_from_plate,
+    get_plate,
+    get_user_by_email,
     check_analyses_objects,
 )
-from genotype_api.crud.samples import (
-    create_analyses_sample_objects,
-    refresh_sample_status,
-)
-from genotype_api.crud.plates import create_plate, get_plate
-from genotype_api.crud.users import get_user_by_email
-from genotype_api.database import get_session
+from genotype_api.database.crud.update import refresh_sample_status
+from genotype_api.database.crud.create import create_plate, create_analyses_sample_objects
+from genotype_api.database.session_handler import get_session
 from genotype_api.file_parsing.excel import GenotypeAnalysis
 from genotype_api.file_parsing.files import check_file
-from genotype_api.models import (
-    Plate,
-    PlateReadWithAnalyses,
+from genotype_api.database.models import (
     Analysis,
-    PlateCreate,
     User,
-    PlateRead,
+    Plate,
+    PlateCreate,
+    PlateReadWithAnalyses,
     PlateReadWithAnalysisDetail,
     PlateReadWithAnalysisDetailSingle,
 )
