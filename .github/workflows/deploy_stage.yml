@@ -24,4 +24,5 @@ jobs:
             "ref": "${{ github.event.inputs.branch_name }}",
             "environment": "stage",
             "auto_merge": false,
-            "description": "genotype-api"}'
+            "description": "genotype-api"
+          }'
