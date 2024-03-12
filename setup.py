@@ -13,7 +13,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name="genotype_api",
-    version="2.0.7",
+    version="2.0.8",
     description="",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -29,5 +29,5 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    python_requires=">=3.10",
+    python_requires=">=3.11",
 )
