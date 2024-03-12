@@ -3,34 +3,30 @@
 from datetime import datetime
 from io import BytesIO
 from pathlib import Path
-from typing import List, Optional, Literal
+from typing import Literal, Optional
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, Query, status
-from sqlalchemy import desc, asc
+from fastapi import (APIRouter, Depends, File, HTTPException, Query,
+                     UploadFile, status)
+from fastapi.responses import JSONResponse
+from sqlalchemy import asc, desc
 from sqlmodel import Session, select
+from sqlmodel.sql.expression import Select, SelectOfScalar
 
-from genotype_api.database.crud.read import (
-    get_analyses_from_plate,
-    get_plate,
-    get_user_by_email,
-    check_analyses_objects,
-)
+from genotype_api.database.crud.create import (create_analyses_sample_objects,
+                                               create_plate)
+from genotype_api.database.crud.read import (check_analyses_objects,
+                                             get_analyses_from_plate,
+                                             get_plate, get_user_by_email)
 from genotype_api.database.crud.update import refresh_sample_status
-from genotype_api.database.crud.create import create_plate, create_analyses_sample_objects
+from genotype_api.database.models import (Analysis, Plate, PlateCreate,
+                                          PlateReadWithAnalyses,
+                                          PlateReadWithAnalysisDetail,
+                                          PlateReadWithAnalysisDetailSingle,
+                                          User)
 from genotype_api.database.session_handler import get_session
 from genotype_api.file_parsing.excel import GenotypeAnalysis
 from genotype_api.file_parsing.files import check_file
-from genotype_api.database.models import (
-    Analysis,
-    User,
-    Plate,
-    PlateCreate,
-    PlateReadWithAnalyses,
-    PlateReadWithAnalysisDetail,
-    PlateReadWithAnalysisDetailSingle,
-)
 from genotype_api.security import get_active_user
-from sqlmodel.sql.expression import Select, SelectOfScalar
 
 SelectOfScalar.inherit_cache = True
 Select.inherit_cache = True
@@ -41,9 +37,6 @@ router = APIRouter()
 def get_plate_id_from_file(file_name: Path) -> str:
     # Get the plate id from the standardized name of the plate
     return file_name.name.split("_", 1)[0]
-
-
-from fastapi.responses import JSONResponse
 
 
 @router.post("/plate", response_model=PlateReadWithAnalyses)
@@ -66,7 +59,7 @@ def upload_plate(
         file_name=str(file_name),
         include_key="-CG-",
     )
-    analyses: List[Analysis] = list(excel_parser.generate_analyses())
+    analyses: list[Analysis] = list(excel_parser.generate_analyses())
     check_analyses_objects(session=session, analyses=analyses, analysis_type="genotype")
     create_analyses_sample_objects(session=session, analyses=analyses)
     plate_obj = PlateCreate(plate_id=plate_id)
@@ -136,7 +129,7 @@ def read_plate(
 
 @router.get(
     "/",
-    response_model=List[PlateReadWithAnalysisDetail],
+    response_model=list[PlateReadWithAnalysisDetail],
     response_model_exclude={"analyses"},
     response_model_by_alias=False,
 )
@@ -150,7 +143,7 @@ async def read_plates(
 ):
     """Display all plates"""
     sort_func = desc if sort_order == "descend" else asc
-    plates: List[Plate] = session.exec(
+    plates: list[Plate] = session.exec(
         select(Plate).order_by(sort_func(order_by)).offset(skip).limit(limit)
     ).all()
 
@@ -165,7 +158,7 @@ def delete_plate(
 ):
     """Delete plate."""
     plate = session.get(Plate, plate_id)
-    analyses: List[Analysis] = get_analyses_from_plate(session=session, plate_id=plate_id)
+    analyses: list[Analysis] = get_analyses_from_plate(session=session, plate_id=plate_id)
     analyse_ids = [analyse.id for analyse in analyses]
     for analysis in analyses:
         session.delete(analysis)

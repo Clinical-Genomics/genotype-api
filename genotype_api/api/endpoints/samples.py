@@ -1,38 +1,27 @@
-from typing import List, Optional, Literal
+from collections import Counter
+from datetime import date, timedelta
+from typing import Literal, Optional
+
 from fastapi import APIRouter, Depends, Query
 from fastapi.responses import JSONResponse
-from datetime import timedelta, date
+from sqlmodel import Session, select
+from sqlmodel.sql.expression import Select, SelectOfScalar
 from starlette import status
 
 import genotype_api.database.crud.create
 from genotype_api.constants import SEXES
+from genotype_api.database.crud.read import (get_commented_samples,
+                                             get_incomplete_samples,
+                                             get_plate_samples, get_sample,
+                                             get_samples,
+                                             get_status_missing_samples)
+from genotype_api.database.crud.update import refresh_sample_status
+from genotype_api.database.models import (Analysis, Sample, SampleRead,
+                                          SampleReadWithAnalysisDeep, User,
+                                          compare_genotypes)
 from genotype_api.database.session_handler import get_session
 from genotype_api.match import check_sample
-from genotype_api.models import (
-    SampleDetail,
-    MatchResult,
-    MatchCounts,
-)
-from genotype_api.database.models import (
-    Analysis,
-    Sample,
-    SampleRead,
-    User,
-    SampleReadWithAnalysisDeep,
-    compare_genotypes,
-)
-from collections import Counter
-from genotype_api.database.crud.update import refresh_sample_status
-from genotype_api.database.crud.read import (
-    get_incomplete_samples,
-    get_plate_samples,
-    get_commented_samples,
-    get_status_missing_samples,
-    get_sample,
-    get_samples,
-)
-from sqlmodel import Session, select
-from sqlmodel.sql.expression import Select, SelectOfScalar
+from genotype_api.models import MatchCounts, MatchResult, SampleDetail
 from genotype_api.security import get_active_user
 
 SelectOfScalar.inherit_cache = True
@@ -71,7 +60,7 @@ def read_sample(
 
 @router.get(
     "/",
-    response_model=List[SampleReadWithAnalysisDeep],
+    response_model=list[SampleReadWithAnalysisDeep],
     response_model_by_alias=False,
     response_model_exclude={
         "analyses": {"__all__": {"genotypes": True, "source": True, "created_at": True}},
@@ -95,7 +84,7 @@ def read_samples(
     status_missing: Optional[bool] = False,
     session: Session = Depends(get_session),
     current_user: User = Depends(get_active_user),
-) -> List[Sample]:
+) -> list[Sample]:
     """Returns a list of samples matching the provided filters."""
     statement: SelectOfScalar = select(Sample).distinct().join(Analysis)
     if sample_id:
@@ -182,7 +171,7 @@ def set_sample_status(
     return sample
 
 
-@router.get("/{sample_id}/match", response_model=List[MatchResult])
+@router.get("/{sample_id}/match", response_model=list[MatchResult])
 def match(
     sample_id: str,
     analysis_type: Literal["genotype", "sequence"],
@@ -191,7 +180,7 @@ def match(
     date_max: Optional[date] = date.max,
     session: Session = Depends(get_session),
     current_user: User = Depends(get_active_user),
-) -> List[MatchResult]:
+) -> list[MatchResult]:
     """Match sample genotype against all other genotypes."""
 
     all_genotypes: Analysis = session.query(Analysis).filter(

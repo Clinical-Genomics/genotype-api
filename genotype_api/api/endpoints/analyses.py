@@ -1,27 +1,23 @@
 """Routes for analysis"""
 
 from pathlib import Path
-from typing import List
 
-from fastapi import APIRouter, Depends, status, Query, UploadFile, File
+from fastapi import APIRouter, Depends, File, Query, UploadFile, status
 from fastapi.responses import JSONResponse
+from sqlmodel import Session, select
+from sqlmodel.sql.expression import Select, SelectOfScalar
 
-from genotype_api.database.crud.read import get_analysis, check_analyses_objects
-from genotype_api.database.crud.create import create_analysis, create_analyses_sample_objects
+from genotype_api.database.crud.create import (create_analyses_sample_objects,
+                                               create_analysis)
+from genotype_api.database.crud.read import (check_analyses_objects,
+                                             get_analysis)
 from genotype_api.database.crud.update import refresh_sample_status
+from genotype_api.database.models import (Analysis, AnalysisRead,
+                                          AnalysisReadWithGenotype, User)
 from genotype_api.database.session_handler import get_session
 from genotype_api.file_parsing.files import check_file
-from genotype_api.database.models import (
-    Analysis,
-    AnalysisRead,
-    User,
-    AnalysisReadWithGenotype,
-)
-from sqlmodel import Session, select
-
-from genotype_api.security import get_active_user
 from genotype_api.file_parsing.vcf import SequenceAnalysis
-from sqlmodel.sql.expression import Select, SelectOfScalar
+from genotype_api.security import get_active_user
 
 SelectOfScalar.inherit_cache = True
 Select.inherit_cache = True
@@ -40,15 +36,15 @@ def read_analysis(
     return get_analysis(session=session, analysis_id=analysis_id)
 
 
-@router.get("/", response_model=List[AnalysisRead])
+@router.get("/", response_model=list[AnalysisRead])
 def read_analyses(
     skip: int = 0,
     limit: int = Query(default=100, lte=100),
     session: Session = Depends(get_session),
     current_user: User = Depends(get_active_user),
-) -> List[Analysis]:
+) -> list[Analysis]:
     """Return all analyses."""
-    analyses: List[Analysis] = session.exec(select(Analysis).offset(skip).limit(limit)).all()
+    analyses: list[Analysis] = session.exec(select(Analysis).offset(skip).limit(limit)).all()
 
     return analyses
 
@@ -67,7 +63,7 @@ def delete_analysis(
     return JSONResponse(f"Deleted analysis: {analysis_id}", status_code=status.HTTP_200_OK)
 
 
-@router.post("/sequence", response_model=List[Analysis])
+@router.post("/sequence", response_model=list[Analysis])
 def upload_sequence_analysis(
     file: UploadFile = File(...),
     session: Session = Depends(get_session),
@@ -78,7 +74,7 @@ def upload_sequence_analysis(
     file_name: Path = check_file(file_path=file.filename, extension=".vcf")
     content = file.file.read().decode("utf-8")
     sequence_analysis = SequenceAnalysis(vcf_file=content, source=str(file_name))
-    analyses: List[Analysis] = list(sequence_analysis.generate_analyses())
+    analyses: list[Analysis] = list(sequence_analysis.generate_analyses())
     check_analyses_objects(session=session, analyses=analyses, analysis_type="sequence")
     create_analyses_sample_objects(session=session, analyses=analyses)
     for analysis in analyses:

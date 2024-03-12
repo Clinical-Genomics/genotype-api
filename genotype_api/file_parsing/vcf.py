@@ -1,9 +1,11 @@
 """Functions to work with VCF files"""
 
-from typing import Dict, Iterable, List, TextIO
+from typing import Iterable, TextIO
 
-from genotype_api.database.models import Genotype as DBGenotype, Analysis
 from pydantic import BaseModel
+
+from genotype_api.database.models import Analysis
+from genotype_api.database.models import Genotype as DBGenotype
 
 
 class Genotype(BaseModel):
@@ -18,7 +20,7 @@ class Variant(BaseModel):
     id: str
     ref: str
     alt: str
-    genotypes: List[Genotype]
+    genotypes: list[Genotype]
 
 
 class SequenceAnalysis:
@@ -44,7 +46,7 @@ class SequenceAnalysis:
                 return
 
     def generate_analyses(self) -> Iterable[Analysis]:
-        analyses: Dict[str, Analysis] = {
+        analyses: dict[str, Analysis] = {
             sample_id: Analysis(type="sequence", source=self.source, sample_id=sample_id)
             for sample_id in self.sample_ids
         }
@@ -70,12 +72,12 @@ class SequenceAnalysis:
             line = line.rstrip()
             variant_line = line.split("\t")
             variant_info = dict(zip(self.header_columns, variant_line))
-            gt_info: List[str] = [gt_call.split(":")[0] for gt_call in variant_line[9:]]
+            gt_info: list[str] = [gt_call.split(":")[0] for gt_call in variant_line[9:]]
 
             variant_info["genotypes"] = self.variant_genotypes(gt_info=gt_info)
             yield Variant(**variant_info)
 
-    def variant_genotypes(self, gt_info: List[str]) -> Iterable[dict]:
+    def variant_genotypes(self, gt_info: list[str]) -> Iterable[dict]:
         """Build Genotype objects from vcf information."""
         for sample_id, bases in zip(self.sample_ids, gt_info):
             bases = bases.replace("|", "/")

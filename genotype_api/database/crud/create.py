@@ -1,18 +1,11 @@
 import logging
-from typing import List
 
 from fastapi import HTTPException
 from sqlmodel import Session
-
-from genotype_api.database.models import (
-    Analysis,
-    Sample,
-    User,
-    UserCreate,
-    Plate,
-    PlateCreate,
-)
 from sqlmodel.sql.expression import Select, SelectOfScalar
+
+from genotype_api.database.models import (Analysis, Plate, PlateCreate, Sample,
+                                          User, UserCreate)
 
 SelectOfScalar.inherit_cache = True
 Select.inherit_cache = True
@@ -49,7 +42,7 @@ def create_sample(session: Session, sample: Sample) -> Sample:
     return sample
 
 
-def create_analyses_sample_objects(session: Session, analyses: List[Analysis]) -> List[Sample]:
+def create_analyses_sample_objects(session: Session, analyses: list[Analysis]) -> list[Sample]:
     """creating samples in an analysis if not already in db."""
     return [
         create_sample(session=session, sample=Sample(id=analysis_obj.sample_id))
