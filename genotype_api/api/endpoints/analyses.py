@@ -9,7 +9,7 @@ from fastapi.responses import JSONResponse
 from genotype_api.database.crud.read import get_analysis, check_analyses_objects
 from genotype_api.database.crud.create import create_analysis, create_analyses_sample_objects
 from genotype_api.database.crud.update import refresh_sample_status
-from genotype_api.database import get_session
+from genotype_api.database.database import get_session
 from genotype_api.file_parsing.files import check_file
 from genotype_api.database.models.models import (
     Analysis,
