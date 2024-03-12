@@ -8,7 +8,7 @@ from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 from genotype_api.config import security_settings
-from genotype_api.database.database import create_db_and_tables
+from genotype_api.database.session_handler import create_db_and_tables
 from genotype_api.api.endpoints import samples, snps, users, plates, analyses
 from sqlalchemy.exc import NoResultFound
 

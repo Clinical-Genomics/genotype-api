@@ -1,7 +1,7 @@
 from sqlmodel import Session
 
 from genotype_api.match import check_sample
-from genotype_api.database.models.models import Sample
+from genotype_api.database.models import Sample
 from sqlmodel.sql.expression import Select, SelectOfScalar
 
 SelectOfScalar.inherit_cache = True

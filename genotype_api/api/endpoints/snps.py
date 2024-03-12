@@ -1,10 +1,10 @@
 """Routes for the snps"""
 
-from genotype_api.database.models.models import SNP, User
+from genotype_api.database.models import SNP, User
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, Query, File, UploadFile
-from genotype_api.database.database import get_session
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile
+from genotype_api.database.session_handler import get_session
 from sqlmodel import Session, delete, select
 
 from genotype_api.security import get_active_user

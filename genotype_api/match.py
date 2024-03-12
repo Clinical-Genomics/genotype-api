@@ -4,7 +4,7 @@ import logging
 from genotype_api.models import (
     SampleDetail,
 )
-from genotype_api.database.models.models import Sample, check_snps, check_sex
+from genotype_api.database.models import Sample, check_snps, check_sex
 
 log = logging.getLogger(__name__)
 

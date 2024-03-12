@@ -5,7 +5,7 @@ from sqlalchemy import func
 from sqlmodel import Session, select
 
 from genotype_api.constants import TYPES
-from genotype_api.database.models.models import Analysis, Sample, User, Plate
+from genotype_api.database.models import Analysis, Sample, User, Plate
 from sqlmodel.sql.expression import Select, SelectOfScalar
 
 SelectOfScalar.inherit_cache = True

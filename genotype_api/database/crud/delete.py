@@ -3,7 +3,7 @@ from typing import Optional
 
 from sqlmodel import Session
 
-from genotype_api.database.models.models import Analysis, Plate
+from genotype_api.database.models import Analysis, Plate
 from sqlmodel.sql.expression import Select, SelectOfScalar
 
 SelectOfScalar.inherit_cache = True

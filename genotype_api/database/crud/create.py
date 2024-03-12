@@ -4,7 +4,7 @@ from typing import List
 from fastapi import HTTPException
 from sqlmodel import Session
 
-from genotype_api.database.models.models import (
+from genotype_api.database.models import (
     Analysis,
     Sample,
     User,

@@ -6,14 +6,14 @@ from starlette import status
 
 import genotype_api.database.crud.create
 from genotype_api.constants import SEXES
-from genotype_api.database.database import get_session
+from genotype_api.database.session_handler import get_session
 from genotype_api.match import check_sample
 from genotype_api.models import (
     SampleDetail,
     MatchResult,
     MatchCounts,
 )
-from genotype_api.database.models.models import (
+from genotype_api.database.models import (
     Analysis,
     Sample,
     SampleRead,
