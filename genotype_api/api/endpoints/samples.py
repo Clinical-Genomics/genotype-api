@@ -10,15 +10,23 @@ from starlette import status
 
 import genotype_api.database.crud.create
 from genotype_api.constants import SEXES
-from genotype_api.database.crud.read import (get_commented_samples,
-                                             get_incomplete_samples,
-                                             get_plate_samples, get_sample,
-                                             get_samples,
-                                             get_status_missing_samples)
+from genotype_api.database.crud.read import (
+    get_commented_samples,
+    get_incomplete_samples,
+    get_plate_samples,
+    get_sample,
+    get_samples,
+    get_status_missing_samples,
+)
 from genotype_api.database.crud.update import refresh_sample_status
-from genotype_api.database.models import (Analysis, Sample, SampleRead,
-                                          SampleReadWithAnalysisDeep, User,
-                                          compare_genotypes)
+from genotype_api.database.models import (
+    Analysis,
+    Sample,
+    SampleRead,
+    SampleReadWithAnalysisDeep,
+    User,
+    compare_genotypes,
+)
 from genotype_api.database.session_handler import get_session
 from genotype_api.match import check_sample
 from genotype_api.models import MatchCounts, MatchResult, SampleDetail
