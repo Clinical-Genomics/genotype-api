@@ -1,6 +1,6 @@
 from collections import Counter
 from datetime import date, timedelta
-from typing import Literal, Optional
+from typing import Literal
 
 from fastapi import APIRouter, Depends, Query
 from fastapi.responses import JSONResponse
@@ -10,23 +10,15 @@ from starlette import status
 
 import genotype_api.database.crud.create
 from genotype_api.constants import SEXES
-from genotype_api.database.crud.read import (
-    get_commented_samples,
-    get_incomplete_samples,
-    get_plate_samples,
-    get_sample,
-    get_samples,
-    get_status_missing_samples,
-)
+from genotype_api.database.crud.read import (get_commented_samples,
+                                             get_incomplete_samples,
+                                             get_plate_samples, get_sample,
+                                             get_samples,
+                                             get_status_missing_samples)
 from genotype_api.database.crud.update import refresh_sample_status
-from genotype_api.database.models import (
-    Analysis,
-    Sample,
-    SampleRead,
-    SampleReadWithAnalysisDeep,
-    User,
-    compare_genotypes,
-)
+from genotype_api.database.models import (Analysis, Sample, SampleRead,
+                                          SampleReadWithAnalysisDeep, User,
+                                          compare_genotypes)
 from genotype_api.database.session_handler import get_session
 from genotype_api.match import check_sample
 from genotype_api.models import MatchCounts, MatchResult, SampleDetail
@@ -85,11 +77,11 @@ def read_sample(
 def read_samples(
     skip: int = 0,
     limit: int = Query(default=10, lte=10),
-    sample_id: Optional[str] = None,
-    plate_id: Optional[str] = None,
-    incomplete: Optional[bool] = False,
-    commented: Optional[bool] = False,
-    status_missing: Optional[bool] = False,
+    sample_id: str | None = None,
+    plate_id: str | None = None,
+    incomplete: bool | None = False,
+    commented: bool | None = False,
+    status_missing: bool | None = False,
     session: Session = Depends(get_session),
     current_user: User = Depends(get_active_user),
 ) -> list[Sample]:
@@ -123,8 +115,8 @@ def create_sample(
 def update_sex(
     sample_id: str,
     sex: SEXES = Query(...),
-    genotype_sex: Optional[SEXES] = None,
-    sequence_sex: Optional[SEXES] = None,
+    genotype_sex: SEXES | None = None,
+    sequence_sex: SEXES | None = None,
     session: Session = Depends(get_session),
     current_user: User = Depends(get_active_user),
 ):
@@ -166,7 +158,7 @@ def update_comment(
 def set_sample_status(
     sample_id: str,
     session: Session = Depends(get_session),
-    status: Optional[Literal["pass", "fail", "cancel"]] = None,
+    status: Literal["pass", "fail", "cancel"] | None = None,
     current_user: User = Depends(get_active_user),
 ):
     """Check sample analyses and update sample status accordingly."""
@@ -184,8 +176,8 @@ def match(
     sample_id: str,
     analysis_type: Literal["genotype", "sequence"],
     comparison_set: Literal["genotype", "sequence"],
-    date_min: Optional[date] = date.min,
-    date_max: Optional[date] = date.max,
+    date_min: date | None = date.min,
+    date_max: date | None = date.max,
     session: Session = Depends(get_session),
     current_user: User = Depends(get_active_user),
 ) -> list[MatchResult]:

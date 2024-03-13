@@ -2,7 +2,7 @@
 
 import logging
 from pathlib import Path
-from typing import ByteString, Iterable, Optional
+from typing import ByteString, Iterable
 
 import openpyxl
 from openpyxl.workbook import Workbook
@@ -25,11 +25,11 @@ class GenotypeAnalysis:
 
     """
 
-    def __init__(self, excel_file: ByteString, file_name: str, include_key: Optional[str] = None):
+    def __init__(self, excel_file: ByteString, file_name: str, include_key: str | None = None):
         LOG.info("Loading genotype information from %s", excel_file)
         self.source: str = file_name
         self.wb: Workbook = openpyxl.load_workbook(filename=excel_file)
-        self.include_key: Optional[str] = include_key
+        self.include_key: str | None = include_key
         self.work_sheet: Worksheet = self.find_sheet(excel_db=self.wb)
         self.header_row: list[str] = self.get_header_cols(self.work_sheet)
         self.snp_start: int = GenotypeAnalysis.find_column(self.header_row, pattern="rs")
@@ -60,7 +60,7 @@ class GenotypeAnalysis:
                 return index
 
     @staticmethod
-    def parse_sample_id(sample_id: str, include_key: str = None) -> Optional[str]:
+    def parse_sample_id(sample_id: str, include_key: str = None) -> str | None:
         """Build samples from Excel sheet."""
         LOG.info("Parse sample id from %s using include_key: %s", sample_id, include_key)
         if include_key:

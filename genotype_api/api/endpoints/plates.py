@@ -3,31 +3,26 @@
 from datetime import datetime
 from io import BytesIO
 from pathlib import Path
-from typing import Literal, Optional
+from typing import Literal
 
-from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, status
+from fastapi import (APIRouter, Depends, File, HTTPException, Query,
+                     UploadFile, status)
 from fastapi.responses import JSONResponse
 from sqlalchemy import asc, desc
 from sqlmodel import Session, select
 from sqlmodel.sql.expression import Select, SelectOfScalar
 
-from genotype_api.database.crud.create import create_analyses_sample_objects, create_plate
-from genotype_api.database.crud.read import (
-    check_analyses_objects,
-    get_analyses_from_plate,
-    get_plate,
-    get_user_by_email,
-)
+from genotype_api.database.crud.create import (create_analyses_sample_objects,
+                                               create_plate)
+from genotype_api.database.crud.read import (check_analyses_objects,
+                                             get_analyses_from_plate,
+                                             get_plate, get_user_by_email)
 from genotype_api.database.crud.update import refresh_sample_status
-from genotype_api.database.models import (
-    Analysis,
-    Plate,
-    PlateCreate,
-    PlateReadWithAnalyses,
-    PlateReadWithAnalysisDetail,
-    PlateReadWithAnalysisDetailSingle,
-    User,
-)
+from genotype_api.database.models import (Analysis, Plate, PlateCreate,
+                                          PlateReadWithAnalyses,
+                                          PlateReadWithAnalysisDetail,
+                                          PlateReadWithAnalysisDetailSingle,
+                                          User)
 from genotype_api.database.session_handler import get_session
 from genotype_api.file_parsing.excel import GenotypeAnalysis
 from genotype_api.file_parsing.files import check_file
@@ -139,10 +134,10 @@ def read_plate(
     response_model_by_alias=False,
 )
 async def read_plates(
-    order_by: Optional[Literal["created_at", "plate_id", "signed_at", "id"]] = "id",
-    sort_order: Optional[Literal["ascend", "descend"]] = "descend",
-    skip: Optional[int] = 0,
-    limit: Optional[int] = 10,
+    order_by: Literal["created_at", "plate_id", "signed_at", "id"] | None = "id",
+    sort_order: Literal["ascend", "descend"] | None = "descend",
+    skip: int | None = 0,
+    limit: int | None = 10,
     session: Session = Depends(get_session),
     current_user: User = Depends(get_active_user),
 ):
