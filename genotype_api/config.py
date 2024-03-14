@@ -1,7 +1,6 @@
 from pathlib import Path
 
-from pydantic import BaseSettings
-
+from pydantic_settings import BaseSettings
 GENOTYPE_PACKAGE = Path(__file__).parent
 PACKAGE_ROOT: Path = GENOTYPE_PACKAGE.parent
 ENV_FILE: Path = PACKAGE_ROOT / ".env"

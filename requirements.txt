@@ -12,7 +12,8 @@ httptools
 numpy
 openpyxl
 passlib
-pydantic==1.10.14
+pydantic==2.6.4
+pydantic-settings
 pymysql
 python-dotenv
 python-jose[cryptography]
