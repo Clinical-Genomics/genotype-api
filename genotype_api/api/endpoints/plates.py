@@ -3,7 +3,7 @@
 from datetime import datetime
 from io import BytesIO
 from pathlib import Path
-from typing import Literal, Optional
+from typing import Literal
 
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, status
 from fastapi.responses import JSONResponse
@@ -139,10 +139,10 @@ def read_plate(
     response_model_by_alias=False,
 )
 async def read_plates(
-    order_by: Optional[Literal["created_at", "plate_id", "signed_at", "id"]] = "id",
-    sort_order: Optional[Literal["ascend", "descend"]] = "descend",
-    skip: Optional[int] = 0,
-    limit: Optional[int] = 10,
+    order_by: Literal["created_at", "plate_id", "signed_at", "id"] | None = "id",
+    sort_order: Literal["ascend", "descend"] | None = "descend",
+    skip: int | None = 0,
+    limit: int | None = 10,
     session: Session = Depends(get_session),
     current_user: User = Depends(get_active_user),
 ):

@@ -1,5 +1,3 @@
-from typing import Optional
-
 from pydantic import BaseModel, validator
 from sqlmodel import Field
 
@@ -17,28 +15,28 @@ class PlateStatusCounts(BaseModel):
 
 
 class SampleDetailStats(BaseModel):
-    matches: Optional[int]
-    mismatches: Optional[int]
-    unknown: Optional[int]
+    matches: int | None
+    mismatches: int | None
+    unknown: int | None
 
 
 class SampleDetailStatus(BaseModel):
-    sex: Optional[str]
-    snps: Optional[str]
-    nocalls: Optional[str]
+    sex: str | None
+    snps: str | None
+    nocalls: str | None
 
 
 class SampleDetail(BaseModel):
-    sex: Optional[str]
-    snps: Optional[str]
-    nocalls: Optional[str]
-    matches: Optional[int]
-    mismatches: Optional[int]
-    unknown: Optional[int]
-    failed_snps: Optional[list[str]]
+    sex: str | None
+    snps: str | None
+    nocalls: str | None
+    matches: int | None
+    mismatches: int | None
+    unknown: int | None
+    failed_snps: list[str] | None
 
-    stats: Optional[SampleDetailStats]
-    status: Optional[SampleDetailStatus]
+    stats: SampleDetailStats | None
+    status: SampleDetailStatus | None
 
     @validator("stats")
     def validate_stats(cls, value, values) -> SampleDetailStats:
@@ -59,9 +57,9 @@ class SampleDetail(BaseModel):
 
 
 class MatchCounts(BaseModel):
-    match: Optional[int] = 0
-    mismatch: Optional[int] = 0
-    unknown: Optional[int] = 0
+    match: int | None = 0
+    mismatch: int | None = 0
+    unknown: int | None = 0
 
 
 class MatchResult(BaseModel):

@@ -1,18 +1,15 @@
-from typing import Optional
-
-from fastapi import HTTPException, Security, Depends
+import requests
+from fastapi import Depends, HTTPException, Security
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from jose import jwt
 from sqlmodel import Session
 from starlette import status
-
 from starlette.requests import Request
 
-from genotype_api.database.session_handler import get_session
-from genotype_api.database.models import User
 from genotype_api.config import security_settings
 from genotype_api.database.crud.read import get_user_by_email
-from jose import jwt
-import requests
+from genotype_api.database.models import User
+from genotype_api.database.session_handler import get_session
 
 
 def decode_id_token(token: str):
@@ -50,7 +47,7 @@ class JWTBearer(HTTPBearer):
 
         return credentials.credentials
 
-    def verify_jwt(self, jwtoken: str) -> Optional[dict]:
+    def verify_jwt(self, jwtoken: str) -> dict | None:
         try:
             return decode_id_token(jwtoken)
         except Exception:

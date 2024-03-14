@@ -1,10 +1,9 @@
 import logging
-from typing import Optional
 
 from sqlmodel import Session
+from sqlmodel.sql.expression import Select, SelectOfScalar
 
 from genotype_api.database.models import Analysis, Plate
-from sqlmodel.sql.expression import Select, SelectOfScalar
 
 SelectOfScalar.inherit_cache = True
 Select.inherit_cache = True
@@ -19,7 +18,7 @@ def delete_analysis(session: Session, analysis_id: int) -> Analysis:
     return db_analysis
 
 
-def delete_plate(session: Session, plate_id: int) -> Optional[Plate]:
+def delete_plate(session: Session, plate_id: int) -> Plate | None:
     db_plate: Plate = session.get(Plate, plate_id)
     if not db_plate:
         LOG.info(f"Could not find plate {plate_id}")

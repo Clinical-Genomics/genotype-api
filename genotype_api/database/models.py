@@ -1,6 +1,5 @@
 from collections import Counter
 from datetime import datetime
-from typing import Optional
 
 from pydantic import EmailStr, constr, validator
 from sqlalchemy import Index
@@ -11,18 +10,18 @@ from genotype_api.models import PlateStatusCounts, SampleDetail
 
 
 class GenotypeBase(SQLModel):
-    rsnumber: Optional[constr(max_length=10)]
-    analysis_id: Optional[int] = Field(default=None, foreign_key="analysis.id")
-    allele_1: Optional[constr(max_length=1)]
-    allele_2: Optional[constr(max_length=1)]
+    rsnumber: constr(max_length=10) | None
+    analysis_id: int | None = Field(default=None, foreign_key="analysis.id")
+    allele_1: constr(max_length=1) | None
+    allele_2: constr(max_length=1) | None
 
 
 class Genotype(GenotypeBase, table=True):
     __tablename__ = "genotype"
     __table_args__ = (Index("_analysis_rsnumber", "analysis_id", "rsnumber", unique=True),)
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: int | None = Field(default=None, primary_key=True)
 
-    analysis: Optional["Analysis"] = Relationship(back_populates="genotypes")
+    analysis: "Analysis" = Relationship(back_populates="genotypes")
 
     @property
     def alleles(self) -> list[str]:
@@ -46,21 +45,21 @@ class GenotypeCreate(GenotypeBase):
 
 class AnalysisBase(SQLModel):
     type: TYPES
-    source: Optional[str]
-    sex: Optional[SEXES]
-    created_at: Optional[datetime] = datetime.now()
-    sample_id: Optional[constr(max_length=32)] = Field(default=None, foreign_key="sample.id")
-    plate_id: Optional[str] = Field(default=None, foreign_key="plate.id")
+    source: str | None
+    sex: SEXES | None
+    created_at: datetime | None = datetime.now()
+    sample_id: constr(max_length=32) | None = Field(default=None, foreign_key="sample.id")
+    plate_id: str | None = Field(default=None, foreign_key="plate.id")
 
 
 class Analysis(AnalysisBase, table=True):
     __tablename__ = "analysis"
     __table_args__ = (Index("_sample_type", "sample_id", "type", unique=True),)
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: int | None = Field(default=None, primary_key=True)
 
-    sample: Optional["Sample"] = Relationship(back_populates="analyses")
-    plate: Optional[list["Plate"]] = Relationship(back_populates="analyses")
-    genotypes: Optional[list["Genotype"]] = Relationship(back_populates="analysis")
+    sample: "Sample" = Relationship(back_populates="analyses")
+    plate: list["Plate"] = Relationship(back_populates="analyses")
+    genotypes: list["Genotype"] = Relationship(back_populates="analysis")
 
     def check_no_calls(self) -> dict[str, int]:
         """Check that genotypes look ok."""
@@ -77,23 +76,23 @@ class AnalysisCreate(AnalysisBase):
 
 
 class SampleSlim(SQLModel):
-    status: Optional[STATUS]
-    comment: Optional[str]
+    status: STATUS | None
+    comment: str | None
 
 
 class SampleBase(SampleSlim):
-    sex: Optional[SEXES]
-    created_at: Optional[datetime] = datetime.now()
+    sex: SEXES | None
+    created_at: datetime | None = datetime.now()
 
 
 class Sample(SampleBase, table=True):
     __tablename__ = "sample"
-    id: Optional[constr(max_length=32)] = Field(default=None, primary_key=True)
+    id: constr(max_length=32) | None = Field(default=None, primary_key=True)
 
-    analyses: Optional[list["Analysis"]] = Relationship(back_populates="sample")
+    analyses: list["Analysis"] = Relationship(back_populates="sample")
 
     @property
-    def genotype_analysis(self) -> Optional[Analysis]:
+    def genotype_analysis(self) -> Analysis | None:
         """Return genotype analysis."""
 
         for analysis in self.analyses:
@@ -103,7 +102,7 @@ class Sample(SampleBase, table=True):
         return None
 
     @property
-    def sequence_analysis(self) -> Optional[Analysis]:
+    def sequence_analysis(self) -> Analysis | None:
         """Return sequence analysis."""
 
         for analysis in self.analyses:
@@ -122,16 +121,16 @@ class SampleCreate(SampleBase):
 
 
 class SNPBase(SQLModel):
-    ref: Optional[constr(max_length=1)]
-    chrom: Optional[constr(max_length=5)]
-    pos: Optional[int]
+    ref: constr(max_length=1) | None
+    chrom: constr(max_length=5) | None
+    pos: int | None
 
 
 class SNP(SNPBase, table=True):
     __tablename__ = "snp"
     """Represent a SNP position under investigation."""
 
-    id: Optional[constr(max_length=32)] = Field(default=None, primary_key=True)
+    id: constr(max_length=32) | None = Field(default=None, primary_key=True)
 
 
 class SNPRead(SNPBase):
@@ -140,13 +139,13 @@ class SNPRead(SNPBase):
 
 class UserBase(SQLModel):
     email: EmailStr = Field(index=True, unique=True)
-    name: Optional[str] = ""
+    name: str | None = ""
 
 
 class User(UserBase, table=True):
     __tablename__ = "user"
-    id: Optional[int] = Field(default=None, primary_key=True)
-    plates: Optional[list["Plate"]] = Relationship(back_populates="user")
+    id: int | None = Field(default=None, primary_key=True)
+    plates: list["Plate"] = Relationship(back_populates="user")
 
 
 class UserRead(UserBase):
@@ -158,45 +157,45 @@ class UserCreate(UserBase):
 
 
 class PlateBase(SQLModel):
-    created_at: Optional[datetime] = datetime.now()
+    created_at: datetime | None = datetime.now()
     plate_id: constr(max_length=16) = Field(index=True, unique=True)
-    signed_by: Optional[int] = Field(default=None, foreign_key="user.id")
-    signed_at: Optional[datetime]
-    method_document: Optional[str]
-    method_version: Optional[str]
+    signed_by: int | None = Field(default=None, foreign_key="user.id")
+    signed_at: datetime | None
+    method_document: str | None
+    method_version: str | None
 
 
 class Plate(PlateBase, table=True):
     __tablename__ = "plate"
-    id: Optional[int] = Field(default=None, primary_key=True)
-    user: Optional["User"] = Relationship(back_populates="plates")
-    analyses: Optional[list["Analysis"]] = Relationship(back_populates="plate")
+    id: int | None = Field(default=None, primary_key=True)
+    user: "User" = Relationship(back_populates="plates")
+    analyses: list["Analysis"] = Relationship(back_populates="plate")
 
 
 class PlateRead(PlateBase):
     id: str
-    user: Optional[UserRead]
+    user: UserRead | None
 
 
 class PlateCreate(PlateBase):
-    analyses: Optional[list[Analysis]] = []
+    analyses: list[Analysis] | None = []
 
 
 class UserReadWithPlates(UserRead):
-    plates: Optional[list[Plate]] = []
+    plates: list[Plate] | None = []
 
 
 class SampleReadWithAnalysis(SampleRead):
-    analyses: Optional[list[AnalysisRead]] = []
+    analyses: list[AnalysisRead] | None = []
 
 
 class AnalysisReadWithGenotype(AnalysisRead):
-    genotypes: Optional[list[Genotype]] = []
+    genotypes: list[Genotype] | None = []
 
 
 class SampleReadWithAnalysisDeep(SampleRead):
-    analyses: Optional[list[AnalysisReadWithGenotype]] = []
-    detail: Optional[SampleDetail]
+    analyses: list[AnalysisReadWithGenotype] | None = []
+    detail: SampleDetail | None
 
     @validator("detail")
     def get_detail(cls, value, values) -> SampleDetail:
@@ -221,7 +220,7 @@ class SampleReadWithAnalysisDeep(SampleRead):
 
 
 class AnalysisReadWithSample(AnalysisRead):
-    sample: Optional[SampleSlim]
+    sample: SampleSlim | None
 
 
 def compare_genotypes(genotype_1: Genotype, genotype_2: Genotype) -> tuple[str, str]:
@@ -236,16 +235,16 @@ def compare_genotypes(genotype_1: Genotype, genotype_2: Genotype) -> tuple[str, 
 
 
 class AnalysisReadWithSampleDeep(AnalysisRead):
-    sample: Optional[SampleReadWithAnalysisDeep]
+    sample: SampleReadWithAnalysisDeep | None
 
 
 class PlateReadWithAnalyses(PlateRead):
-    analyses: Optional[list[AnalysisReadWithSample]] = []
+    analyses: list[AnalysisReadWithSample] | None = []
 
 
 class PlateReadWithAnalysisDetail(PlateRead):
-    analyses: Optional[list[AnalysisReadWithSample]] = []
-    detail: Optional[PlateStatusCounts]
+    analyses: list[AnalysisReadWithSample] | None = []
+    detail: PlateStatusCounts | None
 
     @validator("detail")
     def check_detail(cls, value, values):
@@ -260,8 +259,8 @@ class PlateReadWithAnalysisDetail(PlateRead):
 
 
 class PlateReadWithAnalysisDetailSingle(PlateRead):
-    analyses: Optional[list[AnalysisReadWithSample]] = []
-    detail: Optional[PlateStatusCounts]
+    analyses: list[AnalysisReadWithSample] | None = []
+    detail: PlateStatusCounts | None
 
     @validator("detail")
     def check_detail(cls, value, values):

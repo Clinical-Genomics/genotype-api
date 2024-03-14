@@ -1,5 +1,4 @@
 import logging
-from typing import Optional
 
 from sqlalchemy import func
 from sqlmodel import Session, select
@@ -21,7 +20,7 @@ def get_analyses_from_plate(plate_id: int, session: Session) -> list[Analysis]:
 
 def get_analysis_type_sample(
     sample_id: str, analysis_type: str, session: Session
-) -> Optional[Analysis]:
+) -> Analysis | None:
     statement = select(Analysis).where(
         Analysis.sample_id == sample_id, Analysis.type == analysis_type
     )
@@ -86,7 +85,7 @@ def get_user(session: Session, user_id: int):
     return session.exec(statement).one()
 
 
-def get_user_by_email(session: Session, email: str) -> Optional[User]:
+def get_user_by_email(session: Session, email: str) -> User | None:
     statement = select(User).where(User.email == email)
     return session.exec(statement).first()
 
