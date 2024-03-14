@@ -1,20 +1,20 @@
 """Constants used over the package"""
 
-from enum import StrEnum
+from enum import Enum
 
 
-class TYPES(StrEnum):
+class TYPES(str, Enum):
     GENOTYPE = "genotype"
     SEQUENCE = "sequence"
 
 
-class SEXES(StrEnum):
+class SEXES(str, Enum):
     MALE = "male"
     FEMALE = "female"
     UNKNOWN = "unknown"
 
 
-class STATUS(StrEnum):
+class STATUS(str, Enum):
     PASS = "pass"
     FAIL = "fail"
     CANCEL = "cancel"
