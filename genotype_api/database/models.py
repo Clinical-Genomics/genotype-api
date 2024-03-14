@@ -21,7 +21,7 @@ class Genotype(GenotypeBase, table=True):
     __table_args__ = (Index("_analysis_rsnumber", "analysis_id", "rsnumber", unique=True),)
     id: int | None = Field(default=None, primary_key=True)
 
-    analysis: Analysis | None = Relationship(back_populates="genotypes")
+    analysis: "Analysis" | None = Relationship(back_populates="genotypes")
 
     @property
     def alleles(self) -> list[str]:
@@ -57,9 +57,9 @@ class Analysis(AnalysisBase, table=True):
     __table_args__ = (Index("_sample_type", "sample_id", "type", unique=True),)
     id: int | None = Field(default=None, primary_key=True)
 
-    sample: Sample | None = Relationship(back_populates="analyses")
-    plate: list[Plate] | None = Relationship(back_populates="analyses")
-    genotypes: list[Genotype] | None = Relationship(back_populates="analysis")
+    sample: "Sample" | None = Relationship(back_populates="analyses")
+    plate: list["Plate"] | None = Relationship(back_populates="analyses")
+    genotypes: list["Genotype"] | None = Relationship(back_populates="analysis")
 
     def check_no_calls(self) -> dict[str, int]:
         """Check that genotypes look ok."""
@@ -89,7 +89,7 @@ class Sample(SampleBase, table=True):
     __tablename__ = "sample"
     id: constr(max_length=32) | None = Field(default=None, primary_key=True)
 
-    analyses: list[Analysis] | None = Relationship(back_populates="sample")
+    analyses: list["Analysis"] | None = Relationship(back_populates="sample")
 
     @property
     def genotype_analysis(self) -> Analysis | None:
@@ -145,7 +145,7 @@ class UserBase(SQLModel):
 class User(UserBase, table=True):
     __tablename__ = "user"
     id: int | None = Field(default=None, primary_key=True)
-    plates: list[Plate] | None = Relationship(back_populates="user")
+    plates: list["Plate"] | None = Relationship(back_populates="user")
 
 
 class UserRead(UserBase):
@@ -168,8 +168,8 @@ class PlateBase(SQLModel):
 class Plate(PlateBase, table=True):
     __tablename__ = "plate"
     id: int | None = Field(default=None, primary_key=True)
-    user: User | None = Relationship(back_populates="plates")
-    analyses: list[Analysis] | None = Relationship(back_populates="plate")
+    user: "User" | None = Relationship(back_populates="plates")
+    analyses: list["Analysis"] | None = Relationship(back_populates="plate")
 
 
 class PlateRead(PlateBase):
