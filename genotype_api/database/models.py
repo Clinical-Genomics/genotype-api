@@ -1,6 +1,6 @@
 from collections import Counter
 from datetime import datetime
-from enum import StrEnum
+from enum import Enum
 
 from pydantic import validator
 from sqlalchemy import Index, Column
@@ -44,9 +44,9 @@ class GenotypeCreate(GenotypeBase):
 
 
 class AnalysisBase(SQLModel):
-    type: TYPES = Field(sa_column=Column(StrEnum(TYPES)))
+    type: TYPES = Field()
     source: str | None
-    sex: SEXES | None = Field(sa_column=Column(StrEnum(SEXES)))
+    sex: SEXES | None = Field()
     created_at: datetime | None = datetime.now()
     sample_id: str | None = Field(default=None, foreign_key="sample.id", max_length=32)
     plate_id: str | None = Field(default=None, foreign_key="plate.id")
@@ -76,12 +76,12 @@ class AnalysisCreate(AnalysisBase):
 
 
 class SampleSlim(SQLModel):
-    status: STATUS | None = Field(sa_column=Column(StrEnum(STATUS)))
+    status: STATUS | None = Field()
     comment: str | None
 
 
 class SampleBase(SampleSlim):
-    sex: SEXES | None = Field(sa_column=Column(StrEnum(SEXES)))
+    sex: SEXES | None = Field()
     created_at: datetime | None = datetime.now()
 
 
