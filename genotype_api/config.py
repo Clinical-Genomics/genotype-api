@@ -21,10 +21,10 @@ class DBSettings(BaseSettings):
 class SecuritySettings(BaseSettings):
     """Settings for serving the genotype-api app"""
 
-    client_id = ""
-    algorithm = ""
-    jwks_uri = "https://www.googleapis.com/oauth2/v3/certs"
-    api_root_path = "/"
+    client_id: str = ""
+    algorithm: str = ""
+    jwks_uri: str  = "https://www.googleapis.com/oauth2/v3/certs"
+    api_root_path: str  = "/"
 
     class Config:
         env_file = str(ENV_FILE)

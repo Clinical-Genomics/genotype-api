@@ -4,16 +4,15 @@ from datetime import datetime
 from pydantic import EmailStr, constr, validator
 from sqlalchemy import Index
 from sqlmodel import Field, Relationship, SQLModel
-
 from genotype_api.constants import CUTOFS, SEXES, STATUS, TYPES
 from genotype_api.models import PlateStatusCounts, SampleDetail
 
 
 class GenotypeBase(SQLModel):
-    rsnumber: constr(max_length=10) | None
+    rsnumber: str | None = Field(max_length=10)
     analysis_id: int | None = Field(default=None, foreign_key="analysis.id")
-    allele_1: constr(max_length=1) | None
-    allele_2: constr(max_length=1) | None
+    allele_1: str | None = Field(max_length=1)
+    allele_2: str | None = Field(max_length=1)
 
 
 class Genotype(GenotypeBase, table=True):
@@ -48,7 +47,7 @@ class AnalysisBase(SQLModel):
     source: str | None
     sex: SEXES | None
     created_at: datetime | None = datetime.now()
-    sample_id: constr(max_length=32) | None = Field(default=None, foreign_key="sample.id")
+    sample_id: str | None = Field(default=None, foreign_key="sample.id", max_length=32)
     plate_id: str | None = Field(default=None, foreign_key="plate.id")
 
 
@@ -87,7 +86,7 @@ class SampleBase(SampleSlim):
 
 class Sample(SampleBase, table=True):
     __tablename__ = "sample"
-    id: constr(max_length=32) | None = Field(default=None, primary_key=True)
+    id: str | None = Field(default=None, primary_key=True, max_length=32)
 
     analyses: list["Analysis"] = Relationship(back_populates="sample")
 
@@ -113,7 +112,7 @@ class Sample(SampleBase, table=True):
 
 
 class SampleRead(SampleBase):
-    id: constr(max_length=32)
+    id: str = Field(max_length=32)
 
 
 class SampleCreate(SampleBase):
@@ -121,8 +120,8 @@ class SampleCreate(SampleBase):
 
 
 class SNPBase(SQLModel):
-    ref: constr(max_length=1) | None
-    chrom: constr(max_length=5) | None
+    ref: str | None = Field(max_length=1)
+    chrom: str | None = Field(max_length=5)
     pos: int | None
 
 
@@ -130,15 +129,15 @@ class SNP(SNPBase, table=True):
     __tablename__ = "snp"
     """Represent a SNP position under investigation."""
 
-    id: constr(max_length=32) | None = Field(default=None, primary_key=True)
+    id: str | None = Field(default=None, primary_key=True, max_length=32)
 
 
 class SNPRead(SNPBase):
-    id: constr(max_length=32)
+    id: str = Field(max_length=32)
 
 
 class UserBase(SQLModel):
-    email: EmailStr = Field(index=True, unique=True)
+    email: str = Field(index=True, unique=True)
     name: str | None = ""
 
 
@@ -158,7 +157,7 @@ class UserCreate(UserBase):
 
 class PlateBase(SQLModel):
     created_at: datetime | None = datetime.now()
-    plate_id: constr(max_length=16) = Field(index=True, unique=True)
+    plate_id: str = Field(index=True, unique=True, max_length=16)
     signed_by: int | None = Field(default=None, foreign_key="user.id")
     signed_at: datetime | None
     method_document: str | None
@@ -216,7 +215,7 @@ class SampleReadWithAnalysisDeep(SampleRead):
         return SampleDetail(**status, sex=sex)
 
     class Config:
-        validate_all = True
+        validate_default = True
 
 
 class AnalysisReadWithSample(AnalysisRead):
@@ -255,7 +254,7 @@ class PlateReadWithAnalysisDetail(PlateRead):
         return PlateStatusCounts(**status_counts, total=len(analyses), commented=commented)
 
     class Config:
-        validate_all = True
+        validate_default = True
 
 
 class PlateReadWithAnalysisDetailSingle(PlateRead):
@@ -271,7 +270,7 @@ class PlateReadWithAnalysisDetailSingle(PlateRead):
         return PlateStatusCounts(**status_counts, total=len(analyses), commented=commented)
 
     class Config:
-        validate_all = True
+        validate_default = True
 
 
 def check_snps(genotype_analysis, sequence_analysis):

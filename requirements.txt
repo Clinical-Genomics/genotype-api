@@ -5,7 +5,7 @@ bump2version
 click
 coloredlogs
 email-validator
-fastapi==0.75.0
+fastapi
 google-auth
 gunicorn
 httptools
