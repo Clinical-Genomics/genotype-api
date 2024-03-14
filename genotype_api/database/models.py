@@ -1,7 +1,7 @@
 from collections import Counter
 from datetime import datetime
 
-from pydantic import EmailStr, constr, validator
+from pydantic import validator
 from sqlalchemy import Index
 from sqlmodel import Field, Relationship, SQLModel
 from genotype_api.constants import CUTOFS, SEXES, STATUS, TYPES

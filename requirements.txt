@@ -1,4 +1,4 @@
-SQLAlchemy==1.4.30
+SQLAlchemy
 aiofiles
 bcrypt
 bump2version
@@ -12,7 +12,7 @@ httptools
 numpy
 openpyxl
 passlib
-pydantic==2.6.4
+pydantic
 pydantic-settings
 pymysql
 python-dotenv
