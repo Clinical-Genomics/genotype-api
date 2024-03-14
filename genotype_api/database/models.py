@@ -1,8 +1,9 @@
 from collections import Counter
 from datetime import datetime
+from enum import StrEnum
 
 from pydantic import validator
-from sqlalchemy import Index
+from sqlalchemy import Index, Column
 from sqlmodel import Field, Relationship, SQLModel
 from genotype_api.constants import CUTOFS, SEXES, STATUS, TYPES
 from genotype_api.models import PlateStatusCounts, SampleDetail
@@ -43,9 +44,9 @@ class GenotypeCreate(GenotypeBase):
 
 
 class AnalysisBase(SQLModel):
-    type: TYPES
+    type: TYPES = Field(sa_column=Column(StrEnum(TYPES)))
     source: str | None
-    sex: SEXES | None
+    sex: SEXES | None = Field(sa_column=Column(StrEnum(SEXES)))
     created_at: datetime | None = datetime.now()
     sample_id: str | None = Field(default=None, foreign_key="sample.id", max_length=32)
     plate_id: str | None = Field(default=None, foreign_key="plate.id")
@@ -75,12 +76,12 @@ class AnalysisCreate(AnalysisBase):
 
 
 class SampleSlim(SQLModel):
-    status: STATUS | None
+    status: STATUS | None = Field(sa_column=Column(StrEnum(STATUS)))
     comment: str | None
 
 
 class SampleBase(SampleSlim):
-    sex: SEXES | None
+    sex: SEXES | None = Field(sa_column=Column(StrEnum(SEXES)))
     created_at: datetime | None = datetime.now()
 
 
