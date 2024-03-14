@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from pydantic_settings import BaseSettings
+
 GENOTYPE_PACKAGE = Path(__file__).parent
 PACKAGE_ROOT: Path = GENOTYPE_PACKAGE.parent
 ENV_FILE: Path = PACKAGE_ROOT / ".env"
@@ -23,8 +24,8 @@ class SecuritySettings(BaseSettings):
 
     client_id: str = ""
     algorithm: str = ""
-    jwks_uri: str  = "https://www.googleapis.com/oauth2/v3/certs"
-    api_root_path: str  = "/"
+    jwks_uri: str = "https://www.googleapis.com/oauth2/v3/certs"
+    api_root_path: str = "/"
 
     class Config:
         env_file = str(ENV_FILE)
