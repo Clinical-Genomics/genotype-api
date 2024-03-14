@@ -1,21 +1,20 @@
 """Constants used over the package"""
 
-from enum import Enum
-from pydantic import BaseModel
+from enum import StrEnum
 
 
-class TYPES(str, Enum):
+class TYPES(StrEnum):
     GENOTYPE = "genotype"
     SEQUENCE = "sequence"
 
 
-class SEXES(str, Enum):
+class SEXES(StrEnum):
     MALE = "male"
     FEMALE = "female"
     UNKNOWN = "unknown"
 
 
-class STATUS(str, Enum):
+class STATUS(StrEnum):
     PASS = "pass"
     FAIL = "fail"
     CANCEL = "cancel"
