@@ -9,7 +9,6 @@ from sqlmodel.sql.expression import Select, SelectOfScalar
 from starlette import status
 
 import genotype_api.database.crud.create
-from genotype_api.constants import Sexes
 from genotype_api.database.crud.read import (
     get_commented_samples,
     get_incomplete_samples,
@@ -26,6 +25,7 @@ from genotype_api.database.models import (
     SampleReadWithAnalysisDeep,
     User,
     compare_genotypes,
+    Sexes,
 )
 from genotype_api.database.session_handler import get_session
 from genotype_api.match import check_sample

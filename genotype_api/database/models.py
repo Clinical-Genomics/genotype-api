@@ -1,3 +1,4 @@
+import enum
 from collections import Counter
 from datetime import datetime
 
@@ -5,7 +6,6 @@ from datetime import datetime
 from pydantic import validator
 from sqlalchemy import Index
 from sqlmodel import Field, Relationship, SQLModel
-from genotype_api.constants import CUTOFS, Sexes, Status, AnalysisTypes
 from genotype_api.models import PlateStatusCounts, SampleDetail
 
 
@@ -309,3 +309,23 @@ def check_sex(sample_sex, genotype_analysis, sequence_analysis):
     if {Sexes.MALE, Sexes.FEMALE}.issubset(sexes):
         return "fail"
     return "pass"
+
+
+class AnalysisTypes(enum.Enum):
+    GENOTYPE: str = "genotype"
+    SEQUENCE: str = "sequence"
+
+
+class Sexes(enum.Enum):
+    MALE: str = "male"
+    FEMALE: str = "female"
+    UNKNOWN: str = "unknown"
+
+
+class Status(enum.Enum):
+    PASS: str = "pass"
+    FAIL: str = "fail"
+    CANCEL: str = "cancel"
+
+
+CUTOFS = dict(max_nocalls=15, max_mismatch=3, min_matches=35)
