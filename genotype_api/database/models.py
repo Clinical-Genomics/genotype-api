@@ -46,7 +46,7 @@ class GenotypeCreate(GenotypeBase):
 
 class AnalysisBase(SQLModel):
     type: AnalysisTypes = mapped_column(
-        types.Enum(*(analysis_type for analysis_type in AnalysisTypes))
+        types.Enum(*(analysis_type.value for analysis_type in AnalysisTypes))
     )
     source: str | None
     sex: Sexes | None = mapped_column(types.Enum(*(sex for sex in Sexes)))
@@ -79,12 +79,12 @@ class AnalysisCreate(AnalysisBase):
 
 
 class SampleSlim(SQLModel):
-    status: Status | None = mapped_column(types.Enum(*(status for status in Status)))
+    status: Status | None = mapped_column(types.Enum(*(status.value for status in Status)))
     comment: str | None
 
 
 class SampleBase(SampleSlim):
-    sex: Sexes | None = mapped_column(types.Enum(*(sex for sex in Sexes)))
+    sex: Sexes | None = mapped_column(types.Enum(*(sex.value for sex in Sexes)))
     created_at: datetime | None = datetime.now()
 
 
