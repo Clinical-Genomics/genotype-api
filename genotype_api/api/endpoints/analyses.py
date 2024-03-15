@@ -7,8 +7,13 @@ from fastapi.responses import JSONResponse
 from sqlmodel import Session, select
 from sqlmodel.sql.expression import Select, SelectOfScalar
 
+from genotype_api.database.crud import delete
 from genotype_api.database.crud.create import create_analyses_sample_objects, create_analysis
-from genotype_api.database.crud.read import check_analyses_objects, get_analysis
+from genotype_api.database.crud.read import (
+    check_analyses_objects,
+    get_analysis_by_id,
+    get_analyses_with_skip_and_limit,
+)
 from genotype_api.database.crud.update import refresh_sample_status
 from genotype_api.database.models import Analysis, AnalysisRead, AnalysisReadWithGenotype, User
 from genotype_api.database.session_handler import get_session
@@ -29,8 +34,7 @@ def read_analysis(
     current_user: User = Depends(get_active_user),
 ):
     """Return analysis."""
-
-    return get_analysis(session=session, analysis_id=analysis_id)
+    return get_analysis_by_id(session=session, analysis_id=analysis_id)
 
 
 @router.get("/", response_model=list[AnalysisRead])
@@ -41,8 +45,9 @@ def read_analyses(
     current_user: User = Depends(get_active_user),
 ) -> list[Analysis]:
     """Return all analyses."""
-    analyses: list[Analysis] = session.exec(select(Analysis).offset(skip).limit(limit)).all()
-
+    analyses: list[Analysis] = get_analyses_with_skip_and_limit(
+        session=session, skip=skip, limit=limit
+    )
     return analyses
 
 
@@ -53,10 +58,7 @@ def delete_analysis(
     current_user: User = Depends(get_active_user),
 ):
     """Delete analysis based on analysis_id"""
-    analysis = get_analysis(session=session, analysis_id=analysis_id)
-    session.delete(analysis)
-    session.commit()
-
+    delete.delete_analysis(session=session, analysis_id=analysis_id)
     return JSONResponse(f"Deleted analysis: {analysis_id}", status_code=status.HTTP_200_OK)
 
 
