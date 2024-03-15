@@ -9,6 +9,26 @@ from sqlmodel import Field, Relationship, SQLModel
 from genotype_api.models import PlateStatusCounts, SampleDetail
 
 
+class AnalysisTypes(enum.Enum):
+    GENOTYPE: str = "genotype"
+    SEQUENCE: str = "sequence"
+
+
+class Sexes(enum.Enum):
+    MALE: str = "male"
+    FEMALE: str = "female"
+    UNKNOWN: str = "unknown"
+
+
+class Status(enum.Enum):
+    PASS: str = "pass"
+    FAIL: str = "fail"
+    CANCEL: str = "cancel"
+
+
+CUTOFS = dict(max_nocalls=15, max_mismatch=3, min_matches=35)
+
+
 class GenotypeBase(SQLModel):
     rsnumber: str | None = Field(max_length=10)
     analysis_id: int | None = Field(default=None, foreign_key="analysis.id")
@@ -309,23 +329,3 @@ def check_sex(sample_sex, genotype_analysis, sequence_analysis):
     if {Sexes.MALE, Sexes.FEMALE}.issubset(sexes):
         return "fail"
     return "pass"
-
-
-class AnalysisTypes(enum.Enum):
-    GENOTYPE: str = "genotype"
-    SEQUENCE: str = "sequence"
-
-
-class Sexes(enum.Enum):
-    MALE: str = "male"
-    FEMALE: str = "female"
-    UNKNOWN: str = "unknown"
-
-
-class Status(enum.Enum):
-    PASS: str = "pass"
-    FAIL: str = "fail"
-    CANCEL: str = "cancel"
-
-
-CUTOFS = dict(max_nocalls=15, max_mismatch=3, min_matches=35)
