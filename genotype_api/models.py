@@ -11,7 +11,7 @@ class PlateStatusCounts(BaseModel):
     commented: int = Field(0, nullable=True)
 
     class Config:
-        allow_population_by_field_name = True
+        populate_by_name = True
 
 
 class SampleDetailStats(BaseModel):
@@ -53,7 +53,7 @@ class SampleDetail(BaseModel):
         return SampleDetailStatus(sex=sex, snps=snps, nocalls=nocalls)
 
     class Config:
-        validate_all = True
+        validate_default = True
 
 
 class MatchCounts(BaseModel):

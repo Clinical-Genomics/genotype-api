@@ -1,19 +1,39 @@
+import enum
 from collections import Counter
 from datetime import datetime
 
-from pydantic import EmailStr, constr, validator
+
+from pydantic import validator
 from sqlalchemy import Index
 from sqlmodel import Field, Relationship, SQLModel
-
-from genotype_api.constants import CUTOFS, SEXES, STATUS, TYPES
 from genotype_api.models import PlateStatusCounts, SampleDetail
 
 
+class AnalysisTypes(enum.Enum):
+    GENOTYPE: str = "genotype"
+    SEQUENCE: str = "sequence"
+
+
+class Sexes(enum.Enum):
+    MALE: str = "male"
+    FEMALE: str = "female"
+    UNKNOWN: str = "unknown"
+
+
+class Status(enum.Enum):
+    PASS: str = "pass"
+    FAIL: str = "fail"
+    CANCEL: str = "cancel"
+
+
+CUTOFS = dict(max_nocalls=15, max_mismatch=3, min_matches=35)
+
+
 class GenotypeBase(SQLModel):
-    rsnumber: constr(max_length=10) | None
+    rsnumber: str | None = Field(max_length=10)
     analysis_id: int | None = Field(default=None, foreign_key="analysis.id")
-    allele_1: constr(max_length=1) | None
-    allele_2: constr(max_length=1) | None
+    allele_1: str | None = Field(max_length=1)
+    allele_2: str | None = Field(max_length=1)
 
 
 class Genotype(GenotypeBase, table=True):
@@ -44,11 +64,11 @@ class GenotypeCreate(GenotypeBase):
 
 
 class AnalysisBase(SQLModel):
-    type: TYPES
+    type: AnalysisTypes
     source: str | None
-    sex: SEXES | None
+    sex: Sexes | None
     created_at: datetime | None = datetime.now()
-    sample_id: constr(max_length=32) | None = Field(default=None, foreign_key="sample.id")
+    sample_id: str | None = Field(default=None, foreign_key="sample.id", max_length=32)
     plate_id: str | None = Field(default=None, foreign_key="plate.id")
 
 
@@ -76,18 +96,18 @@ class AnalysisCreate(AnalysisBase):
 
 
 class SampleSlim(SQLModel):
-    status: STATUS | None
+    status: Status | None
     comment: str | None
 
 
 class SampleBase(SampleSlim):
-    sex: SEXES | None
+    sex: Sexes | None
     created_at: datetime | None = datetime.now()
 
 
 class Sample(SampleBase, table=True):
     __tablename__ = "sample"
-    id: constr(max_length=32) | None = Field(default=None, primary_key=True)
+    id: str | None = Field(default=None, primary_key=True, max_length=32)
 
     analyses: list["Analysis"] = Relationship(back_populates="sample")
 
@@ -113,7 +133,7 @@ class Sample(SampleBase, table=True):
 
 
 class SampleRead(SampleBase):
-    id: constr(max_length=32)
+    id: str = Field(max_length=32)
 
 
 class SampleCreate(SampleBase):
@@ -121,8 +141,8 @@ class SampleCreate(SampleBase):
 
 
 class SNPBase(SQLModel):
-    ref: constr(max_length=1) | None
-    chrom: constr(max_length=5) | None
+    ref: str | None = Field(max_length=1)
+    chrom: str | None = Field(max_length=5)
     pos: int | None
 
 
@@ -130,15 +150,15 @@ class SNP(SNPBase, table=True):
     __tablename__ = "snp"
     """Represent a SNP position under investigation."""
 
-    id: constr(max_length=32) | None = Field(default=None, primary_key=True)
+    id: str | None = Field(default=None, primary_key=True, max_length=32)
 
 
 class SNPRead(SNPBase):
-    id: constr(max_length=32)
+    id: str = Field(max_length=32)
 
 
 class UserBase(SQLModel):
-    email: EmailStr = Field(index=True, unique=True)
+    email: str = Field(index=True, unique=True)
     name: str | None = ""
 
 
@@ -158,7 +178,7 @@ class UserCreate(UserBase):
 
 class PlateBase(SQLModel):
     created_at: datetime | None = datetime.now()
-    plate_id: constr(max_length=16) = Field(index=True, unique=True)
+    plate_id: str = Field(index=True, unique=True, max_length=16)
     signed_by: int | None = Field(default=None, foreign_key="user.id")
     signed_at: datetime | None
     method_document: str | None
@@ -216,7 +236,7 @@ class SampleReadWithAnalysisDeep(SampleRead):
         return SampleDetail(**status, sex=sex)
 
     class Config:
-        validate_all = True
+        validate_default = True
 
 
 class AnalysisReadWithSample(AnalysisRead):
@@ -255,7 +275,7 @@ class PlateReadWithAnalysisDetail(PlateRead):
         return PlateStatusCounts(**status_counts, total=len(analyses), commented=commented)
 
     class Config:
-        validate_all = True
+        validate_default = True
 
 
 class PlateReadWithAnalysisDetailSingle(PlateRead):
@@ -271,7 +291,7 @@ class PlateReadWithAnalysisDetailSingle(PlateRead):
         return PlateStatusCounts(**status_counts, total=len(analyses), commented=commented)
 
     class Config:
-        validate_all = True
+        validate_default = True
 
 
 def check_snps(genotype_analysis, sequence_analysis):
@@ -303,9 +323,9 @@ def check_snps(genotype_analysis, sequence_analysis):
 
 def check_sex(sample_sex, genotype_analysis, sequence_analysis):
     """Check if any source disagrees on the sex"""
-    if not sample_sex or genotype_analysis.sex == SEXES.UNKNOWN:
+    if not sample_sex or genotype_analysis.sex == Sexes.UNKNOWN:
         return "fail"
     sexes = {genotype_analysis.sex, sequence_analysis.sex, sample_sex}
-    if {SEXES.MALE, SEXES.FEMALE}.issubset(sexes):
+    if {Sexes.MALE, Sexes.FEMALE}.issubset(sexes):
         return "fail"
     return "pass"
