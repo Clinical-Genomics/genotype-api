@@ -9,7 +9,7 @@ from sqlmodel.sql.expression import Select, SelectOfScalar
 from starlette import status
 
 import genotype_api.database.crud.create
-from genotype_api.constants import SEXES
+from genotype_api.constants import Sexes
 from genotype_api.database.crud.read import (
     get_commented_samples,
     get_incomplete_samples,
@@ -122,9 +122,9 @@ def create_sample(
 @router.put("/{sample_id}/sex", response_model=SampleRead)
 def update_sex(
     sample_id: str,
-    sex: SEXES = Query(...),
-    genotype_sex: SEXES | None = None,
-    sequence_sex: SEXES | None = None,
+    sex: Sexes = Query(...),
+    genotype_sex: Sexes | None = None,
+    sequence_sex: Sexes | None = None,
     session: Session = Depends(get_session),
     current_user: User = Depends(get_active_user),
 ):

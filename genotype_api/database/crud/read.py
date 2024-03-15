@@ -4,7 +4,7 @@ from sqlalchemy import func
 from sqlmodel import Session, select
 from sqlmodel.sql.expression import Select, SelectOfScalar
 
-from genotype_api.constants import TYPES
+from genotype_api.constants import AnalysisTypes
 from genotype_api.database.models import Analysis, Plate, Sample, User
 
 SelectOfScalar.inherit_cache = True
@@ -96,7 +96,7 @@ def get_users(session: Session, skip: int = 0, limit: int = 100) -> list[User]:
 
 
 def check_analyses_objects(
-    session: Session, analyses: list[Analysis], analysis_type: TYPES
+    session: Session, analyses: list[Analysis], analysis_type: AnalysisTypes
 ) -> None:
     """Raising 400 if any analysis in the list already exist in the database"""
     for analysis_obj in analyses:

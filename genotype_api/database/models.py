@@ -1,11 +1,12 @@
 from collections import Counter
 from datetime import datetime
-from enum import Enum
+
 
 from pydantic import validator
-from sqlalchemy import Index, Column
+from sqlalchemy import Index, types
+from sqlalchemy.orm import mapped_column
 from sqlmodel import Field, Relationship, SQLModel
-from genotype_api.constants import CUTOFS, SEXES, STATUS, TYPES
+from genotype_api.constants import CUTOFS, Sexes, Status, AnalysisTypes
 from genotype_api.models import PlateStatusCounts, SampleDetail
 
 
@@ -44,9 +45,11 @@ class GenotypeCreate(GenotypeBase):
 
 
 class AnalysisBase(SQLModel):
-    type: TYPES = Field()
+    type: AnalysisTypes = mapped_column(
+        types.Enum(*(analysis_type for analysis_type in AnalysisTypes))
+    )
     source: str | None
-    sex: SEXES | None = Field()
+    sex: Sexes | None = mapped_column(types.Enum(*(sex for sex in Sexes)))
     created_at: datetime | None = datetime.now()
     sample_id: str | None = Field(default=None, foreign_key="sample.id", max_length=32)
     plate_id: str | None = Field(default=None, foreign_key="plate.id")
@@ -76,12 +79,12 @@ class AnalysisCreate(AnalysisBase):
 
 
 class SampleSlim(SQLModel):
-    status: STATUS | None = Field()
+    status: Status | None = mapped_column(types.Enum(*(status for status in Status)))
     comment: str | None
 
 
 class SampleBase(SampleSlim):
-    sex: SEXES | None = Field()
+    sex: Sexes | None = mapped_column(types.Enum(*(sex for sex in Sexes)))
     created_at: datetime | None = datetime.now()
 
 
@@ -303,9 +306,9 @@ def check_snps(genotype_analysis, sequence_analysis):
 
 def check_sex(sample_sex, genotype_analysis, sequence_analysis):
     """Check if any source disagrees on the sex"""
-    if not sample_sex or genotype_analysis.sex == SEXES.UNKNOWN:
+    if not sample_sex or genotype_analysis.sex == Sexes.UNKNOWN:
         return "fail"
     sexes = {genotype_analysis.sex, sequence_analysis.sex, sample_sex}
-    if {SEXES.MALE, SEXES.FEMALE}.issubset(sexes):
+    if {Sexes.MALE, Sexes.FEMALE}.issubset(sexes):
         return "fail"
     return "pass"
