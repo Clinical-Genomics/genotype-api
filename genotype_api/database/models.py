@@ -3,8 +3,7 @@ from datetime import datetime
 
 
 from pydantic import validator
-from sqlalchemy import Index, types
-from sqlalchemy.orm import mapped_column
+from sqlalchemy import Index
 from sqlmodel import Field, Relationship, SQLModel
 from genotype_api.constants import CUTOFS, Sexes, Status, AnalysisTypes
 from genotype_api.models import PlateStatusCounts, SampleDetail
@@ -45,11 +44,9 @@ class GenotypeCreate(GenotypeBase):
 
 
 class AnalysisBase(SQLModel):
-    type: AnalysisTypes = mapped_column(
-        types.Enum(*(analysis_type.value for analysis_type in AnalysisTypes))
-    )
+    type: AnalysisTypes
     source: str | None
-    sex: Sexes | None = mapped_column(types.Enum(*(sex.value for sex in Sexes)))
+    sex: Sexes | None
     created_at: datetime | None = datetime.now()
     sample_id: str | None = Field(default=None, foreign_key="sample.id", max_length=32)
     plate_id: str | None = Field(default=None, foreign_key="plate.id")
@@ -79,12 +76,12 @@ class AnalysisCreate(AnalysisBase):
 
 
 class SampleSlim(SQLModel):
-    status: Status | None = mapped_column(types.Enum(*(status.value for status in Status)))
+    status: Status | None
     comment: str | None
 
 
 class SampleBase(SampleSlim):
-    sex: Sexes | None = mapped_column(types.Enum(*(sex.value for sex in Sexes)))
+    sex: Sexes | None
     created_at: datetime | None = datetime.now()
 
 
