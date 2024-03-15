@@ -49,7 +49,7 @@ class AnalysisBase(SQLModel):
         types.Enum(*(analysis_type.value for analysis_type in AnalysisTypes))
     )
     source: str | None
-    sex: Sexes | None = mapped_column(types.Enum(*(sex for sex in Sexes)))
+    sex: Sexes | None = mapped_column(types.Enum(*(sex.value for sex in Sexes)))
     created_at: datetime | None = datetime.now()
     sample_id: str | None = Field(default=None, foreign_key="sample.id", max_length=32)
     plate_id: str | None = Field(default=None, foreign_key="plate.id")
