@@ -35,11 +35,15 @@ def get_analysis_type_sample(
     return session.exec(statement).first()
 
 
-def get_analysis(session: Session, analysis_id: int) -> Analysis:
+def get_analysis_by_id(session: Session, analysis_id: int) -> Analysis:
     """Get analysis"""
-
     statement = select(Analysis).where(Analysis.id == analysis_id)
     return session.exec(statement).one()
+
+
+def get_analyses_with_skip_and_limit(session: Session, skip: int, limit: int) -> list[Analysis]:
+    statement = select(Analysis).offset(skip).limit(limit)
+    return session.exec(statement).all()
 
 
 def get_plate(session: Session, plate_id: int) -> Plate:
