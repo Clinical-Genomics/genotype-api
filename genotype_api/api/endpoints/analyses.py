@@ -7,7 +7,7 @@ from fastapi.responses import JSONResponse
 from sqlmodel import Session, select
 from sqlmodel.sql.expression import Select, SelectOfScalar
 
-from genotype_api.database.crud import delete
+from genotype_api.database.crud.delete import delete_analysis
 from genotype_api.database.crud.create import create_analyses_sample_objects, create_analysis
 from genotype_api.database.crud.read import (
     check_analyses_objects,
@@ -58,7 +58,8 @@ def delete_analysis(
     current_user: User = Depends(get_active_user),
 ):
     """Delete analysis based on analysis_id"""
-    delete.delete_analysis(session=session, analysis_id=analysis_id)
+    analysis: Analysis = get_analysis_by_id(session=session, analysis_id=analysis_id)
+    delete_analysis(session=session, analysis=analysis)
     return JSONResponse(f"Deleted analysis: {analysis_id}", status_code=status.HTTP_200_OK)
 
 
