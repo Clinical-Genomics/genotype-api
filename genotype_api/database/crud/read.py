@@ -1,11 +1,19 @@
 import logging
+from typing import Callable, Sequence
 
 from sqlalchemy import func
 from sqlmodel import Session, select
 from sqlmodel.sql.expression import Select, SelectOfScalar
 
 from genotype_api.constants import TYPES
-from genotype_api.database.models import Analysis, Plate, Sample, User
+from genotype_api.database.filter_models.plate_models import PlateOrderParams
+from genotype_api.database.models import (
+    Analysis,
+    Plate,
+    Sample,
+    User,
+    PlateReadWithAnalysisDetailSingle,
+)
 
 SelectOfScalar.inherit_cache = True
 Select.inherit_cache = True
@@ -43,6 +51,25 @@ def get_plate(session: Session, plate_id: int) -> Plate:
 
     statement = select(Plate).where(Plate.id == plate_id)
     return session.exec(statement).one()
+
+
+def get_plate_read_analysis_single(
+    session: Session, plate_id: int
+) -> PlateReadWithAnalysisDetailSingle:
+    plate: Plate = get_plate(session=session, plate_id=plate_id)
+    return PlateReadWithAnalysisDetailSingle.from_orm(plate)
+
+
+def get_ordered_plates(
+    session: Session, order_params: PlateOrderParams, sort_func: Callable
+) -> Sequence[Plate]:
+    plates: Sequence[Plate] = session.exec(
+        select(Plate)
+        .order_by(sort_func(order_params.order_by))
+        .offset(order_params.skip)
+        .limit(order_params.limit)
+    ).all()
+    return plates
 
 
 def get_incomplete_samples(statement: SelectOfScalar) -> SelectOfScalar:
