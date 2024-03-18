@@ -3,7 +3,7 @@
 from datetime import datetime
 from io import BytesIO
 from pathlib import Path
-from typing import Literal
+from typing import Literal, Sequence
 
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, status
 from fastapi.responses import JSONResponse
@@ -17,8 +17,15 @@ from genotype_api.database.crud.read import (
     get_analyses_from_plate,
     get_plate,
     get_user_by_email,
+    get_plate_read_analysis_single,
+    get_ordered_plates,
 )
-from genotype_api.database.crud.update import refresh_sample_status
+from genotype_api.database.crud.update import (
+    refresh_sample_status,
+    refresh_plate,
+    update_plate_sign_off,
+)
+from genotype_api.database.filter_models.plate_models import PlateSignOff, PlateOrderParams
 from genotype_api.database.models import (
     Analysis,
     Plate,
@@ -72,7 +79,7 @@ def upload_plate(
     plate: Plate = create_plate(session=session, plate=plate_obj)
     for analysis in plate.analyses:
         refresh_sample_status(sample=analysis.sample, session=session)
-    session.refresh(plate)
+    refresh_plate(session=session, plate=plate)
     return plate
 
 
@@ -91,13 +98,13 @@ def sign_off_plate(
 
     plate: Plate = get_plate(session=session, plate_id=plate_id)
     db_user = get_user_by_email(session=session, email=current_user.email)
-    plate.signed_by = db_user.id
-    plate.signed_at = datetime.now()
-    plate.method_document = method_document
-    plate.method_version = method_version
-    session.commit()
-    session.refresh(plate)
-    return plate
+    plate_sign_off = PlateSignOff(
+        user_id=db_user.id,
+        signed_at=datetime.now(),
+        method_document=method_document,
+        method_version=method_version,
+    )
+    return update_plate_sign_off(session=session, plate=plate, plate_sign_off=plate_sign_off)
 
 
 @router.get(
@@ -128,8 +135,7 @@ def read_plate(
     current_user: User = Depends(get_active_user),
 ):
     """Display information about a plate."""
-
-    return PlateReadWithAnalysisDetailSingle.from_orm(get_plate(session=session, plate_id=plate_id))
+    return get_plate_read_analysis_single(session=session, plate_id=plate_id)
 
 
 @router.get(
@@ -145,13 +151,13 @@ async def read_plates(
     limit: int | None = 10,
     session: Session = Depends(get_session),
     current_user: User = Depends(get_active_user),
-):
+) -> Sequence[Plate]:
     """Display all plates"""
     sort_func = desc if sort_order == "descend" else asc
-    plates: list[Plate] = session.exec(
-        select(Plate).order_by(sort_func(order_by)).offset(skip).limit(limit)
-    ).all()
-
+    order_params = PlateOrderParams(order_by=order_by, skip=skip, limit=limit)
+    plates: Sequence[Plate] = get_ordered_plates(
+        session=session, order_params=order_params, sort_func=sort_func
+    )
     return plates
 
 

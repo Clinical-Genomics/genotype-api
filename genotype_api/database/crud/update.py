@@ -1,7 +1,8 @@
 from sqlmodel import Session
 
+from genotype_api.database.filter_models.plate_models import PlateSignOff
 from genotype_api.match import check_sample
-from genotype_api.database.models import Sample
+from genotype_api.database.models import Sample, Plate
 from sqlmodel.sql.expression import Select, SelectOfScalar
 
 SelectOfScalar.inherit_cache = True
@@ -19,3 +20,17 @@ def refresh_sample_status(sample: Sample, session: Session) -> Sample:
     session.commit()
     session.refresh(sample)
     return sample
+
+
+def refresh_plate(session: Session, plate: Plate) -> None:
+    session.refresh(plate)
+
+
+def update_plate_sign_off(session: Session, plate: Plate, plate_sign_off: PlateSignOff) -> Plate:
+    plate.signed_by = plate_sign_off.user_id
+    plate.signed_at = plate_sign_off.signed_at
+    plate.method_document = plate_sign_off.method_document
+    plate.method_version = plate_sign_off.method_version
+    session.commit()
+    session.refresh(plate)
+    return plate
