@@ -12,6 +12,7 @@ from sqlmodel import Session, select
 from sqlmodel.sql.expression import Select, SelectOfScalar
 
 from genotype_api.database.crud.create import create_analyses_sample_objects, create_plate
+from genotype_api.database.crud.delete import delete_analysis
 from genotype_api.database.crud.read import (
     check_analyses_objects,
     get_analyses_from_plate,
@@ -172,9 +173,8 @@ def delete_plate(
     analyses: list[Analysis] = get_analyses_from_plate(session=session, plate_id=plate_id)
     analyse_ids = [analyse.id for analyse in analyses]
     for analysis in analyses:
-        session.delete(analysis)
-    session.delete(plate)
-    session.commit()
+        delete_analysis(session=session, analysis=analysis)
+    delete_plate(session=session, plate=plate)
 
     return JSONResponse(
         f"Deleted plate: {plate_id} and analyses: {analyse_ids}",
