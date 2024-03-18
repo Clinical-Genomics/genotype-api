@@ -2,9 +2,13 @@
 
 from collections import Counter
 
-from genotype_api.database.models import Analysis
-from genotype_api.models import MatchResult, MatchCounts
-from genotype_api.service.match_genotype_service.utils import compare_genotypes
+from genotype_api.database.models import Analysis, Sample
+from genotype_api.models import MatchResult, MatchCounts, SampleDetail
+from genotype_api.service.match_genotype_service.utils import (
+    compare_genotypes,
+    check_snps,
+    check_sex,
+)
 
 
 class MatchGenotypeService:
@@ -26,3 +30,21 @@ class MatchGenotypeService:
                     ),
                 )
         return match_results
+
+    @staticmethod
+    def check_sample(sample: Sample) -> SampleDetail:
+        """Check a sample for inconsistencies."""
+        status = check_snps(
+            genotype_analysis=sample.genotype_analysis,
+            sequence_analysis=sample.sequence_analysis,
+        )
+        status.update(
+            {
+                "sex": check_sex(
+                    sample_sex=sample.sex,
+                    sequence_analysis=sample.sequence_analysis,
+                    genotype_analysis=sample.genotype_analysis,
+                )
+            }
+        )
+        return SampleDetail(**status)

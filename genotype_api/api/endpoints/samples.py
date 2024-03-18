@@ -1,4 +1,3 @@
-from collections import Counter
 from datetime import date
 from typing import Literal
 
@@ -29,11 +28,9 @@ from genotype_api.database.models import (
     SampleRead,
     SampleReadWithAnalysisDeep,
     User,
-    compare_genotypes,
 )
 from genotype_api.database.session_handler import get_session
-from genotype_api.match import check_sample
-from genotype_api.models import MatchCounts, MatchResult, SampleDetail
+from genotype_api.models import MatchResult, SampleDetail
 from genotype_api.security import get_active_user
 from genotype_api.service.match_genotype_service.match_genotype import MatchGenotypeService
 
@@ -197,7 +194,7 @@ def get_status_detail(
     sample: Sample = get_sample(session=session, sample_id=sample_id)
     if len(sample.analyses) != 2:
         return SampleDetail()
-    return check_sample(sample=sample)
+    return MatchGenotypeService.check_sample(sample=sample)
 
 
 @router.delete("/{sample_id}", response_model=Sample)
