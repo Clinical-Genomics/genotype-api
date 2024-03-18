@@ -98,9 +98,8 @@ def sign_off_plate(
     """
 
     plate: Plate = get_plate(session=session, plate_id=plate_id)
-    db_user = get_user_by_email(session=session, email=current_user.email)
     plate_sign_off = PlateSignOff(
-        user_id=db_user.id,
+        user_id=current_user.id,
         signed_at=datetime.now(),
         method_document=method_document,
         method_version=method_version,
