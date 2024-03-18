@@ -1,28 +1,28 @@
 from collections import Counter
-from datetime import date, timedelta
+from datetime import date
 from typing import Literal
 
 from fastapi import APIRouter, Depends, Query
 from fastapi.responses import JSONResponse
-from sqlmodel import Session, select
+from sqlmodel import Session
 from sqlmodel.sql.expression import Select, SelectOfScalar
 from starlette import status
 
-from genotype_api.database.crud import create
-from genotype_api.constants import SEXES
+from genotype_api.database.crud import create, delete
+from genotype_api.constants import SEXES, TYPES
 from genotype_api.database.crud.read import (
-    get_commented_samples,
-    get_incomplete_samples,
-    get_plate_samples,
     get_sample,
-    get_samples,
-    get_status_missing_samples,
+    get_filtered_samples,
+    get_analyses_by_type_between_dates,
+    get_analysis_by_type_and_sample_id,
 )
 from genotype_api.database.crud.update import (
     refresh_sample_status,
     update_sample_comment,
     update_sample_status,
+    update_sample_sex,
 )
+from genotype_api.database.filter_models.sample_models import SampleFilterParams, SampleSexesUpdate
 from genotype_api.database.models import (
     Analysis,
     Sample,
@@ -35,6 +35,7 @@ from genotype_api.database.session_handler import get_session
 from genotype_api.match import check_sample
 from genotype_api.models import MatchCounts, MatchResult, SampleDetail
 from genotype_api.security import get_active_user
+from genotype_api.service.match_genotype_service.match_genotype import MatchGenotypeService
 
 SelectOfScalar.inherit_cache = True
 Select.inherit_cache = True
@@ -98,20 +99,16 @@ def read_samples(
     current_user: User = Depends(get_active_user),
 ) -> list[Sample]:
     """Returns a list of samples matching the provided filters."""
-    statement: SelectOfScalar = select(Sample).distinct().join(Analysis)
-    if sample_id:
-        statement: SelectOfScalar = get_samples(statement=statement, sample_id=sample_id)
-    if plate_id:
-        statement: SelectOfScalar = get_plate_samples(statement=statement, plate_id=plate_id)
-    if incomplete:
-        statement: SelectOfScalar = get_incomplete_samples(statement=statement)
-    if commented:
-        statement: SelectOfScalar = get_commented_samples(statement=statement)
-    if status_missing:
-        statement: SelectOfScalar = get_status_missing_samples(statement=statement)
-    return session.exec(
-        statement.order_by(Sample.created_at.desc()).offset(skip).limit(limit)
-    ).all()
+    filter_params = SampleFilterParams(
+        sample_id=sample_id,
+        plate_id=plate_id,
+        is_incomplete=incomplete,
+        is_commented=commented,
+        is_missing=status_missing,
+        skip=skip,
+        limit=limit,
+    )
+    return get_filtered_samples(session=session, filter_params=filter_params)
 
 
 @router.post("/", response_model=SampleRead)
@@ -133,20 +130,11 @@ def update_sex(
     current_user: User = Depends(get_active_user),
 ):
     """Updating sex field on sample and sample analyses."""
-
-    sample_in_db: Sample = get_sample(session=session, sample_id=sample_id)
-    sample_in_db.sex = sex
-    for analysis in sample_in_db.analyses:
-        if genotype_sex and analysis.type == "genotype":
-            analysis.sex = genotype_sex
-        elif sequence_sex and analysis.type == "sequence":
-            analysis.sex = sequence_sex
-        session.add(analysis)
-    session.add(sample_in_db)
-    session.commit()
-    session.refresh(sample_in_db)
-    sample_in_db: Sample = refresh_sample_status(session=session, sample=sample_in_db)
-    return sample_in_db
+    sexes_update = SampleSexesUpdate(
+        sample_id=sample_id, sex=sex, genotype_sex=genotype_sex, sequence_sex=sequence_sex
+    )
+    sample: Sample = update_sample_sex(session=session, sexes_update=sexes_update)
+    return sample
 
 
 @router.put("/{sample_id}/comment", response_model=SampleRead)
@@ -175,41 +163,24 @@ def set_sample_status(
 @router.get("/{sample_id}/match", response_model=list[MatchResult])
 def match(
     sample_id: str,
-    analysis_type: Literal["genotype", "sequence"],
-    comparison_set: Literal["genotype", "sequence"],
+    analysis_type: TYPES,
+    comparison_set: TYPES,
     date_min: date | None = date.min,
     date_max: date | None = date.max,
     session: Session = Depends(get_session),
     current_user: User = Depends(get_active_user),
 ) -> list[MatchResult]:
     """Match sample genotype against all other genotypes."""
-
-    all_genotypes: Analysis = session.query(Analysis).filter(
-        Analysis.type == comparison_set,
-        Analysis.created_at > date_min - timedelta(days=1),
-        Analysis.created_at < date_max + timedelta(days=1),
+    analyses: list[Analysis] = get_analyses_by_type_between_dates(
+        session=session, analysis_type=comparison_set, date_max=date_max, date_min=date_min
     )
-    genotype_checked = (
-        session.query(Analysis).filter(
-            Analysis.sample_id == sample_id, Analysis.type == analysis_type
-        )
-    ).one()
-
-    match_results = []
-    for genotype in all_genotypes:
-        genotype_pairs = zip(genotype.genotypes, genotype_checked.genotypes)
-        results = dict(
-            compare_genotypes(genotype_1, genotype_2) for genotype_1, genotype_2 in genotype_pairs
-        )
-        count = Counter([val for key, val in results.items()])
-        if count.get("match", 0) + count.get("unknown", 0) > 40:
-            match_results.append(
-                MatchResult(
-                    sample_id=genotype.sample_id,
-                    match_results=MatchCounts.parse_obj(count),
-                ),
-            )
-    return match_results
+    sample_analysis: Analysis = get_analysis_by_type_and_sample_id(
+        session=session, analysis_type=analysis_type, sample_id=sample_id
+    )
+    matches: list[MatchResult] = MatchGenotypeService.get_matches(
+        analyses=analyses, sample_analysis=sample_analysis
+    )
+    return matches
 
 
 @router.get(
@@ -239,7 +210,6 @@ def delete_sample(
 
     sample: Sample = get_sample(session=session, sample_id=sample_id)
     for analysis in sample.analyses:
-        session.delete(analysis)
-    session.delete(sample)
-    session.commit()
+        delete.delete_analysis(session=session, analysis=analysis)
+    delete.delete_sample(session=session, sample=sample)
     return JSONResponse("Deleted", status_code=status.HTTP_200_OK)

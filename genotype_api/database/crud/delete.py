@@ -19,3 +19,8 @@ def delete_analysis(session: Session, analysis: Analysis) -> None:
 def delete_plate(session: Session, plate: Plate) -> None:
     session.delete(plate)
     session.commit()
+
+
+def delete_sample(session: Session, sample: Sample) -> None:
+    session.delete(sample)
+    session.commit()

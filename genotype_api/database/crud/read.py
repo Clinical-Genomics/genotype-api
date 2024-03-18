@@ -1,12 +1,15 @@
 import logging
+from datetime import timedelta, date
 from typing import Callable, Sequence
 
 from sqlalchemy import func
+from sqlalchemy.orm import Query
 from sqlmodel import Session, select
 from sqlmodel.sql.expression import Select, SelectOfScalar
 
 from genotype_api.constants import TYPES
 from genotype_api.database.filter_models.plate_models import PlateOrderParams
+from genotype_api.database.filter_models.sample_models import SampleFilterParams
 from genotype_api.database.models import (
     Analysis,
     Plate,
@@ -46,6 +49,27 @@ def get_analyses_with_skip_and_limit(session: Session, skip: int, limit: int) ->
     return session.exec(statement).all()
 
 
+def get_analyses_by_type_between_dates(
+    session, analysis_type: str, date_min: date, date_max: date
+) -> list[Analysis]:
+    analyses: Query = session.query(Analysis).filter(
+        Analysis.type == analysis_type,
+        Analysis.created_at > date_min - timedelta(days=1),
+        Analysis.created_at < date_max + timedelta(days=1),
+    )
+    return analyses.all()
+
+
+def get_analysis_by_type_and_sample_id(
+    session: Session, analysis_type: str, sample_id: str
+) -> Analysis:
+    return (
+        session.query(Analysis).filter(
+            Analysis.sample_id == sample_id, Analysis.type == analysis_type
+        )
+    ).one()
+
+
 def get_plate(session: Session, plate_id: int) -> Plate:
     """Get plate"""
 
@@ -80,6 +104,29 @@ def get_incomplete_samples(statement: SelectOfScalar) -> SelectOfScalar:
         .order_by(Analysis.created_at)
         .having(func.count(Analysis.sample_id) < 2)
     )
+
+
+def get_filtered_samples(session: Session, filter_params: SampleFilterParams) -> list[Sample]:
+    statement: SelectOfScalar = select(Sample).distinct().join(Analysis)
+    if filter_params.sample_id:
+        statement: SelectOfScalar = get_samples(
+            statement=statement, sample_id=filter_params.sample_id
+        )
+    if filter_params.plate_id:
+        statement: SelectOfScalar = get_plate_samples(
+            statement=statement, plate_id=filter_params.plate_id
+        )
+    if filter_params.is_incomplete:
+        statement: SelectOfScalar = get_incomplete_samples(statement=statement)
+    if filter_params.is_commented:
+        statement: SelectOfScalar = get_commented_samples(statement=statement)
+    if filter_params.is_missing:
+        statement: SelectOfScalar = get_status_missing_samples(statement=statement)
+    return session.exec(
+        statement.order_by(Sample.created_at.desc())
+        .offset(filter_params.skip)
+        .limit(filter_params.limit)
+    ).all()
 
 
 def get_plate_samples(statement: SelectOfScalar, plate_id: str) -> SelectOfScalar:

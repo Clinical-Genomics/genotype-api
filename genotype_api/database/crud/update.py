@@ -3,6 +3,7 @@ from sqlmodel import Session
 
 from genotype_api.database.crud.read import get_sample
 from genotype_api.database.filter_models.plate_models import PlateSignOff
+from genotype_api.database.filter_models.sample_models import SampleSexesUpdate
 from genotype_api.match import check_sample
 from genotype_api.database.models import Sample, Plate
 from sqlmodel.sql.expression import Select, SelectOfScalar
@@ -54,3 +55,19 @@ def update_plate_sign_off(session: Session, plate: Plate, plate_sign_off: PlateS
     session.commit()
     session.refresh(plate)
     return plate
+
+
+def update_sample_sex(session: Session, sexes_update: SampleSexesUpdate) -> Sample:
+    sample: Sample = get_sample(session=session, sample_id=sexes_update.sample_id)
+    sample.sex = sexes_update.sex
+    for analysis in sample.analyses:
+        if sexes_update.genotype_sex and analysis.type == "genotype":
+            analysis.sex = sexes_update.genotype_sex
+        elif sexes_update.sequence_sex and analysis.type == "sequence":
+            analysis.sex = sexes_update.sequence_sex
+        session.add(analysis)
+    session.add(sample)
+    session.commit()
+    session.refresh(sample)
+    sample: Sample = refresh_sample_status(session=session, sample=sample)
+    return sample
