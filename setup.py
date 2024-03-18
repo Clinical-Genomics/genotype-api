@@ -13,7 +13,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name="genotype_api",
-    version="2.0.11",
+    version="2.0.12",
     description="",
     long_description=long_description,
     long_description_content_type="text/markdown",
