@@ -8,7 +8,7 @@ from sqlmodel import Session, select
 from sqlmodel.sql.expression import Select, SelectOfScalar
 from starlette import status
 
-import genotype_api.database.crud.create
+from genotype_api.database.crud import create
 from genotype_api.constants import SEXES
 from genotype_api.database.crud.read import (
     get_commented_samples,
@@ -18,7 +18,11 @@ from genotype_api.database.crud.read import (
     get_samples,
     get_status_missing_samples,
 )
-from genotype_api.database.crud.update import refresh_sample_status
+from genotype_api.database.crud.update import (
+    refresh_sample_status,
+    update_sample_comment,
+    update_sample_status,
+)
 from genotype_api.database.models import (
     Analysis,
     Sample,
@@ -116,7 +120,7 @@ def create_sample(
     session: Session = Depends(get_session),
     current_user: User = Depends(get_active_user),
 ):
-    return genotype_api.database.database.crud.create.create_sample(session=session, sample=sample)
+    return create.create_sample(session=session, sample=sample)
 
 
 @router.put("/{sample_id}/sex", response_model=SampleRead)
@@ -151,15 +155,9 @@ def update_comment(
     comment: str = Query(...),
     session: Session = Depends(get_session),
     current_user: User = Depends(get_active_user),
-):
+) -> Sample:
     """Updating comment field on sample."""
-
-    sample_in_db: Sample = get_sample(session=session, sample_id=sample_id)
-    sample_in_db.comment = comment
-    session.add(sample_in_db)
-    session.commit()
-    session.refresh(sample_in_db)
-    return sample_in_db
+    return update_sample_comment(session=session, sample_id=sample_id, comment=comment)
 
 
 @router.put("/{sample_id}/status", response_model=SampleRead)
@@ -168,15 +166,10 @@ def set_sample_status(
     session: Session = Depends(get_session),
     status: Literal["pass", "fail", "cancel"] | None = None,
     current_user: User = Depends(get_active_user),
-):
+) -> Sample:
     """Check sample analyses and update sample status accordingly."""
 
-    sample: Sample = get_sample(session=session, sample_id=sample_id)
-    sample.status = status
-    session.add(sample)
-    session.commit()
-    session.refresh(sample)
-    return sample
+    return update_sample_status(session=session, sample_id=sample_id, status=status)
 
 
 @router.get("/{sample_id}/match", response_model=list[MatchResult])
