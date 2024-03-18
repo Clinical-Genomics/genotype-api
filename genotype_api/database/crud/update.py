@@ -4,9 +4,10 @@ from sqlmodel import Session
 from genotype_api.database.crud.read import get_sample
 from genotype_api.database.filter_models.plate_models import PlateSignOff
 from genotype_api.database.filter_models.sample_models import SampleSexesUpdate
-from genotype_api.match import check_sample
 from genotype_api.database.models import Sample, Plate
 from sqlmodel.sql.expression import Select, SelectOfScalar
+
+from genotype_api.service.match_genotype_service.match_genotype import MatchGenotypeService
 
 SelectOfScalar.inherit_cache = True
 Select.inherit_cache = True
@@ -16,7 +17,7 @@ def refresh_sample_status(sample: Sample, session: Session) -> Sample:
     if len(sample.analyses) != 2:
         sample.status = None
     else:
-        results = check_sample(sample=sample)
+        results = MatchGenotypeService.check_sample(sample=sample)
         sample.status = "fail" if "fail" in results.dict().values() else "pass"
 
     session.add(sample)

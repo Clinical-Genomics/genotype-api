@@ -15,8 +15,8 @@ from genotype_api.database.models import (
     Plate,
     Sample,
     User,
-    PlateReadWithAnalysisDetailSingle,
 )
+from genotype_api.dto.dto import PlateReadWithAnalysisDetailSingle
 
 SelectOfScalar.inherit_cache = True
 Select.inherit_cache = True

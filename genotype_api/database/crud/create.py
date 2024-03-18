@@ -4,7 +4,8 @@ from fastapi import HTTPException
 from sqlmodel import Session
 from sqlmodel.sql.expression import Select, SelectOfScalar
 
-from genotype_api.database.models import Analysis, Plate, PlateCreate, Sample, User, UserCreate
+from genotype_api.database.models import Analysis, Plate, Sample, User
+from genotype_api.dto.dto import UserCreate, PlateCreate
 
 SelectOfScalar.inherit_cache = True
 Select.inherit_cache = True

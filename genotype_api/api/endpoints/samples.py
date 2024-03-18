@@ -25,10 +25,9 @@ from genotype_api.database.filter_models.sample_models import SampleFilterParams
 from genotype_api.database.models import (
     Analysis,
     Sample,
-    SampleRead,
-    SampleReadWithAnalysisDeep,
     User,
 )
+from genotype_api.dto.dto import SampleRead, SampleReadWithAnalysisDeep
 from genotype_api.database.session_handler import get_session
 from genotype_api.models import MatchResult, SampleDetail
 from genotype_api.security import get_active_user

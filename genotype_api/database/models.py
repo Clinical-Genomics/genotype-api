@@ -1,13 +1,11 @@
 from collections import Counter
 from datetime import datetime
 
-from pydantic import EmailStr, constr, validator
+from pydantic import EmailStr, constr
 from sqlalchemy import Index
 from sqlmodel import Field, Relationship, SQLModel
 
 from genotype_api.constants import SEXES, STATUS, TYPES
-from genotype_api.models import PlateStatusCounts, SampleDetail
-from genotype_api.service.match_genotype_service.utils import check_snps, check_sex
 
 
 class GenotypeBase(SQLModel):
@@ -36,14 +34,6 @@ class Genotype(GenotypeBase, table=True):
         return "0" not in self.alleles
 
 
-class GenotypeRead(GenotypeBase):
-    id: int
-
-
-class GenotypeCreate(GenotypeBase):
-    pass
-
-
 class AnalysisBase(SQLModel):
     type: TYPES
     source: str | None
@@ -66,14 +56,6 @@ class Analysis(AnalysisBase, table=True):
         """Check that genotypes look ok."""
         calls = ["known" if genotype.is_ok else "unknown" for genotype in self.genotypes]
         return Counter(calls)
-
-
-class AnalysisRead(AnalysisBase):
-    id: int
-
-
-class AnalysisCreate(AnalysisBase):
-    pass
 
 
 class SampleSlim(SQLModel):
@@ -113,14 +95,6 @@ class Sample(SampleBase, table=True):
         return None
 
 
-class SampleRead(SampleBase):
-    id: constr(max_length=32)
-
-
-class SampleCreate(SampleBase):
-    pass
-
-
 class SNPBase(SQLModel):
     ref: constr(max_length=1) | None
     chrom: constr(max_length=5) | None
@@ -134,10 +108,6 @@ class SNP(SNPBase, table=True):
     id: constr(max_length=32) | None = Field(default=None, primary_key=True)
 
 
-class SNPRead(SNPBase):
-    id: constr(max_length=32)
-
-
 class UserBase(SQLModel):
     email: EmailStr = Field(index=True, unique=True)
     name: str | None = ""
@@ -147,14 +117,6 @@ class User(UserBase, table=True):
     __tablename__ = "user"
     id: int | None = Field(default=None, primary_key=True)
     plates: list["Plate"] = Relationship(back_populates="user")
-
-
-class UserRead(UserBase):
-    id: int
-
-
-class UserCreate(UserBase):
-    pass
 
 
 class PlateBase(SQLModel):
@@ -171,94 +133,3 @@ class Plate(PlateBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
     user: "User" = Relationship(back_populates="plates")
     analyses: list["Analysis"] = Relationship(back_populates="plate")
-
-
-class PlateRead(PlateBase):
-    id: str
-    user: UserRead | None
-
-
-class PlateCreate(PlateBase):
-    analyses: list[Analysis] | None = []
-
-
-class UserReadWithPlates(UserRead):
-    plates: list[Plate] | None = []
-
-
-class SampleReadWithAnalysis(SampleRead):
-    analyses: list[AnalysisRead] | None = []
-
-
-class AnalysisReadWithGenotype(AnalysisRead):
-    genotypes: list[Genotype] | None = []
-
-
-class SampleReadWithAnalysisDeep(SampleRead):
-    analyses: list[AnalysisReadWithGenotype] | None = []
-    detail: SampleDetail | None
-
-    @validator("detail")
-    def get_detail(cls, value, values) -> SampleDetail:
-        analyses = values.get("analyses")
-        if len(analyses) != 2:
-            return SampleDetail()
-        genotype_analysis = [analysis for analysis in analyses if analysis.type == "genotype"][0]
-        sequence_analysis = [analysis for analysis in analyses if analysis.type == "sequence"][0]
-        status = check_snps(
-            genotype_analysis=genotype_analysis, sequence_analysis=sequence_analysis
-        )
-        sex = check_sex(
-            sample_sex=values.get("sex"),
-            genotype_analysis=genotype_analysis,
-            sequence_analysis=sequence_analysis,
-        )
-
-        return SampleDetail(**status, sex=sex)
-
-    class Config:
-        validate_all = True
-
-
-class AnalysisReadWithSample(AnalysisRead):
-    sample: SampleSlim | None
-
-
-class AnalysisReadWithSampleDeep(AnalysisRead):
-    sample: SampleReadWithAnalysisDeep | None
-
-
-class PlateReadWithAnalyses(PlateRead):
-    analyses: list[AnalysisReadWithSample] | None = []
-
-
-class PlateReadWithAnalysisDetail(PlateRead):
-    analyses: list[AnalysisReadWithSample] | None = []
-    detail: PlateStatusCounts | None
-
-    @validator("detail")
-    def check_detail(cls, value, values):
-        analyses = values.get("analyses")
-        statuses = [str(analysis.sample.status) for analysis in analyses]
-        commented = sum(1 for analysis in analyses if analysis.sample.comment)
-        status_counts = Counter(statuses)
-        return PlateStatusCounts(**status_counts, total=len(analyses), commented=commented)
-
-    class Config:
-        validate_all = True
-
-
-class PlateReadWithAnalysisDetailSingle(PlateRead):
-    analyses: list[AnalysisReadWithSample] | None = []
-    detail: PlateStatusCounts | None
-
-    @validator("detail")
-    def check_detail(cls, value, values):
-        analyses = values.get("analyses")
-        statuses = [str(analysis.sample.status) for analysis in analyses]
-        commented = sum(1 for analysis in analyses if analysis.sample.comment)
-        status_counts = Counter(statuses)
-        return PlateStatusCounts(**status_counts, total=len(analyses), commented=commented)
-
-    class Config:
-        validate_all = True

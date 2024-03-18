@@ -3,10 +3,10 @@
 from collections import Counter
 
 from genotype_api.constants import CUTOFS, SEXES
-from genotype_api.database.models import Genotype
+from genotype_api.database import models
 
 
-def compare_genotypes(genotype_1: Genotype, genotype_2: Genotype) -> tuple[str, str]:
+def compare_genotypes(genotype_1: models.Genotype, genotype_2: models.Genotype) -> tuple[str, str]:
     """Compare two genotypes if they have the same alleles."""
 
     if "0" in genotype_1.alleles or "0" in genotype_2.alleles:
