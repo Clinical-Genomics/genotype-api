@@ -1,4 +1,4 @@
-"""Utils functions for the match genotype service."""
+"""Utils functions for the match genotype services."""
 
 from collections import Counter
 

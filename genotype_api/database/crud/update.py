@@ -1,15 +1,16 @@
 import types
 
+from pydantic import EmailStr
 from sqlmodel import Session
 
 from genotype_api.constants import TYPES
 from genotype_api.database.crud.read import get_sample
 from genotype_api.database.filter_models.plate_models import PlateSignOff
 from genotype_api.database.filter_models.sample_models import SampleSexesUpdate
-from genotype_api.database.models import Sample, Plate
+from genotype_api.database.models import Sample, Plate, User
 from sqlmodel.sql.expression import Select, SelectOfScalar
 
-from genotype_api.service.match_genotype_service.match_genotype import MatchGenotypeService
+from genotype_api.services.match_genotype_service.match_genotype import MatchGenotypeService
 
 SelectOfScalar.inherit_cache = True
 Select.inherit_cache = True
@@ -74,3 +75,11 @@ def update_sample_sex(session: Session, sexes_update: SampleSexesUpdate) -> Samp
     session.refresh(sample)
     sample: Sample = refresh_sample_status(session=session, sample=sample)
     return sample
+
+
+def update_user_email(session: Session, user: User, email: EmailStr) -> User:
+    user.email = email
+    session.add(user)
+    session.commit()
+    session.refresh(user)
+    return user

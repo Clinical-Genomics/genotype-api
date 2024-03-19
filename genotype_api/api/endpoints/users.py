@@ -7,7 +7,13 @@ from sqlmodel.sql.expression import Select, SelectOfScalar
 from starlette import status
 from starlette.responses import JSONResponse
 
-from genotype_api.database.crud.read import get_user
+from genotype_api.database.crud.read import (
+    get_user,
+    get_user_by_email,
+    get_users_with_skip_and_limit,
+)
+from genotype_api.database.crud.update import update_user_email
+from genotype_api.database.crud import delete, create
 from genotype_api.database.models import User
 from genotype_api.dto.dto import UserRead, UserCreate, UserReadWithPlates
 from genotype_api.database.session_handler import get_session
@@ -43,8 +49,7 @@ def delete_user(
             status_code=status.HTTP_406_NOT_ACCEPTABLE,
             detail="User previously signed plates, please archive instead",
         )
-    session.delete(user)
-    session.commit()
+    delete.delete_user(session=session, user=user)
     return JSONResponse(content="User deleted successfully", status_code=status.HTTP_200_OK)
 
 
@@ -58,10 +63,7 @@ def change_user_email(
     user: User = get_user(session=session, user_id=user_id)
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    user.email = email
-    session.add(user)
-    session.commit()
-    session.refresh(user)
+    user: User = update_user_email(session=session, user=user, email=email)
     return user
 
 
@@ -72,8 +74,7 @@ def read_users(
     session: Session = Depends(get_session),
     current_user: User = Depends(get_active_user),
 ) -> list[User]:
-    users: list[User] = session.exec(select(User).offset(skip).limit(limit)).all()
-    return users
+    return get_users_with_skip_and_limit(session=session, skip=skip, limit=limit)
 
 
 @router.post("/", response_model=User)
@@ -82,11 +83,8 @@ def create_user(
     session: Session = Depends(get_session),
     current_user: User = Depends(get_active_user),
 ):
-    user_in_db: list[User] = session.exec(select(User).where(User.email == user.email)).all()
-    if user_in_db:
+    existing_user: User = get_user_by_email(session=session, email=user.email)
+    if existing_user:
         raise HTTPException(status_code=409, detail="Email already registered")
-    db_user = User.from_orm(user)
-    session.add(db_user)
-    session.commit()
-    session.refresh(db_user)
-    return db_user
+    new_user: User = create.create_user(session=session, user=user)
+    return new_user

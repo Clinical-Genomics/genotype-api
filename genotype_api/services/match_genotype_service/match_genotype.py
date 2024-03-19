@@ -1,10 +1,10 @@
-"""Module for the match genotype service."""
+"""Module for the match genotype services."""
 
 from collections import Counter
 
 from genotype_api.database.models import Analysis, Sample
 from genotype_api.models import MatchResult, MatchCounts, SampleDetail
-from genotype_api.service.match_genotype_service.utils import (
+from genotype_api.services.match_genotype_service.utils import (
     compare_genotypes,
     check_snps,
     check_sex,

@@ -1,12 +1,16 @@
 """Routes for the snps"""
 
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile
-from sqlmodel import Session, delete, select
+from sqlmodel import Session
 from sqlmodel.sql.expression import Select, SelectOfScalar
 
+from genotype_api.database.crud.create import create_snps
+from genotype_api.database.crud.read import get_snps, get_snps_by_limit_and_skip
 from genotype_api.database.models import SNP, User
+from genotype_api.database.crud import delete
 from genotype_api.database.session_handler import get_session
 from genotype_api.security import get_active_user
+from genotype_api.services.snp_reader.snp_reader import SNPReaderService
 
 SelectOfScalar.inherit_cache = True
 Select.inherit_cache = True
@@ -21,7 +25,7 @@ def read_snps(
     session: Session = Depends(get_session),
     current_user: User = Depends(get_active_user),
 ) -> list[SNP]:
-    return session.exec(select(SNP).offset(skip).limit(limit)).all()
+    return get_snps_by_limit_and_skip(session=session, skip=skip, limit=limit)
 
 
 @router.post("/", response_model=list[SNP])
@@ -30,21 +34,12 @@ async def upload_snps(
     session: Session = Depends(get_session),
     current_user: User = Depends(get_active_user),
 ):
-    db_snps: list[SNP] = session.exec(select(SNP)).all()
-    if db_snps:
+    existing_snps: list[SNP] = get_snps(session)
+    if existing_snps:
         raise HTTPException(status_code=400, detail="SNPs already uploaded")
-    snps = []
-    content = await snps_file.read()
-
-    header = ["id", "ref", "chrom", "pos"]
-    for line in content.decode().split("\n"):
-        if len(line) <= 10:
-            continue
-        snp = SNP(**dict(zip(header, line.split())))
-        session.add(snp)
-        snps.append(snp)
-    session.commit()
-    return snps
+    snps: list[SNP] = SNPReaderService.read_snps_from_file(snps_file)
+    new_snps: list[snps] = create_snps(session=session, snps=snps)
+    return new_snps
 
 
 @router.delete("/")
@@ -54,6 +49,5 @@ def delete_snps(
 ):
     """Delete all SNPs"""
 
-    result = session.exec(delete(SNP))
-    session.commit()
+    result = delete.delete_snps(session)
     return {"message": f"all snps deleted ({result.rowcount} snps)"}

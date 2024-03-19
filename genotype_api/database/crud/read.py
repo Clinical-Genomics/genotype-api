@@ -15,6 +15,7 @@ from genotype_api.database.models import (
     Plate,
     Sample,
     User,
+    SNP,
 )
 from genotype_api.dto.dto import PlateReadWithAnalysisDetailSingle
 
@@ -173,6 +174,10 @@ def get_users(session: Session, skip: int = 0, limit: int = 100) -> list[User]:
     return session.exec(statement).all()
 
 
+def get_users_with_skip_and_limit(session: Session, skip: int, limit: int) -> list[User]:
+    return session.exec(select(User).offset(skip).limit(limit)).all()
+
+
 def check_analyses_objects(
     session: Session, analyses: list[Analysis], analysis_type: TYPES
 ) -> None:
@@ -185,3 +190,11 @@ def check_analyses_objects(
         )
         if db_analysis:
             session.delete(db_analysis)
+
+
+def get_snps(session) -> list[SNP]:
+    return session.exec(select(SNP)).all()
+
+
+def get_snps_by_limit_and_skip(session: Session, skip: int, limit: int) -> list[SNP]:
+    return session.exec(select(SNP).offset(skip).limit(limit)).all()

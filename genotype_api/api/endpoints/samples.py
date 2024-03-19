@@ -31,7 +31,7 @@ from genotype_api.dto.dto import SampleRead, SampleReadWithAnalysisDeep
 from genotype_api.database.session_handler import get_session
 from genotype_api.models import MatchResult, SampleDetail
 from genotype_api.security import get_active_user
-from genotype_api.service.match_genotype_service.match_genotype import MatchGenotypeService
+from genotype_api.services.match_genotype_service.match_genotype import MatchGenotypeService
 
 SelectOfScalar.inherit_cache = True
 Select.inherit_cache = True
