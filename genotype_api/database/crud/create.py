@@ -4,7 +4,7 @@ from fastapi import HTTPException
 from sqlmodel import Session
 from sqlmodel.sql.expression import Select, SelectOfScalar
 
-from genotype_api.database.models import Analysis, Plate, Sample, User
+from genotype_api.database.models import Analysis, Plate, Sample, User, SNP
 from genotype_api.dto.dto import UserCreate, PlateCreate
 
 SelectOfScalar.inherit_cache = True
@@ -51,10 +51,15 @@ def create_analyses_sample_objects(session: Session, analyses: list[Analysis]) -
     ]
 
 
-def create_user(db: Session, user: UserCreate):
-    fake_hashed_password = user.password + "notreallyhashed"
-    db_user = User(email=user.email, hashed_password=fake_hashed_password)
-    db.add(db_user)
-    db.commit()
-    db.refresh(db_user)
+def create_user(session: Session, user: UserCreate):
+    db_user = User.from_orm(user)
+    session.add(db_user)
+    session.commit()
+    session.refresh(db_user)
     return db_user
+
+
+def create_snps(session: Session, snps: list[SNP]) -> list[SNP]:
+    session.add_all(snps)
+    session.commit()
+    return snps
