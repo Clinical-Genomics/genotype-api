@@ -8,7 +8,8 @@ from starlette import status
 from starlette.responses import JSONResponse
 
 from genotype_api.database.crud.read import get_user
-from genotype_api.database.models import User, UserCreate, UserRead, UserReadWithPlates
+from genotype_api.database.models import User
+from genotype_api.dto.dto import UserRead, UserCreate, UserReadWithPlates
 from genotype_api.database.session_handler import get_session
 from genotype_api.security import get_active_user
 

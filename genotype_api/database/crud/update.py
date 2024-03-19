@@ -1,9 +1,15 @@
+import types
+
 from sqlmodel import Session
 
+from genotype_api.constants import TYPES
+from genotype_api.database.crud.read import get_sample
 from genotype_api.database.filter_models.plate_models import PlateSignOff
-from genotype_api.match import check_sample
+from genotype_api.database.filter_models.sample_models import SampleSexesUpdate
 from genotype_api.database.models import Sample, Plate
 from sqlmodel.sql.expression import Select, SelectOfScalar
+
+from genotype_api.service.match_genotype_service.match_genotype import MatchGenotypeService
 
 SelectOfScalar.inherit_cache = True
 Select.inherit_cache = True
@@ -13,9 +19,27 @@ def refresh_sample_status(sample: Sample, session: Session) -> Sample:
     if len(sample.analyses) != 2:
         sample.status = None
     else:
-        results = check_sample(sample=sample)
+        results = MatchGenotypeService.check_sample(sample=sample)
         sample.status = "fail" if "fail" in results.dict().values() else "pass"
 
+    session.add(sample)
+    session.commit()
+    session.refresh(sample)
+    return sample
+
+
+def update_sample_comment(session: Session, sample_id: str, comment: str) -> Sample:
+    sample: Sample = get_sample(session=session, sample_id=sample_id)
+    sample.comment = comment
+    session.add(sample)
+    session.commit()
+    session.refresh(sample)
+    return sample
+
+
+def update_sample_status(session: Session, sample_id: str, status: str | None) -> Sample:
+    sample: Sample = get_sample(session=session, sample_id=sample_id)
+    sample.status = status
     session.add(sample)
     session.commit()
     session.refresh(sample)
@@ -34,3 +58,19 @@ def update_plate_sign_off(session: Session, plate: Plate, plate_sign_off: PlateS
     session.commit()
     session.refresh(plate)
     return plate
+
+
+def update_sample_sex(session: Session, sexes_update: SampleSexesUpdate) -> Sample:
+    sample: Sample = get_sample(session=session, sample_id=sexes_update.sample_id)
+    sample.sex = sexes_update.sex
+    for analysis in sample.analyses:
+        if sexes_update.genotype_sex and analysis.type == TYPES.GENOTYPE:
+            analysis.sex = sexes_update.genotype_sex
+        elif sexes_update.sequence_sex and analysis.type == TYPES.SEQUENCE:
+            analysis.sex = sexes_update.sequence_sex
+        session.add(analysis)
+    session.add(sample)
+    session.commit()
+    session.refresh(sample)
+    sample: Sample = refresh_sample_status(session=session, sample=sample)
+    return sample

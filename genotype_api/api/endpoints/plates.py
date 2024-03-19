@@ -30,11 +30,13 @@ from genotype_api.database.filter_models.plate_models import PlateSignOff, Plate
 from genotype_api.database.models import (
     Analysis,
     Plate,
+    User,
+)
+from genotype_api.dto.dto import (
     PlateCreate,
     PlateReadWithAnalyses,
     PlateReadWithAnalysisDetail,
     PlateReadWithAnalysisDetailSingle,
-    User,
 )
 from genotype_api.database.session_handler import get_session
 from genotype_api.file_parsing.excel import GenotypeAnalysis
