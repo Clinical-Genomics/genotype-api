@@ -15,4 +15,13 @@ class AnalysisService:
 
     def get_analysis_with_genotype_response(self, analysis_id: int) -> AnalysisWithGenotypeResponse:
         analysis: Analysis = get_analysis_by_id(session=self.session, analysis_id=analysis_id)
-        return AnalysisWithGenotypeResponse(**analysis.dict())
+        return AnalysisWithGenotypeResponse(
+            type=analysis.type,
+            source=analysis.source,
+            sex=analysis.sex,
+            created_at=analysis.created_at,
+            sample_id=analysis.sample_id,
+            plate_id=analysis.plate_id,
+            id=analysis.id,
+            genotypes=analysis.genotypes,
+        )
