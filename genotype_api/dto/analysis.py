@@ -9,11 +9,11 @@ from genotype_api.dto.genotype import GenotypeBase
 
 
 class AnalysisWithGenotypeResponse(BaseModel):
-    type: TYPES
-    source: str
-    sex: SEXES
-    created_at: datetime
-    sample_id: str
-    plate_id: str
-    id: int
-    genotypes: list[GenotypeBase]
+    type: TYPES | None
+    source: str | None
+    sex: SEXES | None
+    created_at: datetime | None
+    sample_id: str | None
+    plate_id: str | None
+    id: int | None
+    genotypes: list[GenotypeBase] | None
