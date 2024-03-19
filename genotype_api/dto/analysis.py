@@ -5,7 +5,7 @@ from datetime import datetime
 from pydantic import BaseModel
 
 from genotype_api.constants import SEXES, TYPES
-from genotype_api.database.models import GenotypeBase
+from genotype_api.dto.genotype import GenotypeBase
 
 
 class AnalysisWithGenotypeResponse(BaseModel):
