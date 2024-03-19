@@ -22,6 +22,7 @@ from genotype_api.database.session_handler import get_session
 from genotype_api.file_parsing.files import check_file
 from genotype_api.file_parsing.vcf import SequenceAnalysis
 from genotype_api.security import get_active_user
+from genotype_api.services.analysis_service.analysis_service import AnalysisService
 
 SelectOfScalar.inherit_cache = True
 Select.inherit_cache = True
@@ -36,7 +37,8 @@ def read_analysis(
     current_user: User = Depends(get_active_user),
 ):
     """Return analysis."""
-    return get_analysis_by_id(session=session, analysis_id=analysis_id)
+    analysis_service = AnalysisService(session)
+    return analysis_service.get_analysis_with_genotype_response(analysis_id)
 
 
 @router.get("/", response_model=list[AnalysisRead])
