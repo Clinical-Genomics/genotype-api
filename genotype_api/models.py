@@ -1,5 +1,4 @@
-from pydantic import BaseModel, validator
-from sqlmodel import Field
+from pydantic import BaseModel, validator, Field
 
 
 class PlateStatusCounts(BaseModel):

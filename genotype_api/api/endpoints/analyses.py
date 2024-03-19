@@ -16,6 +16,7 @@ from genotype_api.database.crud.read import (
 )
 from genotype_api.database.crud.update import refresh_sample_status
 from genotype_api.database.models import Analysis, User
+from genotype_api.dto.analysis import AnalysisWithGenotypeResponse
 from genotype_api.dto.dto import AnalysisRead, AnalysisReadWithGenotype
 from genotype_api.database.session_handler import get_session
 from genotype_api.file_parsing.files import check_file
@@ -28,7 +29,7 @@ Select.inherit_cache = True
 router = APIRouter()
 
 
-@router.get("/{analysis_id}", response_model=AnalysisReadWithGenotype)
+@router.get("/{analysis_id}", response_model=AnalysisWithGenotypeResponse)
 def read_analysis(
     analysis_id: int,
     session: Session = Depends(get_session),
