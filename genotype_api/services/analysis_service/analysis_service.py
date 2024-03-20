@@ -10,7 +10,6 @@ from genotype_api.database.crud.create import create_analyses_samples, create_an
 from genotype_api.database.crud.read import (
     get_analysis_by_id,
     get_analyses_with_skip_and_limit,
-    get_analyses,
     check_analyses_objects,
 )
 from genotype_api.database.crud.update import refresh_sample_status
@@ -43,18 +42,7 @@ class AnalysisService:
         analyses: list[Analysis] = get_analyses_with_skip_and_limit(
             session=self.session, skip=skip, limit=limit
         )
-        return [
-            AnalysisResponse(
-                type=analysis.type,
-                source=analysis.source,
-                sex=analysis.sex,
-                created_at=analysis.created_at,
-                sample_id=analysis.sample_id,
-                plate_id=analysis.plate_id,
-                id=analysis.id,
-            )
-            for analysis in analyses
-        ]
+        return self.create_analyses_response(analyses)
 
     def get_upload_sequence_analyses(self, file: UploadFile) -> list[AnalysisResponse]:
         """
@@ -73,6 +61,10 @@ class AnalysisService:
             analysis: Analysis = create_analysis(session=self.session, analysis=analysis)
             refresh_sample_status(session=self.session, sample=analysis.sample)
 
+        return self.create_analyses_response(analyses)
+
+    @staticmethod
+    def create_analyses_response(analyses: list[Analysis]) -> list[AnalysisResponse]:
         return [
             AnalysisResponse(
                 type=analysis.type,
