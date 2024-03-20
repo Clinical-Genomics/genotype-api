@@ -7,8 +7,9 @@ from fastapi.responses import JSONResponse
 from sqlmodel import Session, select
 from sqlmodel.sql.expression import Select, SelectOfScalar
 
+from genotype_api.constants import Types
 from genotype_api.database.crud.delete import delete_analysis
-from genotype_api.database.crud.create import create_analyses_sample_objects, create_analysis
+from genotype_api.database.crud.create import create_analyses_samples, create_analysis
 from genotype_api.database.crud.read import (
     check_analyses_objects,
     get_analysis_by_id,
@@ -16,8 +17,8 @@ from genotype_api.database.crud.read import (
 )
 from genotype_api.database.crud.update import refresh_sample_status
 from genotype_api.database.models import Analysis, User
-from genotype_api.dto.analysis import AnalysisWithGenotypeResponse
-from genotype_api.dto.dto import AnalysisRead, AnalysisReadWithGenotype
+from genotype_api.dto.analysis import AnalysisWithGenotypeResponse, AnalysisResponse
+from genotype_api.dto.dto import AnalysisRead
 from genotype_api.database.session_handler import get_session
 from genotype_api.file_parsing.files import check_file
 from genotype_api.file_parsing.vcf import SequenceAnalysis
@@ -38,21 +39,19 @@ def read_analysis(
 ):
     """Return analysis."""
     analysis_service = AnalysisService(session)
-    return analysis_service.get_analysis_with_genotype_response(analysis_id)
+    return analysis_service.get_analysis_with_genotype(analysis_id)
 
 
-@router.get("/", response_model=list[AnalysisRead])
+@router.get("/", response_model=list[AnalysisResponse])
 def read_analyses(
     skip: int = 0,
     limit: int = Query(default=100, lte=100),
     session: Session = Depends(get_session),
     current_user: User = Depends(get_active_user),
-) -> list[Analysis]:
+):
     """Return all analyses."""
-    analyses: list[Analysis] = get_analyses_with_skip_and_limit(
-        session=session, skip=skip, limit=limit
-    )
-    return analyses
+    analysis_service = AnalysisService(session)
+    return analysis_service.get_analyses_to_display(skip=skip, limit=limit)
 
 
 @router.delete("/{analysis_id}")
@@ -67,21 +66,13 @@ def delete_analysis(
     return JSONResponse(f"Deleted analysis: {analysis_id}", status_code=status.HTTP_200_OK)
 
 
-@router.post("/sequence", response_model=list[Analysis])
+@router.post("/sequence", response_model=list[AnalysisResponse])
 def upload_sequence_analysis(
     file: UploadFile = File(...),
     session: Session = Depends(get_session),
     current_user: User = Depends(get_active_user),
 ):
-    """Reading vcf file, creating and uploading sequence analyses and sample objects to db"""
-
-    file_name: Path = check_file(file_path=file.filename, extension=".vcf")
-    content = file.file.read().decode("utf-8")
-    sequence_analysis = SequenceAnalysis(vcf_file=content, source=str(file_name))
-    analyses: list[Analysis] = list(sequence_analysis.generate_analyses())
-    check_analyses_objects(session=session, analyses=analyses, analysis_type="sequence")
-    create_analyses_sample_objects(session=session, analyses=analyses)
-    for analysis in analyses:
-        analysis: Analysis = create_analysis(session=session, analysis=analysis)
-        refresh_sample_status(session=session, sample=analysis.sample)
+    """Reading vcf file, creating and uploading sequence analyses and sample objects to db."""
+    analysis_service = AnalysisService(session)
+    analyses: list[AnalysisResponse] = analysis_service.get_upload_sequence_analyses(file)
     return analyses

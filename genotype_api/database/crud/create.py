@@ -42,12 +42,12 @@ def create_sample(session: Session, sample: Sample) -> Sample:
     return sample
 
 
-def create_analyses_sample_objects(session: Session, analyses: list[Analysis]) -> list[Sample]:
+def create_analyses_samples(session: Session, analyses: list[Analysis]) -> list[Sample]:
     """creating samples in an analysis if not already in db."""
     return [
-        create_sample(session=session, sample=Sample(id=analysis_obj.sample_id))
-        for analysis_obj in analyses
-        if not session.get(Sample, analysis_obj.sample_id)
+        create_sample(session=session, sample=Sample(id=analysis.sample_id))
+        for analysis in analyses
+        if not session.get(Sample, analysis.sample_id)
     ]
 
 

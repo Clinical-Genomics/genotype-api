@@ -4,12 +4,12 @@ from enum import Enum
 from pydantic import BaseModel
 
 
-class TYPES(str, Enum):
+class Types(str, Enum):
     GENOTYPE = "genotype"
     SEQUENCE = "sequence"
 
 
-class SEXES(str, Enum):
+class Sexes(str, Enum):
     MALE = "male"
     FEMALE = "female"
     UNKNOWN = "unknown"

@@ -3,7 +3,7 @@ import types
 from pydantic import EmailStr
 from sqlmodel import Session
 
-from genotype_api.constants import TYPES
+from genotype_api.constants import Types
 from genotype_api.database.crud.read import get_sample
 from genotype_api.database.filter_models.plate_models import PlateSignOff
 from genotype_api.database.filter_models.sample_models import SampleSexesUpdate
@@ -65,9 +65,9 @@ def update_sample_sex(session: Session, sexes_update: SampleSexesUpdate) -> Samp
     sample: Sample = get_sample(session=session, sample_id=sexes_update.sample_id)
     sample.sex = sexes_update.sex
     for analysis in sample.analyses:
-        if sexes_update.genotype_sex and analysis.type == TYPES.GENOTYPE:
+        if sexes_update.genotype_sex and analysis.type == Types.GENOTYPE:
             analysis.sex = sexes_update.genotype_sex
-        elif sexes_update.sequence_sex and analysis.type == TYPES.SEQUENCE:
+        elif sexes_update.sequence_sex and analysis.type == Types.SEQUENCE:
             analysis.sex = sexes_update.sequence_sex
         session.add(analysis)
     session.add(sample)
