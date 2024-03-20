@@ -58,7 +58,7 @@ def upload_sequence_analysis(
     session: Session = Depends(get_session),
     current_user: User = Depends(get_active_user),
 ):
-    """Reading vcf file, creating and uploading sequence analyses and sample objects to db."""
+    """Reading VCF file, creating and uploading sequence analyses and sample objects to the database."""
     analysis_service = AnalysisService(session)
     analyses: list[AnalysisResponse] = analysis_service.get_upload_sequence_analyses(file)
     return analyses

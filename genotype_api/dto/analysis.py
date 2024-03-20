@@ -1,4 +1,4 @@
-"""Module that holds the analysis dtos."""
+"""Module that holds the analysis DTOs."""
 
 from datetime import datetime
 

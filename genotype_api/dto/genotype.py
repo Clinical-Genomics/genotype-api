@@ -1,4 +1,4 @@
-"""Module to hold the genotype dtos."""
+"""Module to hold the genotype DTOs."""
 
 from pydantic import BaseModel, Field
 

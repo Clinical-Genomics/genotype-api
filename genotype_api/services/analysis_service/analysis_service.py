@@ -20,7 +20,7 @@ from genotype_api.file_parsing.vcf import SequenceAnalysis
 
 
 class AnalysisService:
-    """This service acts as a translational layer between the crud and the api."""
+    """This service acts as a translational layer between the CRUD and the API."""
 
     def __init__(self, session: Session):
         self.session: Session = session
@@ -46,8 +46,7 @@ class AnalysisService:
 
     def get_upload_sequence_analyses(self, file: UploadFile) -> list[AnalysisResponse]:
         """
-        Reading vcf file, creating and uploading sequence analyses and sample objects to db.
-        NOTE: requires further refactoring - leaving it for now.
+        Reading VCF file, creating and uploading sequence analyses and sample objects to the database.
         """
         file_name: Path = check_file(file_path=file.filename, extension=".vcf")
         content = file.file.read().decode("utf-8")
