@@ -8,7 +8,7 @@ from typing import Literal, Sequence
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, status
 from fastapi.responses import JSONResponse
 from sqlalchemy import asc, desc
-from sqlmodel import Session, select
+from sqlmodel import Session
 from sqlmodel.sql.expression import Select, SelectOfScalar
 
 from genotype_api.database.crud.create import create_analyses_samples, create_plate
@@ -17,7 +17,6 @@ from genotype_api.database.crud.read import (
     check_analyses_objects,
     get_analyses_from_plate,
     get_plate,
-    get_user_by_email,
     get_plate_read_analysis_single,
     get_ordered_plates,
 )

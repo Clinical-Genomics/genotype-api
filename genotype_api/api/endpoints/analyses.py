@@ -1,15 +1,10 @@
 """Routes for analysis"""
 
-from pathlib import Path
-
 from fastapi import APIRouter, Depends, File, Query, UploadFile, status
 from fastapi.responses import JSONResponse
 from sqlmodel import Session
-from sqlmodel.sql.expression import Select, SelectOfScalar
-
 
 from genotype_api.database.crud.delete import delete_analysis
-
 from genotype_api.database.crud.read import (
     get_analysis_by_id,
 )
@@ -18,9 +13,6 @@ from genotype_api.dto.analysis import AnalysisWithGenotypeResponse, AnalysisResp
 from genotype_api.database.session_handler import get_session
 from genotype_api.security import get_active_user
 from genotype_api.services.analysis_service.analysis_service import AnalysisService
-
-SelectOfScalar.inherit_cache = True
-Select.inherit_cache = True
 
 router = APIRouter()
 

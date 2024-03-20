@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import EmailStr
-from sqlmodel import Session, select
+from sqlmodel import Session
 from sqlmodel.sql.expression import Select, SelectOfScalar
 from starlette import status
 from starlette.responses import JSONResponse
