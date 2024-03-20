@@ -5,7 +5,7 @@ from pathlib import Path
 from fastapi import UploadFile
 from sqlmodel import Session
 
-from genotype_api.constants import Types
+from genotype_api.constants import Types, FileExtension
 from genotype_api.database.crud.create import create_analyses_samples, create_analysis
 from genotype_api.database.crud.read import (
     get_analysis_by_id,
@@ -48,7 +48,7 @@ class AnalysisService:
         """
         Reading VCF file, creating and uploading sequence analyses and sample objects to the database.
         """
-        file_name: Path = check_file(file_path=file.filename, extension=".vcf")
+        file_name: Path = check_file(file_path=file.filename, extension=FileExtension.VCF)
         content = file.file.read().decode("utf-8")
         sequence_analysis = SequenceAnalysis(vcf_file=content, source=str(file_name))
         analyses: list[Analysis] = list(sequence_analysis.generate_analyses())

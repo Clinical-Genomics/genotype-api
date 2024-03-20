@@ -1,7 +1,11 @@
 """Constants used over the package"""
 
-from enum import Enum
+from enum import Enum, StrEnum
 from pydantic import BaseModel
+
+
+class FileExtension(StrEnum):
+    VCF: str = ".vcf"
 
 
 class Types(str, Enum):
