@@ -5,7 +5,7 @@ from pydantic import EmailStr, constr
 from sqlalchemy import Index
 from sqlmodel import Field, Relationship, SQLModel
 
-from genotype_api.constants import SEXES, STATUS, TYPES
+from genotype_api.constants import Sexes, STATUS, Types
 
 
 class GenotypeBase(SQLModel):
@@ -35,9 +35,9 @@ class Genotype(GenotypeBase, table=True):
 
 
 class AnalysisBase(SQLModel):
-    type: TYPES
+    type: Types
     source: str | None
-    sex: SEXES | None
+    sex: Sexes | None
     created_at: datetime | None = datetime.now()
     sample_id: constr(max_length=32) | None = Field(default=None, foreign_key="sample.id")
     plate_id: str | None = Field(default=None, foreign_key="plate.id")
@@ -64,7 +64,7 @@ class SampleSlim(SQLModel):
 
 
 class SampleBase(SampleSlim):
-    sex: SEXES | None
+    sex: Sexes | None
     created_at: datetime | None = datetime.now()
 
 

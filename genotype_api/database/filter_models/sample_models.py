@@ -2,7 +2,7 @@
 
 from pydantic import BaseModel, Field
 
-from genotype_api.constants import SEXES
+from genotype_api.constants import Sexes
 
 
 class SampleFilterParams(BaseModel):
@@ -17,6 +17,6 @@ class SampleFilterParams(BaseModel):
 
 class SampleSexesUpdate(BaseModel):
     sample_id: str
-    sex: SEXES
-    genotype_sex: SEXES
-    sequence_sex: SEXES
+    sex: Sexes
+    genotype_sex: Sexes
+    sequence_sex: Sexes

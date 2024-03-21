@@ -2,7 +2,7 @@
 
 from collections import Counter
 
-from genotype_api.constants import CUTOFS, SEXES
+from genotype_api.constants import CUTOFS, Sexes
 from genotype_api.database import models
 
 
@@ -19,10 +19,10 @@ def compare_genotypes(genotype_1: models.Genotype, genotype_2: models.Genotype) 
 
 def check_sex(sample_sex, genotype_analysis, sequence_analysis):
     """Check if any source disagrees on the sex"""
-    if not sample_sex or genotype_analysis.sex == SEXES.UNKNOWN:
+    if not sample_sex or genotype_analysis.sex == Sexes.UNKNOWN:
         return "fail"
     sexes = {genotype_analysis.sex, sequence_analysis.sex, sample_sex}
-    if {SEXES.MALE, SEXES.FEMALE}.issubset(sexes):
+    if {Sexes.MALE, Sexes.FEMALE}.issubset(sexes):
         return "fail"
     return "pass"
 

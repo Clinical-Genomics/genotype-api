@@ -7,7 +7,7 @@ from sqlalchemy.orm import Query
 from sqlmodel import Session, select
 from sqlmodel.sql.expression import Select, SelectOfScalar
 
-from genotype_api.constants import TYPES
+from genotype_api.constants import Types
 from genotype_api.database.filter_models.plate_models import PlateOrderParams
 from genotype_api.database.filter_models.sample_models import SampleFilterParams
 from genotype_api.database.models import (
@@ -30,7 +30,7 @@ def get_analyses_from_plate(plate_id: int, session: Session) -> list[Analysis]:
     return session.exec(statement).all()
 
 
-def get_analysis_type_sample(
+def get_analysis_by_type_sample(
     sample_id: str, analysis_type: str, session: Session
 ) -> Analysis | None:
     statement = select(Analysis).where(
@@ -43,6 +43,11 @@ def get_analysis_by_id(session: Session, analysis_id: int) -> Analysis:
     """Get analysis"""
     statement = select(Analysis).where(Analysis.id == analysis_id)
     return session.exec(statement).one()
+
+
+def get_analyses(session: Session) -> list[Analysis]:
+    statement = select(Analysis)
+    return session.exec(statement).all()
 
 
 def get_analyses_with_skip_and_limit(session: Session, skip: int, limit: int) -> list[Analysis]:
@@ -179,17 +184,17 @@ def get_users_with_skip_and_limit(session: Session, skip: int, limit: int) -> li
 
 
 def check_analyses_objects(
-    session: Session, analyses: list[Analysis], analysis_type: TYPES
+    session: Session, analyses: list[Analysis], analysis_type: Types
 ) -> None:
     """Raising 400 if any analysis in the list already exist in the database"""
     for analysis_obj in analyses:
-        db_analysis: Analysis = get_analysis_type_sample(
+        existing_analysis: Analysis = get_analysis_by_type_sample(
             session=session,
             sample_id=analysis_obj.sample_id,
             analysis_type=analysis_type,
         )
-        if db_analysis:
-            session.delete(db_analysis)
+        if existing_analysis:
+            session.delete(existing_analysis)
 
 
 def get_snps(session) -> list[SNP]:

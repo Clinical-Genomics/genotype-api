@@ -1,15 +1,19 @@
 """Constants used over the package"""
 
-from enum import Enum
+from enum import Enum, StrEnum
 from pydantic import BaseModel
 
 
-class TYPES(str, Enum):
+class FileExtension(StrEnum):
+    VCF: str = ".vcf"
+
+
+class Types(str, Enum):
     GENOTYPE = "genotype"
     SEQUENCE = "sequence"
 
 
-class SEXES(str, Enum):
+class Sexes(str, Enum):
     MALE = "male"
     FEMALE = "female"
     UNKNOWN = "unknown"

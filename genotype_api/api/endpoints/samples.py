@@ -8,7 +8,7 @@ from sqlmodel.sql.expression import Select, SelectOfScalar
 from starlette import status
 
 from genotype_api.database.crud import create, delete
-from genotype_api.constants import SEXES, TYPES
+from genotype_api.constants import Sexes, Types
 from genotype_api.database.crud.read import (
     get_sample,
     get_filtered_samples,
@@ -119,9 +119,9 @@ def create_sample(
 @router.put("/{sample_id}/sex", response_model=SampleRead)
 def update_sex(
     sample_id: str,
-    sex: SEXES = Query(...),
-    genotype_sex: SEXES | None = None,
-    sequence_sex: SEXES | None = None,
+    sex: Sexes = Query(...),
+    genotype_sex: Sexes | None = None,
+    sequence_sex: Sexes | None = None,
     session: Session = Depends(get_session),
     current_user: User = Depends(get_active_user),
 ):
@@ -159,8 +159,8 @@ def set_sample_status(
 @router.get("/{sample_id}/match", response_model=list[MatchResult])
 def match(
     sample_id: str,
-    analysis_type: TYPES,
-    comparison_set: TYPES,
+    analysis_type: Types,
+    comparison_set: Types,
     date_min: date | None = date.min,
     date_max: date | None = date.max,
     session: Session = Depends(get_session),
