@@ -8,16 +8,15 @@ from typing import Literal, Sequence
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, status
 from fastapi.responses import JSONResponse
 from sqlalchemy import asc, desc
-from sqlmodel import Session, select
+from sqlmodel import Session
 from sqlmodel.sql.expression import Select, SelectOfScalar
 
-from genotype_api.database.crud.create import create_analyses_sample_objects, create_plate
+from genotype_api.database.crud.create import create_analyses_samples, create_plate
 from genotype_api.database.crud.delete import delete_analysis
 from genotype_api.database.crud.read import (
     check_analyses_objects,
     get_analyses_from_plate,
     get_plate,
-    get_user_by_email,
     get_plate_read_analysis_single,
     get_ordered_plates,
 )
@@ -76,7 +75,7 @@ def upload_plate(
     )
     analyses: list[Analysis] = list(excel_parser.generate_analyses())
     check_analyses_objects(session=session, analyses=analyses, analysis_type="genotype")
-    create_analyses_sample_objects(session=session, analyses=analyses)
+    create_analyses_samples(session=session, analyses=analyses)
     plate_obj = PlateCreate(plate_id=plate_id)
     plate_obj.analyses = analyses
     plate: Plate = create_plate(session=session, plate=plate_obj)

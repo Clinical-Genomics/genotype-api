@@ -10,7 +10,7 @@ from genotype_api.database.models import SNP, User
 from genotype_api.database.crud import delete
 from genotype_api.database.session_handler import get_session
 from genotype_api.security import get_active_user
-from genotype_api.services.snp_reader.snp_reader import SNPReaderService
+from genotype_api.services.snp_reader_service.snp_reader import SNPReaderService
 
 SelectOfScalar.inherit_cache = True
 Select.inherit_cache = True
