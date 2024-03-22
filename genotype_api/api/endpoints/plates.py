@@ -4,8 +4,7 @@ from typing import Literal
 from fastapi import APIRouter, Depends, File, Query, UploadFile, status
 from fastapi.responses import JSONResponse
 from sqlalchemy import asc, desc
-from sqlalchemy.orm import Session
-
+from sqlmodel import Session
 from genotype_api.database.filter_models.plate_models import PlateOrderParams
 from genotype_api.database.models import (
     User,
@@ -19,8 +18,7 @@ from genotype_api.services.plate_service.plate_service import PlateService
 router = APIRouter()
 
 
-def get_plate_service() -> PlateService:
-    session: Session = get_session()
+def get_plate_service(session: Session = Depends(get_session)) -> PlateService:
     return PlateService(session)
 
 
