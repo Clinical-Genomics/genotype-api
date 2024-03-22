@@ -6,28 +6,6 @@ from genotype_api.dto.analysis import AnalysisSampleResponse
 from genotype_api.dto.user import UserInfoResponse
 
 
-class PlateResponse(BaseModel):
-    created_at: str
-    plate_id: str
-    signed_by: int
-    signed_at: str
-    method_document: str
-    method_version: str
-    id: str
-
-
-class PlateAnalysesResponse(BaseModel):
-    created_at: str
-    plate_id: str
-    signed_by: int
-    signed_at: str
-    method_document: str
-    method_version: str
-    id: str
-    user: UserInfoResponse
-    analyses: list[AnalysisSampleResponse] = []
-
-
 class PlateStatusCounts(BaseModel):
     total: int = Field(0, nullable=True)
     failed: int = Field(0, alias="STATUS.FAIL", nullable=True)
@@ -40,7 +18,7 @@ class PlateStatusCounts(BaseModel):
         allow_population_by_field_name = True
 
 
-class PlateAnalysesDetailResponse(BaseModel):
+class PlateResponse(BaseModel):
     created_at: str
     plate_id: str
     signed_by: int
@@ -50,6 +28,7 @@ class PlateAnalysesDetailResponse(BaseModel):
     id: str
     user: UserInfoResponse
     analyses: list[AnalysisSampleResponse] = []
+    detail: PlateStatusCounts
 
     @validator("detail")
     def check_detail(self, values):

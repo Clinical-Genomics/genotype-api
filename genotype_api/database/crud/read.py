@@ -76,7 +76,7 @@ def get_analysis_by_type_and_sample_id(
     ).one()
 
 
-def get_plate(session: Session, plate_id: int) -> Plate:
+def get_plate_by_id(session: Session, plate_id: int) -> Plate:
     """Get plate"""
 
     statement = select(Plate).where(Plate.id == plate_id)
@@ -86,7 +86,7 @@ def get_plate(session: Session, plate_id: int) -> Plate:
 def get_plate_read_analysis_single(
     session: Session, plate_id: int
 ) -> PlateReadWithAnalysisDetailSingle:
-    plate: Plate = get_plate(session=session, plate_id=plate_id)
+    plate: Plate = get_plate_by_id(session=session, plate_id=plate_id)
     return PlateReadWithAnalysisDetailSingle.from_orm(plate)
 
 
