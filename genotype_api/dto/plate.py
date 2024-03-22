@@ -19,16 +19,16 @@ class PlateStatusCounts(BaseModel):
 
 
 class PlateResponse(BaseModel):
-    created_at: str
-    plate_id: str
-    signed_by: int
-    signed_at: str
-    method_document: str
-    method_version: str
-    id: str
+    created_at: str | None = None
+    plate_id: str | None = None
+    signed_by: int | None = None
+    signed_at: str | None = None
+    method_document: str | None = None
+    method_version: str | None = None
+    id: str | None = None
     user: UserInfoResponse | None = None
-    analyses: list[AnalysisSampleResponse] = []
-    detail: PlateStatusCounts
+    analyses: list[AnalysisSampleResponse] | None = None
+    detail: PlateStatusCounts | None = None
 
     @validator("detail")
     def check_detail(cls, value, values):
