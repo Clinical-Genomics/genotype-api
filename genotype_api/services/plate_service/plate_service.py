@@ -65,7 +65,7 @@ class PlateService:
     def _get_plate_user(plate: Plate) -> UserInfoResponse:
         return UserInfoResponse(email=plate.user.email, name=plate.user.name, id=plate.user.id)
 
-    def get_plate_analyses_response(self, plate: Plate) -> PlateResponse:
+    def _get_plate_response(self, plate: Plate) -> PlateResponse:
         analyses_response: list[AnalysisSampleResponse] = self._get_analyses_on_plate(plate)
         user: UserInfoResponse = self._get_plate_user(plate)
         return PlateResponse(
@@ -107,19 +107,7 @@ class PlateService:
             refresh_sample_status(sample=analysis.sample, session=self.session)
         refresh_plate(session=self.session, plate=plate)
 
-        return self.get_plate_analyses_response(plate)
-
-    @staticmethod
-    def _get_plate_response(plate: Plate) -> PlateResponse:
-        return PlateResponse(
-            created_at=plate.created_at,
-            plate_id=plate.plate_id,
-            signed_by=plate.signed_by,
-            signed_at=plate.signed_at,
-            method_document=plate.method_document,
-            method_version=plate.method_version,
-            id=plate.id,
-        )
+        return self._get_plate_response(plate)
 
     def update_plate_sign_off(
         self, plate_id: int, user_id: int, method_document: str, method_version: str
@@ -136,7 +124,7 @@ class PlateService:
 
     def read_plate(self, plate_id: int) -> PlateAnalysesDetailResponse:
         plate: Plate = get_plate_by_id(session=self.session, plate_id=plate_id)
-        return self.get_plate_analyses_response(plate)
+        return self._get_plate_response(plate)
 
     def read_plates(
         self, order_params: PlateOrderParams, sort_func: callable
@@ -144,7 +132,7 @@ class PlateService:
         plates: Sequence[Plate] = get_ordered_plates(
             session=self.session, order_params=order_params, sort_func=sort_func
         )
-        return [self.get_plate_analyses_response(plate) for plate in plates]
+        return [self._get_plate_response(plate) for plate in plates]
 
     def delete_plate(self, plate_id) -> list[int]:
         plate = get_plate_by_id(session=self.session, plate_id=plate_id)
