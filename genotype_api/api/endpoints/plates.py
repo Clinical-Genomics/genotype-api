@@ -1,11 +1,11 @@
 """Routes for plates"""
 
-from pathlib import Path
 from typing import Literal
 from fastapi import APIRouter, Depends, File, Query, UploadFile, status
 from fastapi.responses import JSONResponse
 from sqlalchemy import asc, desc
-from sqlmodel import Session
+from sqlalchemy.orm import Session
+
 from genotype_api.database.filter_models.plate_models import PlateOrderParams
 from genotype_api.database.models import (
     User,
