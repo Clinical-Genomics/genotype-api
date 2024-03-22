@@ -122,7 +122,7 @@ class PlateService:
         update_plate_sign_off(session=self.session, plate=plate, plate_sign_off=plate_sign_off)
         return self._get_plate_response(plate)
 
-    def read_plate(self, plate_id: int) -> PlateAnalysesDetailResponse:
+    def read_plate(self, plate_id: int) -> PlateResponse:
         plate: Plate = get_plate_by_id(session=self.session, plate_id=plate_id)
         return self._get_plate_response(plate)
 
