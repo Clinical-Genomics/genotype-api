@@ -19,7 +19,7 @@ class Sexes(str, Enum):
     UNKNOWN = "unknown"
 
 
-class STATUS(str, Enum):
+class Status(str, Enum):
     PASS = "pass"
     FAIL = "fail"
     CANCEL = "cancel"

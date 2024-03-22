@@ -1,46 +1,32 @@
 """Routes for plates"""
 
-from datetime import datetime
-from io import BytesIO
 from pathlib import Path
 from typing import Literal, Sequence
-
-from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, status
+from fastapi import APIRouter, Depends, File, Query, UploadFile, status
 from fastapi.responses import JSONResponse
 from sqlalchemy import asc, desc
 from sqlmodel import Session
 from sqlmodel.sql.expression import Select, SelectOfScalar
-
-from genotype_api.database.crud.create import create_analyses_samples, create_plate
 from genotype_api.database.crud.delete import delete_analysis
 from genotype_api.database.crud.read import (
-    check_analyses_objects,
     get_analyses_from_plate,
-    get_plate,
     get_plate_read_analysis_single,
     get_ordered_plates,
 )
-from genotype_api.database.crud.update import (
-    refresh_sample_status,
-    refresh_plate,
-    update_plate_sign_off,
-)
-from genotype_api.database.filter_models.plate_models import PlateSignOff, PlateOrderParams
+from genotype_api.database.filter_models.plate_models import PlateOrderParams
 from genotype_api.database.models import (
     Analysis,
     Plate,
     User,
 )
 from genotype_api.dto.dto import (
-    PlateCreate,
-    PlateReadWithAnalyses,
     PlateReadWithAnalysisDetail,
     PlateReadWithAnalysisDetailSingle,
 )
 from genotype_api.database.session_handler import get_session
-from genotype_api.file_parsing.excel import GenotypeAnalysis
-from genotype_api.file_parsing.files import check_file
+from genotype_api.dto.plate import PlateAnalysesResponse, PlateResponse
 from genotype_api.security import get_active_user
+from genotype_api.services.plate_service.plate_service import PlateService
 
 SelectOfScalar.inherit_cache = True
 Select.inherit_cache = True
@@ -53,39 +39,17 @@ def get_plate_id_from_file(file_name: Path) -> str:
     return file_name.name.split("_", 1)[0]
 
 
-@router.post("/plate", response_model=PlateReadWithAnalyses)
+@router.post("/plate", response_model=PlateAnalysesResponse)
 def upload_plate(
     file: UploadFile = File(...),
     session: Session = Depends(get_session),
     current_user: User = Depends(get_active_user),
 ):
-    file_name: Path = check_file(file_path=file.filename, extension=".xlsx")
-    plate_id: str = get_plate_id_from_file(file_name)
-    db_plate = session.get(Plate, plate_id)
-    if db_plate:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail=f"Plate with id {db_plate.id} already exists",
-        )
-
-    excel_parser = GenotypeAnalysis(
-        excel_file=BytesIO(file.file.read()),
-        file_name=str(file_name),
-        include_key="-CG-",
-    )
-    analyses: list[Analysis] = list(excel_parser.generate_analyses())
-    check_analyses_objects(session=session, analyses=analyses, analysis_type="genotype")
-    create_analyses_samples(session=session, analyses=analyses)
-    plate_obj = PlateCreate(plate_id=plate_id)
-    plate_obj.analyses = analyses
-    plate: Plate = create_plate(session=session, plate=plate_obj)
-    for analysis in plate.analyses:
-        refresh_sample_status(sample=analysis.sample, session=session)
-    refresh_plate(session=session, plate=plate)
-    return plate
+    plate_service = PlateService(session)
+    return plate_service.upload_plate(file)
 
 
-@router.patch("/{plate_id}/sign-off", response_model=Plate)
+@router.patch("/{plate_id}/sign-off", response_model=PlateResponse)
 def sign_off_plate(
     plate_id: int,
     method_document: str = Query(...),
@@ -97,15 +61,13 @@ def sign_off_plate(
     This means that current User sign off that the plate is checked
     Add Depends with current user
     """
-
-    plate: Plate = get_plate(session=session, plate_id=plate_id)
-    plate_sign_off = PlateSignOff(
+    plate_service = PlateService(session)
+    return plate_service.update_plate_sign_off(
+        plate_id=plate_id,
         user_id=current_user.id,
-        signed_at=datetime.now(),
-        method_document=method_document,
         method_version=method_version,
+        method_document=method_document,
     )
-    return update_plate_sign_off(session=session, plate=plate, plate_sign_off=plate_sign_off)
 
 
 @router.get(
