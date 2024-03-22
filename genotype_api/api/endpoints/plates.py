@@ -19,11 +19,6 @@ from genotype_api.services.plate_service.plate_service import PlateService
 router = APIRouter()
 
 
-def get_plate_id_from_file(file_name: Path) -> str:
-    # Get the plate id from the standardized name of the plate
-    return file_name.name.split("_", 1)[0]
-
-
 def get_plate_service() -> PlateService:
     session: Session = get_session()
     return PlateService(session)

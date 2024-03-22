@@ -10,7 +10,7 @@ from fastapi import UploadFile
 from sqlmodel import Session
 from starlette import status
 
-from genotype_api.api.endpoints.plates import get_plate_id_from_file
+
 from genotype_api.constants import Types
 from genotype_api.database.crud.create import create_analyses_samples, create_plate
 from genotype_api.database.crud.delete import delete_analysis, delete_plate
@@ -80,9 +80,13 @@ class PlateService:
             analyses=analyses_response,
         )
 
+    def _get_plate_id_from_file(self, file_name: Path) -> str:
+        # Get the plate id from the standardized name of the plate
+        return file_name.name.split("_", 1)[0]
+
     def upload_plate(self, file: UploadFile) -> PlateResponse:
         file_name: Path = check_file(file_path=file.filename, extension=".xlsx")
-        plate_id: str = get_plate_id_from_file(file_name)
+        plate_id: str = self._get_plate_id_from_file(file_name)
         db_plate = self.session.get(Plate, plate_id)
         if db_plate:
             raise HTTPException(

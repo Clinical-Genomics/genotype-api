@@ -31,7 +31,7 @@ class PlateResponse(BaseModel):
     detail: PlateStatusCounts
 
     @validator("detail")
-    def check_detail(self, values):
+    def check_detail(cls, value, values):
         analyses = values.get("analyses")
         statuses = [str(analysis.sample.status) for analysis in analyses]
         commented = sum(1 for analysis in analyses if analysis.sample.comment)
