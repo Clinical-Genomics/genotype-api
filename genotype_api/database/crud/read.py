@@ -83,13 +83,6 @@ def get_plate_by_id(session: Session, plate_id: int) -> Plate:
     return session.exec(statement).one()
 
 
-def get_plate_read_analysis_single(
-    session: Session, plate_id: int
-) -> PlateReadWithAnalysisDetailSingle:
-    plate: Plate = get_plate_by_id(session=session, plate_id=plate_id)
-    return PlateReadWithAnalysisDetailSingle.from_orm(plate)
-
-
 def get_ordered_plates(
     session: Session, order_params: PlateOrderParams, sort_func: Callable
 ) -> Sequence[Plate]:
