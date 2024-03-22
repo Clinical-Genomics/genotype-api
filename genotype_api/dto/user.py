@@ -4,6 +4,6 @@ from pydantic import BaseModel, EmailStr
 
 
 class UserInfoResponse(BaseModel):
-    email: EmailStr
+    email: EmailStr | None = None
     name: str | None = None
-    id: int
+    id: int | None = None

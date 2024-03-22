@@ -26,7 +26,7 @@ class PlateResponse(BaseModel):
     method_document: str
     method_version: str
     id: str
-    user: UserInfoResponse
+    user: UserInfoResponse | None = None
     analyses: list[AnalysisSampleResponse] = []
     detail: PlateStatusCounts
 

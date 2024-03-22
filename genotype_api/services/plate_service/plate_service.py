@@ -19,6 +19,7 @@ from genotype_api.database.crud.read import (
     get_plate_by_id,
     get_ordered_plates,
     get_analyses_from_plate,
+    get_user_by_id,
 )
 from genotype_api.database.crud.update import (
     refresh_sample_status,
@@ -26,7 +27,7 @@ from genotype_api.database.crud.update import (
     update_plate_sign_off,
 )
 from genotype_api.database.filter_models.plate_models import PlateSignOff, PlateOrderParams
-from genotype_api.database.models import Plate, Analysis
+from genotype_api.database.models import Plate, Analysis, User
 from genotype_api.dto.analysis import AnalysisSampleResponse
 from genotype_api.dto.dto import PlateCreate
 from genotype_api.dto.plate import PlateResponse
@@ -61,9 +62,11 @@ class PlateService:
             analyses_response.append(analysis_response)
         return analyses_response
 
-    @staticmethod
-    def _get_plate_user(plate: Plate) -> UserInfoResponse:
-        return UserInfoResponse(email=plate.user.email, name=plate.user.name, id=plate.user.id)
+    def _get_plate_user(self, plate: Plate) -> UserInfoResponse | None:
+        user: User = get_user_by_id(session=self.session, user_id=plate.signed_by)
+        if user:
+            return UserInfoResponse(email=user.email, name=user.name, id=user.id)
+        return None
 
     def _get_plate_response(self, plate: Plate) -> PlateResponse:
         analyses_response: list[AnalysisSampleResponse] = self._get_analyses_on_plate(plate)

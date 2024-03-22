@@ -158,7 +158,7 @@ def get_samples(statement: SelectOfScalar, sample_id: str) -> SelectOfScalar:
     return statement.where(Sample.id.contains(sample_id))
 
 
-def get_user(session: Session, user_id: int):
+def get_user_by_id(session: Session, user_id: int):
     statement = select(User).where(User.id == user_id)
     return session.exec(statement).one()
 
