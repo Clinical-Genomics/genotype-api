@@ -19,6 +19,7 @@ from genotype_api.database.crud.read import (
     get_plate,
     get_plate_read_analysis_single,
     get_ordered_plates,
+    get_user_by_email,
 )
 from genotype_api.database.crud.update import (
     refresh_sample_status,
@@ -97,10 +98,10 @@ def sign_off_plate(
     This means that current User sign off that the plate is checked
     Add Depends with current user
     """
-
+    user: User = get_user_by_email(session=session, email=current_user.email)
     plate: Plate = get_plate(session=session, plate_id=plate_id)
     plate_sign_off = PlateSignOff(
-        user_id=current_user.id,
+        user_id=user.id,
         signed_at=datetime.now(),
         method_document=method_document,
         method_version=method_version,
