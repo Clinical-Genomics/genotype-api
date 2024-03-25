@@ -7,6 +7,7 @@ from sqlmodel import Session
 
 from genotype_api.constants import Types, FileExtension
 from genotype_api.database.crud.create import create_analyses_samples, create_analysis
+from genotype_api.database.crud.delete import delete_analysis
 from genotype_api.database.crud.read import (
     get_analysis_by_id,
     get_analyses_with_skip_and_limit,
@@ -76,3 +77,7 @@ class AnalysisService:
             )
             for analysis in analyses
         ]
+
+    def delete_analysis(self, analysis_id: int) -> None:
+        analysis: Analysis = get_analysis_by_id(session=self.session, analysis_id=analysis_id)
+        delete_analysis(session=self.session, analysis=analysis)
