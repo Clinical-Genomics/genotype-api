@@ -4,8 +4,7 @@ from pydantic import constr, validator
 
 import genotype_api.database.models
 from genotype_api.database import models
-from genotype_api.models import SampleDetail
-from genotype_api.dto.plate import PlateStatusCounts
+from genotype_api.models import SampleDetail, PlateStatusCounts
 from genotype_api.services.match_genotype_service.utils import check_snps, check_sex
 
 

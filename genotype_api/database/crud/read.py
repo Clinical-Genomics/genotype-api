@@ -76,23 +76,33 @@ def get_analysis_by_type_and_sample_id(
     ).one()
 
 
-def get_plate_by_id(session: Session, plate_id: int) -> Plate:
+def get_plate(session: Session, plate_id: int) -> Plate:
+    """Get plate"""
     statement = select(Plate).where(Plate.id == plate_id)
     return session.exec(statement).one()
 
 
+def get_plate_read_analysis_single(
+    session: Session, plate_id: int
+) -> PlateReadWithAnalysisDetailSingle:
+    plate: Plate = get_plate(session=session, plate_id=plate_id)
+    return PlateReadWithAnalysisDetailSingle.from_orm(plate)
+
+
 def get_ordered_plates(session: Session, order_params: PlateOrderParams) -> list[Plate]:
     sort_func = desc if order_params.sort_order == "descend" else asc
-    return session.exec(
+    plates: list[Plate] = session.exec(
         select(Plate)
         .order_by(sort_func(order_params.order_by))
         .offset(order_params.skip)
         .limit(order_params.limit)
     ).all()
+    return plates
 
 
 def get_incomplete_samples(statement: SelectOfScalar) -> SelectOfScalar:
     """Returning sample query statement for samples with less than two analyses."""
+
     return (
         statement.group_by(Analysis.sample_id)
         .order_by(Analysis.created_at)
@@ -152,7 +162,7 @@ def get_samples(statement: SelectOfScalar, sample_id: str) -> SelectOfScalar:
     return statement.where(Sample.id.contains(sample_id))
 
 
-def get_user_by_id(session: Session, user_id: int):
+def get_user(session: Session, user_id: int):
     statement = select(User).where(User.id == user_id)
     return session.exec(statement).one()
 

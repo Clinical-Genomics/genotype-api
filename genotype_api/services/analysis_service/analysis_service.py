@@ -14,7 +14,7 @@ from genotype_api.database.crud.read import (
 )
 from genotype_api.database.crud.update import refresh_sample_status
 from genotype_api.database.models import Analysis
-from genotype_api.dto.analysis import AnalysisGenotypeResponse, AnalysisResponse
+from genotype_api.dto.analysis import AnalysisWithGenotypeResponse, AnalysisResponse
 from genotype_api.file_parsing.files import check_file
 from genotype_api.file_parsing.vcf import SequenceAnalysis
 
@@ -25,9 +25,9 @@ class AnalysisService:
     def __init__(self, session: Session):
         self.session: Session = session
 
-    def get_analysis_with_genotype(self, analysis_id: int) -> AnalysisGenotypeResponse:
+    def get_analysis_with_genotype(self, analysis_id: int) -> AnalysisWithGenotypeResponse:
         analysis: Analysis = get_analysis_by_id(session=self.session, analysis_id=analysis_id)
-        return AnalysisGenotypeResponse(
+        return AnalysisWithGenotypeResponse(
             type=analysis.type,
             source=analysis.source,
             sex=analysis.sex,

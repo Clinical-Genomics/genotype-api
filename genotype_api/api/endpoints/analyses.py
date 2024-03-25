@@ -9,7 +9,7 @@ from genotype_api.database.crud.read import (
     get_analysis_by_id,
 )
 from genotype_api.database.models import Analysis, User
-from genotype_api.dto.analysis import AnalysisGenotypeResponse, AnalysisResponse
+from genotype_api.dto.analysis import AnalysisWithGenotypeResponse, AnalysisResponse
 from genotype_api.database.session_handler import get_session
 from genotype_api.security import get_active_user
 from genotype_api.services.analysis_service.analysis_service import AnalysisService
@@ -17,7 +17,7 @@ from genotype_api.services.analysis_service.analysis_service import AnalysisServ
 router = APIRouter()
 
 
-@router.get("/{analysis_id}", response_model=AnalysisGenotypeResponse)
+@router.get("/{analysis_id}", response_model=AnalysisWithGenotypeResponse)
 def read_analysis(
     analysis_id: int,
     session: Session = Depends(get_session),
