@@ -1,18 +1,11 @@
 """Routes for plates"""
 
-from typing import Literal
+from typing import Literal, Annotated
 from fastapi import APIRouter, Depends, File, Query, UploadFile, status
 from fastapi.responses import JSONResponse
-
 from sqlmodel import Session
-
-from genotype_api.database.crud.read import get_ordered_plates
 from genotype_api.database.filter_models.plate_models import PlateOrderParams
-
-from genotype_api.database.models import (
-    User,
-    Plate,
-)
+from genotype_api.database.models import User
 from genotype_api.database.session_handler import get_session
 from genotype_api.dto.plate import PlateResponse
 from genotype_api.security import get_active_user
@@ -22,7 +15,9 @@ from genotype_api.services.plate_service.plate_service import PlateService
 router = APIRouter()
 
 
-def get_plate_service(session: Session = Depends(get_session)) -> PlateService:
+async def get_plate_service(
+    session: Session = Annotated[Session, Depends(get_session)]
+) -> PlateService:
     return PlateService(session)
 
 
@@ -98,7 +93,7 @@ def read_plate(
 
 @router.get(
     "/",
-    response_model=list[Plate],
+    response_model=list[PlateResponse],
     response_model_exclude={"analyses"},
     response_model_by_alias=False,
 )
@@ -107,15 +102,15 @@ async def read_plates(
     sort_order: Literal["ascend", "descend"] | None = "descend",
     skip: int | None = 0,
     limit: int | None = 10,
-    plate_service: PlateService = Depends(get_plate_service),
+    session: Session = Depends(get_session),
     current_user: User = Depends(get_active_user),
 ):
     """Display all plates"""
     order_params = PlateOrderParams(
         order_by=order_by, skip=skip, limit=limit, sort_order=sort_order
     )
-
-    return get_ordered_plates(session=get_session(), order_params=order_params)
+    plate_service = PlateService(session)
+    return plate_service.read_plates(order_params=order_params)
 
 
 @router.delete("/{plate_id}")
