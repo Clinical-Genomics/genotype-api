@@ -146,7 +146,7 @@ class PlateService:
         """Delete a plate with the given plate id and return associated analysis ids."""
         plate = get_plate_by_id(session=self.session, plate_id=plate_id)
         analyses: list[Analysis] = get_analyses_from_plate(session=self.session, plate_id=plate_id)
-        analysis_ids = [analyse.id for analyse in analyses]
+        analysis_ids: list[int] = [analyse.id for analyse in analyses]
         for analysis in analyses:
             delete_analysis(session=self.session, analysis=analysis)
         delete_plate(session=self.session, plate=plate)
