@@ -155,11 +155,11 @@ async def read_plates(
     current_user: User = Depends(get_active_user),
 ) -> Sequence[Plate]:
     """Display all plates"""
-    sort_func = desc if sort_order == "descend" else asc
-    order_params = PlateOrderParams(order_by=order_by, skip=skip, limit=limit)
-    plates: Sequence[Plate] = get_ordered_plates(
-        session=session, order_params=order_params, sort_func=sort_func
+
+    order_params = PlateOrderParams(
+        order_by=order_by, skip=skip, limit=limit, sort_order=sort_order
     )
+    plates: Sequence[Plate] = get_ordered_plates(session=session, order_params=order_params)
     return plates
 
 
