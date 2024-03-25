@@ -143,7 +143,7 @@ class PlateService:
         return [self._get_plate_response(plate) for plate in plates]
 
     def delete_plate(self, plate_id) -> list[int]:
-    """Delete a plate with the given plate id and return associated analysis ids."""
+        """Delete a plate with the given plate id and return associated analysis ids."""
         plate = get_plate_by_id(session=self.session, plate_id=plate_id)
         analyses: list[Analysis] = get_analyses_from_plate(session=self.session, plate_id=plate_id)
         analysis_ids = [analyse.id for analyse in analyses]
