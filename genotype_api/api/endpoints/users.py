@@ -8,7 +8,7 @@ from starlette import status
 from starlette.responses import JSONResponse
 
 from genotype_api.database.crud.read import (
-    get_user,
+    get_user_by_id,
     get_user_by_email,
     get_users_with_skip_and_limit,
 )
@@ -32,7 +32,7 @@ def read_user(
     session: Session = Depends(get_session),
     current_user: User = Depends(get_active_user),
 ) -> User:
-    return get_user(session=session, user_id=user_id)
+    return get_user_by_id(session=session, user_id=user_id)
 
 
 @router.delete("/{user_id}")
@@ -41,7 +41,7 @@ def delete_user(
     session: Session = Depends(get_session),
     current_user: User = Depends(get_active_user),
 ) -> JSONResponse:
-    user: User = get_user(session=session, user_id=user_id)
+    user: User = get_user_by_id(session=session, user_id=user_id)
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     if user.plates:
@@ -60,7 +60,7 @@ def change_user_email(
     session: Session = Depends(get_session),
     current_user: User = Depends(get_active_user),
 ) -> User:
-    user: User = get_user(session=session, user_id=user_id)
+    user: User = get_user_by_id(session=session, user_id=user_id)
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     user: User = update_user_email(session=session, user=user, email=email)

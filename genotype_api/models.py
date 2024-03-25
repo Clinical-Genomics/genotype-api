@@ -1,16 +1,4 @@
-from pydantic import BaseModel, validator, Field
-
-
-class PlateStatusCounts(BaseModel):
-    total: int = Field(0, nullable=True)
-    failed: int = Field(0, alias="STATUS.FAIL", nullable=True)
-    passed: int = Field(0, alias="STATUS.PASS", nullable=True)
-    cancelled: int = Field(0, alias="STATUS.CANCEL", nullable=True)
-    unknown: int = Field(0, alias="None", nullable=True)
-    commented: int = Field(0, nullable=True)
-
-    class Config:
-        allow_population_by_field_name = True
+from pydantic import BaseModel, validator
 
 
 class SampleDetailStats(BaseModel):
