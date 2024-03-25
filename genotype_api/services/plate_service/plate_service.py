@@ -135,7 +135,7 @@ class PlateService:
         plate: Plate = get_plate_by_id(session=self.session, plate_id=plate_id)
         return self._get_plate_response(plate)
 
-    def read_plates(self, order_params: PlateOrderParams) -> list[PlateSimple]:
+    def read_plates(self, order_params: PlateOrderParams) -> list[PlateResponse]:
         plates: list[Plate] = get_ordered_plates(session=self.session, order_params=order_params)
         return [self._get_plate_response(plate) for plate in plates]
 
