@@ -6,10 +6,12 @@ from fastapi.responses import JSONResponse
 
 from sqlmodel import Session
 
+from genotype_api.database.crud.read import get_ordered_plates
 from genotype_api.database.filter_models.plate_models import PlateOrderParams
 
 from genotype_api.database.models import (
     User,
+    Plate,
 )
 from genotype_api.database.session_handler import get_session
 from genotype_api.dto.plate import PlateResponse
@@ -96,7 +98,7 @@ def read_plate(
 
 @router.get(
     "/",
-    response_model=list[PlateResponse],
+    response_model=list[Plate],
     response_model_exclude={"analyses"},
     response_model_by_alias=False,
 )
@@ -112,7 +114,8 @@ async def read_plates(
     order_params = PlateOrderParams(
         order_by=order_by, skip=skip, limit=limit, sort_order=sort_order
     )
-    return plate_service.read_plates(order_params=order_params)
+
+    return get_ordered_plates(session=get_session(), order_params=order_params)
 
 
 @router.delete("/{plate_id}")
