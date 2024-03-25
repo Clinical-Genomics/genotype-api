@@ -4,12 +4,8 @@ from fastapi import APIRouter, Depends, File, Query, UploadFile, status
 from fastapi.responses import JSONResponse
 from sqlmodel import Session
 
-from genotype_api.database.crud.delete import delete_analysis
-from genotype_api.database.crud.read import (
-    get_analysis_by_id,
-)
-from genotype_api.database.models import Analysis, User
-from genotype_api.dto.analysis import AnalysisWithGenotypeResponse, AnalysisResponse
+from genotype_api.database.models import User
+from genotype_api.dto.analysis import AnalysisResponse
 from genotype_api.database.session_handler import get_session
 from genotype_api.security import get_active_user
 from genotype_api.services.analysis_service.analysis_service import AnalysisService
@@ -21,7 +17,7 @@ def get_analysis_service(session: Session = Depends(get_session)):
     return AnalysisService(session)
 
 
-@router.get("/{analysis_id}", response_model=AnalysisWithGenotypeResponse)
+@router.get("/{analysis_id}", response_model=AnalysisResponse)
 def read_analysis(
     analysis_id: int,
     analysis_service: AnalysisService = Depends(get_analysis_service),
@@ -31,7 +27,7 @@ def read_analysis(
     return analysis_service.get_analysis_with_genotype(analysis_id)
 
 
-@router.get("/", response_model=list[AnalysisResponse])
+@router.get("/", response_model=list[AnalysisResponse], response_model_exclude={"genotypes"})
 def read_analyses(
     skip: int = 0,
     limit: int = Query(default=100, lte=100),
@@ -53,7 +49,9 @@ def delete_analysis(
     return JSONResponse(f"Deleted analysis: {analysis_id}", status_code=status.HTTP_200_OK)
 
 
-@router.post("/sequence", response_model=list[AnalysisResponse])
+@router.post(
+    "/sequence", response_model=list[AnalysisResponse], response_model_exclude={"genotypes"}
+)
 def upload_sequence_analysis(
     file: UploadFile = File(...),
     analysis_service: AnalysisService = Depends(get_analysis_service),
