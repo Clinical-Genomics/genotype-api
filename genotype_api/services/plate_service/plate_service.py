@@ -7,6 +7,7 @@ from pathlib import Path
 
 
 from fastapi import UploadFile
+from pydantic import EmailStr
 from sqlmodel import Session
 from starlette import status
 
@@ -20,6 +21,7 @@ from genotype_api.database.crud.read import (
     get_ordered_plates,
     get_analyses_from_plate,
     get_user_by_id,
+    get_user_by_email,
 )
 from genotype_api.database.crud.update import (
     refresh_sample_status,
@@ -119,11 +121,12 @@ class PlateService:
         return self._get_plate_response(plate)
 
     def update_plate_sign_off(
-        self, plate_id: int, user_id: int, method_document: str, method_version: str
+        self, plate_id: int, user_email: EmailStr, method_document: str, method_version: str
     ) -> PlateResponse:
         plate: Plate = get_plate_by_id(session=self.session, plate_id=plate_id)
+        user: User = get_user_by_email(session=self.session, email=user_email)
         plate_sign_off = PlateSignOff(
-            user_id=user_id,
+            user_id=user.id,
             signed_at=datetime.now(),
             method_document=method_document,
             method_version=method_version,

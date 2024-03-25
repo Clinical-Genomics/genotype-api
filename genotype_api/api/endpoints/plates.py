@@ -51,7 +51,7 @@ def sign_off_plate(
 
     return plate_service.update_plate_sign_off(
         plate_id=plate_id,
-        user_id=current_user.id,
+        user_email=current_user.email,
         method_version=method_version,
         method_document=method_document,
     )
