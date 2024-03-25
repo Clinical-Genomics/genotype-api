@@ -2,7 +2,7 @@ import logging
 from datetime import timedelta, date
 from typing import Callable, Sequence
 
-from sqlalchemy import func
+from sqlalchemy import func, desc, asc
 from sqlalchemy.orm import Query
 from sqlmodel import Session, select
 from sqlmodel.sql.expression import Select, SelectOfScalar
@@ -78,21 +78,18 @@ def get_analysis_by_type_and_sample_id(
 
 def get_plate_by_id(session: Session, plate_id: int) -> Plate:
     """Get plate"""
-
     statement = select(Plate).where(Plate.id == plate_id)
     return session.exec(statement).one()
 
 
-def get_ordered_plates(
-    session: Session, order_params: PlateOrderParams, sort_func: Callable
-) -> list[Plate]:
-    statement = (
+def get_ordered_plates(session: Session, order_params: PlateOrderParams) -> list[Plate]:
+    sort_func = desc if order_params.sort_order == "descend" else asc
+    return session.exec(
         select(Plate)
         .order_by(sort_func(order_params.order_by))
         .offset(order_params.skip)
         .limit(order_params.limit)
-    )
-    return session.exec(statement).all()
+    ).all()
 
 
 def get_incomplete_samples(statement: SelectOfScalar) -> SelectOfScalar:

@@ -7,13 +7,14 @@ from pydantic import BaseModel
 
 
 class PlateSignOff(BaseModel):
-    user_id: int | None
+    user_id: int | None = None
     signed_at: datetime = datetime.now()
-    method_document: str | None
-    method_version: str | None
+    method_document: str | None = None
+    method_version: str | None = None
 
 
 class PlateOrderParams(BaseModel):
-    skip: int | None
-    limit: int | None
-    order_by: str | None
+    sort_order: str | None = None
+    skip: int | None = None
+    limit: int | None = None
+    order_by: str | None = None

@@ -3,9 +3,11 @@
 from typing import Literal
 from fastapi import APIRouter, Depends, File, Query, UploadFile, status
 from fastapi.responses import JSONResponse
-from sqlalchemy import asc, desc
+
 from sqlmodel import Session
+
 from genotype_api.database.filter_models.plate_models import PlateOrderParams
+
 from genotype_api.database.models import (
     User,
 )
@@ -51,6 +53,7 @@ def sign_off_plate(
     This means that current User sign off that the plate is checked
     Add Depends with current user
     """
+
     return plate_service.update_plate_sign_off(
         plate_id=plate_id,
         user_id=current_user.id,
@@ -106,10 +109,10 @@ async def read_plates(
     current_user: User = Depends(get_active_user),
 ):
     """Display all plates"""
-    sort_func = desc if sort_order == "descend" else asc
-    order_params = PlateOrderParams(order_by=order_by, skip=skip, limit=limit)
-
-    return plate_service.read_plates(order_params=order_params, sort_func=sort_func)
+    order_params = PlateOrderParams(
+        order_by=order_by, skip=skip, limit=limit, sort_order=sort_order
+    )
+    return plate_service.read_plates(order_params=order_params)
 
 
 @router.delete("/{plate_id}")
