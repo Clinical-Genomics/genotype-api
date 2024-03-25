@@ -30,7 +30,7 @@ from genotype_api.database.filter_models.plate_models import PlateSignOff, Plate
 from genotype_api.database.models import Plate, Analysis, User
 from genotype_api.dto.analysis import AnalysisSampleResponse
 from genotype_api.dto.dto import PlateCreate
-from genotype_api.dto.plate import PlateResponse, PlateSimple
+from genotype_api.dto.plate import PlateResponse
 from genotype_api.dto.sample import SampleStatusResponse
 from genotype_api.dto.user import UserInfoResponse
 from genotype_api.file_parsing.excel import GenotypeAnalysis
@@ -82,19 +82,6 @@ class PlateService:
             id=plate.id,
             user=user,
             analyses=analyses_response,
-        )
-
-    def _get_simple_plate(self, plate: Plate) -> PlateSimple:
-        user: UserInfoResponse = self._get_plate_user(plate)
-        return PlateSimple(
-            created_at=plate.created_at,
-            plate_id=plate.plate_id,
-            signed_by=plate.signed_by,
-            signed_at=plate.signed_at,
-            method_document=plate.method_document,
-            method_version=plate.method_version,
-            id=plate.id,
-            user=user,
         )
 
     @staticmethod
@@ -150,7 +137,7 @@ class PlateService:
 
     def read_plates(self, order_params: PlateOrderParams) -> list[PlateSimple]:
         plates: list[Plate] = get_ordered_plates(session=self.session, order_params=order_params)
-        return [self._get_simple_plate(plate) for plate in plates]
+        return [self._get_plate_response(plate) for plate in plates]
 
     def delete_plate(self, plate_id) -> list[int]:
         plate = get_plate_by_id(session=self.session, plate_id=plate_id)
