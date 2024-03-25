@@ -20,6 +20,18 @@ class PlateStatusCounts(BaseModel):
         allow_population_by_field_name = True
 
 
+class PlateSimple(BaseModel):
+
+    created_at: datetime | None = None
+    plate_id: str | None = None
+    signed_by: int | None = None
+    signed_at: datetime | None = None
+    method_document: str | None = None
+    method_version: str | None = None
+    id: str | None = None
+    user: UserInfoResponse | None = None
+
+
 class PlateResponse(BaseModel):
     created_at: datetime | None = None
     plate_id: str | None = None
