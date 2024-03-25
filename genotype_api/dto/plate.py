@@ -32,7 +32,7 @@ class PlateResponse(BaseModel):
     analyses: list[AnalysisSampleResponse] | None = None
     plate_status_counts: PlateStatusCounts | None = None
 
-    @validator("detail")
+    @validator("plate_status_counts")
     def check_detail(cls, value, values):
         analyses = values.get("analyses")
         if not analyses:
