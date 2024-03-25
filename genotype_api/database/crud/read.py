@@ -85,15 +85,14 @@ def get_plate_by_id(session: Session, plate_id: int) -> Plate:
 
 def get_ordered_plates(
     session: Session, order_params: PlateOrderParams, sort_func: Callable
-) -> Sequence[Plate]:
+) -> list[Plate]:
     statement = (
         select(Plate)
         .order_by(sort_func(order_params.order_by))
         .offset(order_params.skip)
         .limit(order_params.limit)
     )
-    plates: Sequence[Plate] = session.exec(statement).all()
-    return plates
+    return session.exec(statement).all()
 
 
 def get_incomplete_samples(statement: SelectOfScalar) -> SelectOfScalar:

@@ -83,7 +83,8 @@ class PlateService:
             analyses=analyses_response,
         )
 
-    def _get_plate_id_from_file(self, file_name: Path) -> str:
+    @staticmethod
+    def _get_plate_id_from_file(file_name: Path) -> str:
         # Get the plate id from the standardized name of the plate
         return file_name.name.split("_", 1)[0]
 
@@ -136,7 +137,7 @@ class PlateService:
     def read_plates(
         self, order_params: PlateOrderParams, sort_func: callable
     ) -> list[PlateResponse]:
-        plates: Sequence[Plate] = get_ordered_plates(
+        plates: list[Plate] = get_ordered_plates(
             session=self.session, order_params=order_params, sort_func=sort_func
         )
         return [self._get_plate_response(plate) for plate in plates]
