@@ -77,7 +77,6 @@ def get_analysis_by_type_and_sample_id(
 
 
 def get_plate_by_id(session: Session, plate_id: int) -> Plate:
-    """Get plate"""
     statement = select(Plate).where(Plate.id == plate_id)
     return session.exec(statement).one()
 

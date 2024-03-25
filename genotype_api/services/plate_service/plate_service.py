@@ -34,7 +34,7 @@ from genotype_api.dto.analysis import AnalysisSampleResponse
 from genotype_api.dto.dto import PlateCreate
 from genotype_api.dto.plate import PlateResponse
 from genotype_api.dto.sample import SampleStatusResponse
-from genotype_api.dto.user import UserInfoResponse
+from genotype_api.dto.user import UserResponse
 from genotype_api.file_parsing.excel import GenotypeAnalysis
 from genotype_api.file_parsing.files import check_file
 
@@ -65,15 +65,15 @@ class PlateService:
                 analyses_response.append(analysis_response)
         return analyses_response if analyses_response else None
 
-    def _get_plate_user(self, plate: Plate) -> UserInfoResponse | None:
+    def _get_plate_user(self, plate: Plate) -> UserResponse | None:
         if plate.signed_by:
             user: User = get_user_by_id(session=self.session, user_id=plate.signed_by)
-            return UserInfoResponse(email=user.email, name=user.name, id=user.id)
+            return UserResponse(email=user.email, name=user.name, id=user.id)
         return None
 
     def _get_plate_response(self, plate: Plate) -> PlateResponse:
         analyses_response: list[AnalysisSampleResponse] = self._get_analyses_on_plate(plate)
-        user: UserInfoResponse = self._get_plate_user(plate)
+        user: UserResponse = self._get_plate_user(plate)
         return PlateResponse(
             created_at=plate.created_at,
             plate_id=plate.plate_id,

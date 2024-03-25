@@ -5,7 +5,7 @@ from datetime import datetime
 
 from pydantic import BaseModel, validator, Field
 from genotype_api.dto.analysis import AnalysisSampleResponse
-from genotype_api.dto.user import UserInfoResponse
+from genotype_api.dto.user import UserResponse
 
 
 class PlateStatusCounts(BaseModel):
@@ -28,7 +28,7 @@ class PlateResponse(BaseModel):
     method_document: str | None = None
     method_version: str | None = None
     id: str | None = None
-    user: UserInfoResponse | None = None
+    user: UserResponse | None = None
     analyses: list[AnalysisSampleResponse] | None = None
     plate_status_counts: PlateStatusCounts | None = None
 
