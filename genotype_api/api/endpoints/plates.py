@@ -15,9 +15,7 @@ from genotype_api.services.plate_service.plate_service import PlateService
 router = APIRouter()
 
 
-async def get_plate_service(
-    session: Session = Annotated[Session, Depends(get_session)]
-) -> PlateService:
+def get_plate_service(session: Session = Depends(get_session)) -> PlateService:
     return PlateService(session)
 
 
