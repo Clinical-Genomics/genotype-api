@@ -4,7 +4,7 @@ from datetime import datetime
 from http.client import HTTPException
 from io import BytesIO
 from pathlib import Path
-from typing import Sequence
+
 
 from fastapi import UploadFile
 from sqlmodel import Session
@@ -43,24 +43,25 @@ class PlateService:
         self.session: Session = session
 
     @staticmethod
-    def _get_analyses_on_plate(plate: Plate) -> list[AnalysisSampleResponse]:
+    def _get_analyses_on_plate(plate: Plate) -> list[AnalysisSampleResponse] | None:
         analyses_response: list[AnalysisSampleResponse] = []
         for analysis in plate.analyses:
-            sample_status = SampleStatusResponse(
-                status=analysis.sample.status, comment=analysis.sample.comment
-            )
-            analysis_response = AnalysisSampleResponse(
-                type=analysis.type,
-                source=analysis.source,
-                sex=analysis.sex,
-                created_at=analysis.created_at,
-                sample_id=analysis.sample_id,
-                plate_id=analysis.plate_id,
-                id=analysis.id,
-                sample=sample_status,
-            )
-            analyses_response.append(analysis_response)
-        return analyses_response
+            if analysis:
+                sample_status = SampleStatusResponse(
+                    status=analysis.sample.status, comment=analysis.sample.comment
+                )
+                analysis_response = AnalysisSampleResponse(
+                    type=analysis.type,
+                    source=analysis.source,
+                    sex=analysis.sex,
+                    created_at=analysis.created_at,
+                    sample_id=analysis.sample_id,
+                    plate_id=analysis.plate_id,
+                    id=analysis.id,
+                    sample=sample_status,
+                )
+                analyses_response.append(analysis_response)
+        return analyses_response if analyses_response else None
 
     def _get_plate_user(self, plate: Plate) -> UserInfoResponse | None:
         user: User = get_user_by_id(session=self.session, user_id=plate.signed_by)
