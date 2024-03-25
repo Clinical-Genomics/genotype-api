@@ -94,7 +94,6 @@ def get_ordered_plates(session: Session, order_params: PlateOrderParams) -> list
 
 def get_incomplete_samples(statement: SelectOfScalar) -> SelectOfScalar:
     """Returning sample query statement for samples with less than two analyses."""
-
     return (
         statement.group_by(Analysis.sample_id)
         .order_by(Analysis.created_at)

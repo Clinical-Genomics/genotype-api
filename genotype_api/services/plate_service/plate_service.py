@@ -64,8 +64,8 @@ class PlateService:
         return analyses_response if analyses_response else None
 
     def _get_plate_user(self, plate: Plate) -> UserInfoResponse | None:
-        user: User = get_user_by_id(session=self.session, user_id=plate.signed_by)
-        if user:
+        if plate.signed_by:
+            user: User = get_user_by_id(session=self.session, user_id=plate.signed_by)
             return UserInfoResponse(email=user.email, name=user.name, id=user.id)
         return None
 
