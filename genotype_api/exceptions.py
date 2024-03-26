@@ -17,6 +17,10 @@ class PlateExistsError(Exception):
     pass
 
 
+class PlateNotFoundError(Exception):
+    pass
+
+
 class UserNotFoundError(Exception):
     pass
 

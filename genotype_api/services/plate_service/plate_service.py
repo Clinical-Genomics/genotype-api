@@ -33,6 +33,7 @@ from genotype_api.database.models import Plate, Analysis, User
 from genotype_api.dto.dto import PlateCreate
 from genotype_api.dto.plate import PlateResponse, UserOnPlate, AnalysisOnPlate
 from genotype_api.dto.sample import SampleStatusResponse
+from genotype_api.exceptions import PlateNotFoundError, UserNotFoundError
 from genotype_api.file_parsing.excel import GenotypeAnalysis
 from genotype_api.file_parsing.files import check_file
 
@@ -122,7 +123,11 @@ class PlateService:
         self, plate_id: int, user_email: EmailStr, method_document: str, method_version: str
     ) -> PlateResponse:
         plate: Plate = get_plate_by_id(session=self.session, plate_id=plate_id)
+        if not plate:
+            raise PlateNotFoundError
         user: User = get_user_by_email(session=self.session, email=user_email)
+        if not user:
+            raise UserNotFoundError
         plate_sign_off = PlateSignOff(
             user_id=user.id,
             signed_at=datetime.now(),
@@ -134,15 +139,21 @@ class PlateService:
 
     def get_plate(self, plate_id: int) -> PlateResponse:
         plate: Plate = get_plate_by_id(session=self.session, plate_id=plate_id)
+        if not plate:
+            raise PlateNotFoundError
         return self._create_plate_response(plate)
 
     def get_plates(self, order_params: PlateOrderParams) -> list[PlateResponse]:
         plates: list[Plate] = get_ordered_plates(session=self.session, order_params=order_params)
+        if not plates:
+            raise PlateNotFoundError
         return [self._create_plate_response(plate) for plate in plates]
 
     def delete_plate(self, plate_id) -> list[int]:
         """Delete a plate with the given plate id and return associated analysis ids."""
         plate = get_plate_by_id(session=self.session, plate_id=plate_id)
+        if not plate:
+            raise PlateNotFoundError
         analyses: list[Analysis] = get_analyses_from_plate(session=self.session, plate_id=plate_id)
         analysis_ids: list[int] = [analyse.id for analyse in analyses]
         for analysis in analyses:

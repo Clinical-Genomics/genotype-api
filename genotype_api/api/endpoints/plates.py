@@ -1,13 +1,15 @@
 """Routes for plates"""
 
+from http import HTTPStatus
 from typing import Literal
-from fastapi import APIRouter, Depends, File, Query, UploadFile, status
+from fastapi import APIRouter, Depends, File, Query, UploadFile, status, HTTPException
 from fastapi.responses import JSONResponse
 from sqlmodel import Session
 from genotype_api.database.filter_models.plate_models import PlateOrderParams
 from genotype_api.database.models import User
 from genotype_api.database.session_handler import get_session
 from genotype_api.dto.plate import PlateResponse
+from genotype_api.exceptions import PlateNotFoundError
 from genotype_api.security import get_active_user
 from genotype_api.services.plate_service.plate_service import PlateService
 
@@ -85,8 +87,12 @@ def read_plate(
     current_user: User = Depends(get_active_user),
 ):
     """Display information about a plate."""
-
-    return plate_service.get_plate(plate_id=plate_id)
+    try:
+        return plate_service.get_plate(plate_id=plate_id)
+    except PlateNotFoundError:
+        raise HTTPException(
+            detail=f"Could not find plate with id {plate_id}", status_code=HTTPStatus.BAD_REQUEST
+        )
 
 
 @router.get(
@@ -107,7 +113,12 @@ async def read_plates(
     order_params = PlateOrderParams(
         order_by=order_by, skip=skip, limit=limit, sort_order=sort_order
     )
-    return plate_service.get_plates(order_params=order_params)
+    try:
+        return plate_service.get_plates(order_params=order_params)
+    except PlateNotFoundError:
+        raise HTTPException(
+            detail=f"Could not fetch plates from backend.", status_code=HTTPStatus.BAD_REQUEST
+        )
 
 
 @router.delete("/{plate_id}")
@@ -117,8 +128,13 @@ def delete_plate(
     current_user: User = Depends(get_active_user),
 ):
     """Delete plate."""
-    analysis_ids = plate_service.delete_plate(plate_id)
-    return JSONResponse(
-        f"Deleted plate: {plate_id} and analyses: {analysis_ids}",
-        status_code=status.HTTP_200_OK,
-    )
+    try:
+        analysis_ids = plate_service.delete_plate(plate_id)
+        return JSONResponse(
+            f"Deleted plate: {plate_id} and analyses: {analysis_ids}",
+            status_code=status.HTTP_200_OK,
+        )
+    except PlateNotFoundError:
+        raise HTTPException(
+            detail=f"Could not find plate with id {plate_id}", status_code=HTTPStatus.BAD_REQUEST
+        )
