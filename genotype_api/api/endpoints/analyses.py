@@ -1,6 +1,8 @@
 """Routes for analysis"""
 
-from fastapi import APIRouter, Depends, File, Query, UploadFile, status
+from http import HTTPStatus
+
+from fastapi import APIRouter, Depends, File, Query, UploadFile, status, HTTPException
 from fastapi.responses import JSONResponse
 from sqlmodel import Session
 
@@ -9,6 +11,7 @@ from genotype_api.database.models import User
 from genotype_api.dto.analysis import AnalysisResponse
 
 from genotype_api.database.session_handler import get_session
+from genotype_api.exceptions import AnalysisNotFoundError
 from genotype_api.security import get_active_user
 from genotype_api.services.analysis_service.analysis_service import AnalysisService
 
@@ -26,7 +29,13 @@ def read_analysis(
     current_user: User = Depends(get_active_user),
 ):
     """Return analysis."""
-    return analysis_service.get_analysis(analysis_id)
+    try:
+        return analysis_service.get_analysis(analysis_id)
+    except AnalysisNotFoundError:
+        raise HTTPException(
+            detail=f"Could not find analysis with id {analysis_id}",
+            status_code=HTTPStatus.BAD_REQUEST,
+        )
 
 
 @router.get("/", response_model=list[AnalysisResponse], response_model_exclude={"genotypes"})
@@ -37,7 +46,13 @@ def read_analyses(
     current_user: User = Depends(get_active_user),
 ):
     """Return all analyses."""
-    return analysis_service.get_analyses(skip=skip, limit=limit)
+    try:
+        return analysis_service.get_analyses(skip=skip, limit=limit)
+    except AnalysisNotFoundError:
+        raise HTTPException(
+            detail="Could not fetch analyses from back end.",
+            status_code=HTTPStatus.BAD_REQUEST,
+        )
 
 
 @router.delete("/{analysis_id}")
@@ -46,9 +61,15 @@ def delete_analysis(
     analysis_service: AnalysisService = Depends(get_analysis_service),
     current_user: User = Depends(get_active_user),
 ):
-    """Delete analysis based on analysis_id"""
-    analysis_service.delete_analysis(analysis_id)
-    return JSONResponse(f"Deleted analysis: {analysis_id}", status_code=status.HTTP_200_OK)
+    """Delete analysis based on analysis_id."""
+    try:
+        analysis_service.delete_analysis(analysis_id)
+    except AnalysisNotFoundError:
+        raise HTTPException(
+            detail=f"Could not find analysis with id {analysis_id}",
+            status_code=HTTPStatus.BAD_REQUEST,
+        )
+    return JSONResponse(content=f"Deleted analysis: {analysis_id}", status_code=status.HTTP_200_OK)
 
 
 @router.post(

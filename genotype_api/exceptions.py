@@ -27,3 +27,7 @@ class UserArchiveError(Exception):
 
 class UserExistsError(Exception):
     pass
+
+
+class AnalysisNotFoundError(Exception):
+    pass

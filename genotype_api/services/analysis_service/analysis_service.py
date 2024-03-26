@@ -17,6 +17,7 @@ from genotype_api.database.crud.update import refresh_sample_status
 from genotype_api.database.models import Analysis
 
 from genotype_api.dto.analysis import AnalysisResponse
+from genotype_api.exceptions import AnalysisNotFoundError
 
 from genotype_api.file_parsing.files import check_file
 from genotype_api.file_parsing.vcf import SequenceAnalysis
@@ -43,12 +44,16 @@ class AnalysisService:
 
     def get_analysis(self, analysis_id: int) -> AnalysisResponse:
         analysis: Analysis = get_analysis_by_id(session=self.session, analysis_id=analysis_id)
+        if not analysis:
+            raise AnalysisNotFoundError
         return self._create_analysis_response(analysis)
 
     def get_analyses(self, skip: int, limit: int) -> list[AnalysisResponse]:
         analyses: list[Analysis] = get_analyses_with_skip_and_limit(
             session=self.session, skip=skip, limit=limit
         )
+        if not analyses:
+            raise AnalysisNotFoundError
         return [self._create_analysis_response(analysis) for analysis in analyses]
 
     def get_upload_sequence_analyses(self, file: UploadFile) -> list[AnalysisResponse]:
@@ -71,4 +76,6 @@ class AnalysisService:
 
     def delete_analysis(self, analysis_id: int) -> None:
         analysis: Analysis = get_analysis_by_id(session=self.session, analysis_id=analysis_id)
+        if not analysis:
+            raise AnalysisNotFoundError
         delete_analysis(session=self.session, analysis=analysis)
