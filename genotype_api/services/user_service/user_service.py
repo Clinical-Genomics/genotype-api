@@ -21,19 +21,20 @@ class UserService:
         self.session: Session = session
 
     @staticmethod
-    def _get_plates_on_user(user: User) -> list[PlateOnUser]:
+    def _get_plates_on_user(user: User) -> list[PlateOnUser] | None:
         plates_response: list[PlateOnUser] = []
+        if not user.plates:
+            return None
         for plate in user.plates:
-            if plate:
-                plate_response = PlateOnUser(
-                    created_at=plate.created_at,
-                    plate_id=plate.plate_id,
-                    id=plate.id,
-                    signed_by=plate.signed_by,
-                    signed_at=plate.signed_at,
-                )
-                plates_response.append(plate_response)
-        return plates_response if plates_response else None
+            plate_response = PlateOnUser(
+                created_at=plate.created_at,
+                plate_id=plate.plate_id,
+                id=plate.id,
+                signed_by=plate.signed_by,
+                signed_at=plate.signed_at,
+            )
+            plates_response.append(plate_response)
+        return plates_response
 
     def _create_user_response(self, user: User) -> UserResponse:
         plates: list[PlateOnUser] = self._get_plates_on_user(user)
