@@ -1,11 +1,7 @@
 """Module to holds the plate service."""
 
-from fastapi import HTTPException
 from pydantic import EmailStr
-
 from sqlmodel import Session
-from starlette import status
-
 from genotype_api.database.crud.create import create_user
 from genotype_api.database.crud.delete import delete_user
 from genotype_api.database.crud.read import (
@@ -16,6 +12,7 @@ from genotype_api.database.crud.read import (
 from genotype_api.database.crud.update import update_user_email
 from genotype_api.database.models import User
 from genotype_api.dto.user import UserResponse, UserRequest, PlateOnUser
+from genotype_api.exceptions import UserNotFoundError, UserArchiveError, UserExistsError
 
 
 class UserService:
@@ -45,7 +42,7 @@ class UserService:
     def create_user(self, user: UserRequest):
         existing_user: User = get_user_by_email(session=self.session, email=user.email)
         if existing_user:
-            raise HTTPException(status_code=409, detail="Email already registered.")
+            raise UserExistsError
         new_user: User = create_user(session=self.session, user=user)
         return self._create_user_response(new_user)
 
@@ -62,17 +59,14 @@ class UserService:
     def delete_user(self, user_id: int):
         user: User = get_user_by_id(session=self.session, user_id=user_id)
         if not user:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+            raise UserNotFoundError
         if user.plates:
-            raise HTTPException(
-                status_code=status.HTTP_406_NOT_ACCEPTABLE,
-                detail="User previously signed plates, please archive instead",
-            )
+            raise UserArchiveError
         delete_user(session=self.session, user=user)
 
     def update_user_email(self, user_id: int, email: EmailStr):
         user: User = get_user_by_id(session=self.session, user_id=user_id)
         if not user:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+            raise UserNotFoundError
         user: User = update_user_email(session=self.session, user=user, email=email)
         return self._create_user_response(user)

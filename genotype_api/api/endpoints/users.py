@@ -1,6 +1,6 @@
 """Routes for users"""
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, HTTPException
 from pydantic import EmailStr
 from sqlmodel import Session
 from starlette import status
@@ -10,6 +10,7 @@ from starlette.responses import JSONResponse
 from genotype_api.database.models import User
 from genotype_api.database.session_handler import get_session
 from genotype_api.dto.user import UserRequest, UserResponse
+from genotype_api.exceptions import UserNotFoundError, UserArchiveError, UserExistsError
 from genotype_api.security import get_active_user
 from genotype_api.services.user_service.user_service import UserService
 
@@ -35,7 +36,15 @@ def delete_user(
     user_service: UserService = Depends(get_user_service),
     current_user: User = Depends(get_active_user),
 ) -> JSONResponse:
-    user_service.delete_user(user_id)
+    try:
+        user_service.delete_user(user_id)
+    except UserNotFoundError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    except UserArchiveError:
+        HTTPException(
+            status_code=status.HTTP_406_NOT_ACCEPTABLE,
+            detail="User previously signed plates, please archive instead",
+        )
     return JSONResponse(content="Deleted user with id: {user_id}.", status_code=status.HTTP_200_OK)
 
 
@@ -46,7 +55,10 @@ def change_user_email(
     user_service: UserService = Depends(get_user_service),
     current_user: User = Depends(get_active_user),
 ) -> UserResponse:
-    return user_service.update_user_email(user_id=user_id, email=email)
+    try:
+        return user_service.update_user_email(user_id=user_id, email=email)
+    except UserNotFoundError:
+        HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
 
 @router.get("/", response_model=list[UserResponse], response_model_exclude={"plates"})
@@ -56,6 +68,7 @@ def read_users(
     user_service: UserService = Depends(get_user_service),
     current_user: User = Depends(get_active_user),
 ) -> list[UserResponse]:
+
     return user_service.read_users(skip=skip, limit=limit)
 
 
@@ -65,4 +78,7 @@ def create_user(
     user_service: UserService = Depends(get_user_service),
     current_user: User = Depends(get_active_user),
 ):
-    return user_service.create_user(user)
+    try:
+        return user_service.create_user(user)
+    except UserExistsError:
+        HTTPException(status_code=409, detail="Email already registered.")
