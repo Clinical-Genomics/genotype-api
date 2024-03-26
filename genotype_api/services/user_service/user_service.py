@@ -14,7 +14,8 @@ from genotype_api.database.crud.read import (
     get_user_by_email,
 )
 from genotype_api.database.crud.update import update_user_email
-from genotype_api.database.models import User
+from genotype_api.database.models import User, Plate
+from genotype_api.dto.plate import PlateResponse
 from genotype_api.dto.user import UserResponse, UserRequest
 
 
@@ -23,8 +24,24 @@ class UserService:
     def __init__(self, session: Session):
         self.session: Session = session
 
+    @staticmethod
+    def _get_plates_on_user(user: User) -> list[PlateResponse]:
+        plates_response: list[PlateResponse] = []
+        for plate in user.plates:
+            if plate:
+                plate_response = PlateResponse(
+                    created_at=plate.created_at,
+                    plate_id=plate.plate_id,
+                    id=plate.id,
+                    signed_by=plate.signed_by,
+                    signed_at=plate.signed_at,
+                )
+                plates_response.append(plate_response)
+        return plates_response if plates_response else None
+
     def _get_user_response(self, user: User) -> UserResponse:
-        pass
+        plates: list[PlateResponse] = self._get_plates_on_user(user)
+        return UserResponse(email=user.email, name=user.name, id=user.id, plates=plates)
 
     def create_user(self, user: UserRequest):
         existing_user: User = get_user_by_email(session=self.session, email=user.email)
