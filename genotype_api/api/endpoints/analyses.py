@@ -33,7 +33,7 @@ def read_analysis(
         return analysis_service.get_analysis(analysis_id)
     except AnalysisNotFoundError:
         raise HTTPException(
-            detail=f"Could not find analysis with id {analysis_id}",
+            detail=f"Could not find analysis with id: {analysis_id}",
             status_code=HTTPStatus.BAD_REQUEST,
         )
 
@@ -50,7 +50,7 @@ def read_analyses(
         return analysis_service.get_analyses(skip=skip, limit=limit)
     except AnalysisNotFoundError:
         raise HTTPException(
-            detail="Could not fetch analyses from back end.",
+            detail="Could not fetch analyses from backend.",
             status_code=HTTPStatus.BAD_REQUEST,
         )
 
@@ -61,12 +61,12 @@ def delete_analysis(
     analysis_service: AnalysisService = Depends(get_analysis_service),
     current_user: User = Depends(get_active_user),
 ):
-    """Delete analysis based on analysis_id."""
+    """Delete analysis based on analysis id."""
     try:
         analysis_service.delete_analysis(analysis_id)
     except AnalysisNotFoundError:
         raise HTTPException(
-            detail=f"Could not find analysis with id {analysis_id}",
+            detail=f"Could not find analysis with id: {analysis_id}",
             status_code=HTTPStatus.BAD_REQUEST,
         )
     return JSONResponse(content=f"Deleted analysis: {analysis_id}", status_code=status.HTTP_200_OK)

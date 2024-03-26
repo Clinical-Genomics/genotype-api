@@ -91,7 +91,7 @@ def read_plate(
         return plate_service.get_plate(plate_id=plate_id)
     except PlateNotFoundError:
         raise HTTPException(
-            detail=f"Could not find plate with id {plate_id}", status_code=HTTPStatus.BAD_REQUEST
+            detail=f"Could not find plate with id: {plate_id}", status_code=HTTPStatus.BAD_REQUEST
         )
 
 
@@ -136,5 +136,5 @@ def delete_plate(
         )
     except PlateNotFoundError:
         raise HTTPException(
-            detail=f"Could not find plate with id {plate_id}", status_code=HTTPStatus.BAD_REQUEST
+            detail=f"Could not find plate with id: {plate_id}", status_code=HTTPStatus.BAD_REQUEST
         )
