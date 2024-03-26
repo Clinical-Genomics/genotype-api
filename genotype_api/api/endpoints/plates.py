@@ -22,7 +22,7 @@ def get_plate_service(session: Session = Depends(get_session)) -> PlateService:
 @router.post(
     "/plate",
     response_model=PlateResponse,
-    response_model_exclude={"detail"},
+    response_model_exclude={"plate_status_counts"},
 )
 def upload_plate(
     file: UploadFile = File(...),
@@ -35,7 +35,7 @@ def upload_plate(
 @router.patch(
     "/{plate_id}/sign-off",
     response_model=PlateResponse,
-    response_model_exclude={"analyses", "user", "detail"},
+    response_model_exclude={"analyses", "user", "plate_status_counts"},
 )
 def sign_off_plate(
     plate_id: int,

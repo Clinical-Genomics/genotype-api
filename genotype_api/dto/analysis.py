@@ -17,16 +17,6 @@ class AnalysisResponse(BaseModel):
     sample_id: str | None
     plate_id: str | None
     id: int | None
-
-
-class AnalysisGenotypeResponse(BaseModel):
-    type: Types | None
-    source: str | None
-    sex: Sexes | None
-    created_at: datetime | None
-    sample_id: str | None
-    plate_id: str | None
-    id: int | None
     genotypes: list[GenotypeResponse] | None = None
 
 
