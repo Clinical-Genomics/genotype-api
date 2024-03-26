@@ -117,7 +117,7 @@ async def read_plates(
         return plate_service.get_plates(order_params=order_params)
     except PlateNotFoundError:
         raise HTTPException(
-            detail=f"Could not fetch plates from backend.", status_code=HTTPStatus.BAD_REQUEST
+            detail="Could not fetch plates from backend.", status_code=HTTPStatus.BAD_REQUEST
         )
 
 
