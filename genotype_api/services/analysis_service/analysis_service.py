@@ -41,11 +41,11 @@ class AnalysisService:
             genotypes=analysis.genotypes,
         )
 
-    def read_analysis(self, analysis_id: int) -> AnalysisResponse:
+    def get_analysis(self, analysis_id: int) -> AnalysisResponse:
         analysis: Analysis = get_analysis_by_id(session=self.session, analysis_id=analysis_id)
         return self._create_analysis_response(analysis)
 
-    def get_analyses_to_display(self, skip: int, limit: int) -> list[AnalysisResponse]:
+    def get_analyses(self, skip: int, limit: int) -> list[AnalysisResponse]:
         analyses: list[Analysis] = get_analyses_with_skip_and_limit(
             session=self.session, skip=skip, limit=limit
         )

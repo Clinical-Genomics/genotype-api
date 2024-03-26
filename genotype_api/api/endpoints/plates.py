@@ -86,7 +86,7 @@ def read_plate(
 ):
     """Display information about a plate."""
 
-    return plate_service.read_plate(plate_id=plate_id)
+    return plate_service.get_plate(plate_id=plate_id)
 
 
 @router.get(
@@ -107,7 +107,7 @@ async def read_plates(
     order_params = PlateOrderParams(
         order_by=order_by, skip=skip, limit=limit, sort_order=sort_order
     )
-    return plate_service.read_plates(order_params=order_params)
+    return plate_service.get_plates(order_params=order_params)
 
 
 @router.delete("/{plate_id}")

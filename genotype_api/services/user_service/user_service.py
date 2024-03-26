@@ -1,4 +1,4 @@
-"""Module to holds the plate service."""
+"""Module to holds the user service."""
 
 from pydantic import EmailStr
 from sqlmodel import Session
@@ -46,14 +46,16 @@ class UserService:
         new_user: User = create_user(session=self.session, user=user)
         return self._create_user_response(new_user)
 
-    def read_users(self, skip: int, limit: int) -> list[UserResponse]:
+    def get_users(self, skip: int, limit: int) -> list[UserResponse]:
         users: list[User] = get_users_with_skip_and_limit(
             session=self.session, skip=skip, limit=limit
         )
         return [self._create_user_response(user) for user in users]
 
-    def read_user(self, user_id: int) -> UserResponse:
+    def get_user(self, user_id: int) -> UserResponse:
         user: User = get_user_by_id(session=self.session, user_id=user_id)
+        if not user:
+            raise UserNotFoundError
         return self._create_user_response(user)
 
     def delete_user(self, user_id: int):

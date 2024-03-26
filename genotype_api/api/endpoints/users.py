@@ -27,7 +27,10 @@ def read_user(
     user_service: UserService = Depends(get_user_service),
     current_user: User = Depends(get_active_user),
 ) -> UserResponse:
-    return user_service.read_user(user_id)
+    try:
+        return user_service.get_user(user_id)
+    except UserNotFoundError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
 
 @router.delete("/{user_id}")
@@ -45,7 +48,7 @@ def delete_user(
             status_code=status.HTTP_406_NOT_ACCEPTABLE,
             detail="User previously signed plates, please archive instead",
         )
-    return JSONResponse(content="Deleted user with id: {user_id}.", status_code=status.HTTP_200_OK)
+    return JSONResponse(content=f"Deleted user with id: {user_id}.", status_code=status.HTTP_200_OK)
 
 
 @router.put("/{user_id}/email", response_model=UserResponse, response_model_exclude={"plates"})
@@ -69,7 +72,7 @@ def read_users(
     current_user: User = Depends(get_active_user),
 ) -> list[UserResponse]:
 
-    return user_service.read_users(skip=skip, limit=limit)
+    return user_service.get_users(skip=skip, limit=limit)
 
 
 @router.post("/", response_model=UserResponse, response_model_exclude={"plates"})

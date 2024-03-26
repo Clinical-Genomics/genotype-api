@@ -26,7 +26,7 @@ def read_analysis(
     current_user: User = Depends(get_active_user),
 ):
     """Return analysis."""
-    return analysis_service.get_analysis_with_genotype(analysis_id)
+    return analysis_service.get_analysis(analysis_id)
 
 
 @router.get("/", response_model=list[AnalysisResponse], response_model_exclude={"genotypes"})
@@ -37,7 +37,7 @@ def read_analyses(
     current_user: User = Depends(get_active_user),
 ):
     """Return all analyses."""
-    return analysis_service.get_analyses_to_display(skip=skip, limit=limit)
+    return analysis_service.get_analyses(skip=skip, limit=limit)
 
 
 @router.delete("/{analysis_id}")

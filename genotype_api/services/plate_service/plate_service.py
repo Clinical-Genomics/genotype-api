@@ -132,11 +132,11 @@ class PlateService:
         update_plate_sign_off(session=self.session, plate=plate, plate_sign_off=plate_sign_off)
         return self._create_plate_response(plate)
 
-    def read_plate(self, plate_id: int) -> PlateResponse:
+    def get_plate(self, plate_id: int) -> PlateResponse:
         plate: Plate = get_plate_by_id(session=self.session, plate_id=plate_id)
         return self._create_plate_response(plate)
 
-    def read_plates(self, order_params: PlateOrderParams) -> list[PlateResponse]:
+    def get_plates(self, order_params: PlateOrderParams) -> list[PlateResponse]:
         plates: list[Plate] = get_ordered_plates(session=self.session, order_params=order_params)
         return [self._create_plate_response(plate) for plate in plates]
 
