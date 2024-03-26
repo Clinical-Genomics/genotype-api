@@ -30,11 +30,10 @@ from genotype_api.database.crud.update import (
 )
 from genotype_api.database.filter_models.plate_models import PlateSignOff, PlateOrderParams
 from genotype_api.database.models import Plate, Analysis, User
-from genotype_api.dto.analysis import AnalysisSampleResponse
 from genotype_api.dto.dto import PlateCreate
-from genotype_api.dto.plate import PlateResponse
+from genotype_api.dto.plate import PlateResponse, UserOnPlate, AnalysisOnPlate
 from genotype_api.dto.sample import SampleStatusResponse
-from genotype_api.dto.user import UserResponse
+from genotype_api.exceptions import PlateNotFoundError, UserNotFoundError
 from genotype_api.file_parsing.excel import GenotypeAnalysis
 from genotype_api.file_parsing.files import check_file
 
@@ -45,14 +44,14 @@ class PlateService:
         self.session: Session = session
 
     @staticmethod
-    def _get_analyses_on_plate(plate: Plate) -> list[AnalysisSampleResponse] | None:
-        analyses_response: list[AnalysisSampleResponse] = []
+    def _get_analyses_on_plate(plate: Plate) -> list[AnalysisOnPlate] | None:
+        analyses_response: list[AnalysisOnPlate] = []
         for analysis in plate.analyses:
             if analysis:
                 sample_status = SampleStatusResponse(
                     status=analysis.sample.status, comment=analysis.sample.comment
                 )
-                analysis_response = AnalysisSampleResponse(
+                analysis_response = AnalysisOnPlate(
                     type=analysis.type,
                     source=analysis.source,
                     sex=analysis.sex,
@@ -65,15 +64,15 @@ class PlateService:
                 analyses_response.append(analysis_response)
         return analyses_response if analyses_response else None
 
-    def _get_plate_user(self, plate: Plate) -> UserResponse | None:
+    def _get_plate_user(self, plate: Plate) -> UserOnPlate | None:
         if plate.signed_by:
             user: User = get_user_by_id(session=self.session, user_id=plate.signed_by)
-            return UserResponse(email=user.email, name=user.name, id=user.id)
+            return UserOnPlate(email=user.email, name=user.name, id=user.id)
         return None
 
-    def _get_plate_response(self, plate: Plate) -> PlateResponse:
-        analyses_response: list[AnalysisSampleResponse] = self._get_analyses_on_plate(plate)
-        user: UserResponse = self._get_plate_user(plate)
+    def _create_plate_response(self, plate: Plate) -> PlateResponse:
+        analyses_response: list[AnalysisOnPlate] = self._get_analyses_on_plate(plate)
+        user: UserOnPlate = self._get_plate_user(plate)
         return PlateResponse(
             created_at=plate.created_at,
             plate_id=plate.plate_id,
@@ -118,13 +117,17 @@ class PlateService:
             refresh_sample_status(sample=analysis.sample, session=self.session)
         refresh_plate(session=self.session, plate=plate)
 
-        return self._get_plate_response(plate)
+        return self._create_plate_response(plate)
 
     def update_plate_sign_off(
         self, plate_id: int, user_email: EmailStr, method_document: str, method_version: str
     ) -> PlateResponse:
         plate: Plate = get_plate_by_id(session=self.session, plate_id=plate_id)
+        if not plate:
+            raise PlateNotFoundError
         user: User = get_user_by_email(session=self.session, email=user_email)
+        if not user:
+            raise UserNotFoundError
         plate_sign_off = PlateSignOff(
             user_id=user.id,
             signed_at=datetime.now(),
@@ -132,19 +135,25 @@ class PlateService:
             method_version=method_version,
         )
         update_plate_sign_off(session=self.session, plate=plate, plate_sign_off=plate_sign_off)
-        return self._get_plate_response(plate)
+        return self._create_plate_response(plate)
 
-    def read_plate(self, plate_id: int) -> PlateResponse:
+    def get_plate(self, plate_id: int) -> PlateResponse:
         plate: Plate = get_plate_by_id(session=self.session, plate_id=plate_id)
-        return self._get_plate_response(plate)
+        if not plate:
+            raise PlateNotFoundError
+        return self._create_plate_response(plate)
 
-    def read_plates(self, order_params: PlateOrderParams) -> list[PlateResponse]:
+    def get_plates(self, order_params: PlateOrderParams) -> list[PlateResponse]:
         plates: list[Plate] = get_ordered_plates(session=self.session, order_params=order_params)
-        return [self._get_plate_response(plate) for plate in plates]
+        if not plates:
+            raise PlateNotFoundError
+        return [self._create_plate_response(plate) for plate in plates]
 
     def delete_plate(self, plate_id) -> list[int]:
         """Delete a plate with the given plate id and return associated analysis ids."""
         plate = get_plate_by_id(session=self.session, plate_id=plate_id)
+        if not plate:
+            raise PlateNotFoundError
         analyses: list[Analysis] = get_analyses_from_plate(session=self.session, plate_id=plate_id)
         analysis_ids: list[int] = [analyse.id for analyse in analyses]
         for analysis in analyses:

@@ -3,9 +3,11 @@
 from collections import Counter
 from datetime import datetime
 
-from pydantic import BaseModel, validator, Field
-from genotype_api.dto.analysis import AnalysisSampleResponse
-from genotype_api.dto.user import UserResponse
+from pydantic import BaseModel, validator, Field, EmailStr
+
+from genotype_api.constants import Types, Sexes
+
+from genotype_api.dto.sample import SampleStatusResponse
 
 
 class PlateStatusCounts(BaseModel):
@@ -20,6 +22,23 @@ class PlateStatusCounts(BaseModel):
         allow_population_by_field_name = True
 
 
+class UserOnPlate(BaseModel):
+    email: EmailStr | None = None
+    name: str | None = None
+    id: int | None = None
+
+
+class AnalysisOnPlate(BaseModel):
+    type: Types | None
+    source: str | None
+    sex: Sexes | None
+    created_at: datetime | None
+    sample_id: str | None
+    plate_id: str | None
+    id: int | None
+    sample: SampleStatusResponse | None = None
+
+
 class PlateResponse(BaseModel):
     created_at: datetime | None = None
     plate_id: str | None = None
@@ -28,8 +47,8 @@ class PlateResponse(BaseModel):
     method_document: str | None = None
     method_version: str | None = None
     id: str | None = None
-    user: UserResponse | None = None
-    analyses: list[AnalysisSampleResponse] | None = None
+    user: UserOnPlate | None = None
+    analyses: list[AnalysisOnPlate] | None = None
     plate_status_counts: PlateStatusCounts | None = None
 
     @validator("plate_status_counts")
