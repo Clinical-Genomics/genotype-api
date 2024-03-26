@@ -3,6 +3,7 @@
 from fastapi import APIRouter, Depends, Query
 from pydantic import EmailStr
 from sqlmodel import Session
+from starlette import status
 
 from starlette.responses import JSONResponse
 
@@ -35,7 +36,7 @@ def delete_user(
     current_user: User = Depends(get_active_user),
 ) -> JSONResponse:
     user_service.delete_user(user_id)
-    return JSONResponse(f"Deleted user with id: {user_id}.")
+    return JSONResponse(content="Deleted user with id: {user_id}.", status_code=status.HTTP_200_OK)
 
 
 @router.put("/{user_id}/email", response_model=UserResponse, response_model_exclude={"plates"})
