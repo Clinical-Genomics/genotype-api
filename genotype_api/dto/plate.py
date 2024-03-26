@@ -10,9 +10,9 @@ from genotype_api.dto.user import UserResponse
 
 class PlateStatusCounts(BaseModel):
     total: int = Field(0, nullable=True)
-    failed: int = Field(0, alias="STATUS.FAIL", nullable=True)
-    passed: int = Field(0, alias="STATUS.PASS", nullable=True)
-    cancelled: int = Field(0, alias="STATUS.CANCEL", nullable=True)
+    failed: int = Field(0, alias="Status.FAIL", nullable=True)
+    passed: int = Field(0, alias="Status.PASS", nullable=True)
+    cancelled: int = Field(0, alias="Status.CANCEL", nullable=True)
     unknown: int = Field(0, alias="None", nullable=True)
     commented: int = Field(0, nullable=True)
 
