@@ -71,7 +71,7 @@ class PlateService:
             return UserResponse(email=user.email, name=user.name, id=user.id)
         return None
 
-    def _get_plate_response(self, plate: Plate) -> PlateResponse:
+    def _create_plate_response(self, plate: Plate) -> PlateResponse:
         analyses_response: list[AnalysisSampleResponse] = self._get_analyses_on_plate(plate)
         user: UserResponse = self._get_plate_user(plate)
         return PlateResponse(
@@ -118,7 +118,7 @@ class PlateService:
             refresh_sample_status(sample=analysis.sample, session=self.session)
         refresh_plate(session=self.session, plate=plate)
 
-        return self._get_plate_response(plate)
+        return self._create_plate_response(plate)
 
     def update_plate_sign_off(
         self, plate_id: int, user_email: EmailStr, method_document: str, method_version: str
@@ -132,15 +132,15 @@ class PlateService:
             method_version=method_version,
         )
         update_plate_sign_off(session=self.session, plate=plate, plate_sign_off=plate_sign_off)
-        return self._get_plate_response(plate)
+        return self._create_plate_response(plate)
 
     def read_plate(self, plate_id: int) -> PlateResponse:
         plate: Plate = get_plate_by_id(session=self.session, plate_id=plate_id)
-        return self._get_plate_response(plate)
+        return self._create_plate_response(plate)
 
     def read_plates(self, order_params: PlateOrderParams) -> list[PlateResponse]:
         plates: list[Plate] = get_ordered_plates(session=self.session, order_params=order_params)
-        return [self._get_plate_response(plate) for plate in plates]
+        return [self._create_plate_response(plate) for plate in plates]
 
     def delete_plate(self, plate_id) -> list[int]:
         """Delete a plate with the given plate id and return associated analysis ids."""
