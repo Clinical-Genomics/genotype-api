@@ -22,6 +22,7 @@ from genotype_api.database.crud.update import (
 )
 from genotype_api.database.filter_models.sample_models import SampleFilterParams, SampleSexesUpdate
 from genotype_api.database.models import Sample, Analysis
+from genotype_api.dto.genotype import GenotypeResponse
 from genotype_api.dto.sample import AnalysisOnSample, SampleResponse
 from genotype_api.exceptions import SampleNotFoundError
 from genotype_api.models import SampleDetail, MatchResult
@@ -34,25 +35,41 @@ class SampleService:
         self.session = session
 
     @staticmethod
-    def _get_analyses_on_sample(sample: Sample, plate_id=None) -> list[AnalysisOnSample] | None:
+    def _get_genotype_on_analysis(analysis: Analysis) -> list[GenotypeResponse] | None:
+        genotypes: list[GenotypeResponse] = []
+        if not analysis.genotypes:
+            return None
+        for genotype_on_analysis in analysis.genotypes:
+            genotype = GenotypeResponse(
+                rsnumber=genotype_on_analysis.rsnumber,
+                analysis_id=genotype_on_analysis.analysis_id,
+                allele_1=genotype_on_analysis.allele_1,
+                allele_2=genotype_on_analysis.allele_1,
+            )
+            genotypes.append(genotype)
+        return genotypes
+
+    def _get_analyses_on_sample(self, sample: Sample) -> list[AnalysisOnSample] | None:
         analyses: list[AnalysisOnSample] = []
         if not sample.analyses:
             return None
         for analysis in sample.analyses:
+            genotypes: list[GenotypeResponse] = self._get_genotype_on_analysis(analysis)
             analysis_on_sample = AnalysisOnSample(
                 type=analysis.type,
+                source=analysis.source,
                 sex=analysis.sex,
+                created_at=analysis.created_at,
                 sample_id=analysis.sample_id,
-                plate_id=plate_id,
+                plate_id=analysis.plate_id,
                 id=analysis.id,
+                genotypes=genotypes,
             )
             analyses.append(analysis_on_sample)
         return analyses
 
-    def _get_sample_response(self, sample: Sample, plate_id=None) -> SampleResponse:
-        analyses: list[AnalysisOnSample] = self._get_analyses_on_sample(
-            sample=sample, plate_id=plate_id
-        )
+    def _get_sample_response(self, sample: Sample) -> SampleResponse:
+        analyses: list[AnalysisOnSample] = self._get_analyses_on_sample(sample=sample)
         return SampleResponse(
             id=sample.id,
             status=sample.status,
@@ -74,9 +91,7 @@ class SampleService:
         samples: list[Sample] = get_filtered_samples(
             session=self.session, filter_params=filter_params
         )
-        return [
-            self._get_sample_response(sample, plate_id=filter_params.plate_id) for sample in samples
-        ]
+        return [self._get_sample_response(sample) for sample in samples]
 
     def create_sample(self, sample: Sample):
         create_sample(session=self.session, sample=sample)
