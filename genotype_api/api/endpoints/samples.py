@@ -70,6 +70,16 @@ def create_sample(
 @router.get(
     "/",
     response_model=list[SampleResponse],
+    response_model_exclude={
+        "detail": {
+            "sex": True,
+            "nocalls": True,
+            "snps": True,
+            "matches": True,
+            "mismatches": True,
+            "unknown": True,
+        },
+    },
 )
 def read_samples(
     skip: int = 0,

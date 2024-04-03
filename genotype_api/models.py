@@ -2,28 +2,28 @@ from pydantic import BaseModel, validator
 
 
 class SampleDetailStats(BaseModel):
-    matches: int | None
-    mismatches: int | None
-    unknown: int | None
+    matches: int | None = None
+    mismatches: int | None = None
+    unknown: int | None = None
 
 
 class SampleDetailStatus(BaseModel):
-    sex: str | None
-    snps: str | None
-    nocalls: str | None
+    sex: str | None = None
+    snps: str | None = None
+    nocalls: str | None = None
 
 
 class SampleDetail(BaseModel):
-    sex: str | None
-    snps: str | None
-    nocalls: str | None
-    matches: int | None
-    mismatches: int | None
-    unknown: int | None
-    failed_snps: list[str] | None
+    sex: str | None = None
+    snps: str | None = None
+    nocalls: str | None = None
+    matches: int | None = None
+    mismatches: int | None = None
+    unknown: int | None = None
+    failed_snps: list[str] | None = None
 
-    stats: SampleDetailStats | None
-    status: SampleDetailStatus | None
+    stats: SampleDetailStats | None = None
+    status: SampleDetailStatus | None = None
 
     @validator("stats")
     def validate_stats(cls, value, values) -> SampleDetailStats:
@@ -50,5 +50,5 @@ class MatchCounts(BaseModel):
 
 
 class MatchResult(BaseModel):
-    sample_id: str
-    match_results: MatchCounts
+    sample_id: str = None
+    match_results: MatchCounts | None = None
