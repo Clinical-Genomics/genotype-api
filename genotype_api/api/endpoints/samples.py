@@ -30,8 +30,6 @@ def get_sample_service(session: Session = Depends(get_session)) -> SampleService
 @router.get(
     "/{sample_id}",
     response_model=SampleResponse,
-    response_model_by_alias=False,
-    response_model_exclude={"analyses", "detail"},
 )
 def read_sample(
     sample_id: str,
@@ -49,10 +47,6 @@ def read_sample(
 @router.get(
     "/",
     response_model=list[SampleResponse],
-    response_model_exclude={
-        "analyses",
-        "detail",
-    },
 )
 def read_samples(
     skip: int = 0,
@@ -96,7 +90,7 @@ def create_sample(
         new_sample: SampleResponse = sample_service.get_sample(sample_id=sample.id)
         if not new_sample:
             return JSONResponse(
-                content=f"Failed to create sample.", status_code=HTTPStatus.BAD_REQUEST
+                content="Failed to create sample.", status_code=HTTPStatus.BAD_REQUEST
             )
         return JSONResponse(f"Sample with id: {sample.id} was created.", status_code=HTTPStatus.OK)
     except SampleExistsError:
