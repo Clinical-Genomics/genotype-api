@@ -34,36 +34,17 @@ class SampleService:
     def __init__(self, session: Session):
         self.session = session
 
-    @staticmethod
-    def _get_genotype_on_analysis(analysis: Analysis) -> list[GenotypeResponse] | None:
-        genotypes: list[GenotypeResponse] = []
-        if not analysis.genotypes:
-            return None
-        for genotype_on_analysis in analysis.genotypes:
-            genotype = GenotypeResponse(
-                rsnumber=genotype_on_analysis.rsnumber,
-                analysis_id=genotype_on_analysis.analysis_id,
-                allele_1=genotype_on_analysis.allele_1,
-                allele_2=genotype_on_analysis.allele_1,
-            )
-            genotypes.append(genotype)
-        return genotypes
-
     def _get_analysis_on_sample(self, sample: Sample) -> list[AnalysisOnSample] | None:
         analyses: list[AnalysisOnSample] = []
         if not sample.analyses:
             return None
         for analysis in sample.analyses:
-            genotypes: list[GenotypeResponse] = self._get_genotype_on_analysis(analysis)
             analysis_on_sample = AnalysisOnSample(
                 type=analysis.type,
-                source=analysis.source,
                 sex=analysis.sex,
-                created_at=analysis.created_at,
                 sample_id=analysis.sample_id,
                 plate_id=analysis.plate_id,
                 id=analysis.id,
-                genotypes=genotypes,
             )
             analyses.append(analysis_on_sample)
         return analyses
