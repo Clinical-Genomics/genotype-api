@@ -71,7 +71,7 @@ class SampleService:
     def _get_sample_response(self, sample: Sample) -> SampleResponse:
         analyses: list[AnalysisOnSample] = self._get_analysis_on_sample(sample)
         return SampleResponse(
-            sample_id=sample.id,
+            id=sample.id,
             status=sample.status,
             comment=sample.comment,
             sex=sample.sex,

@@ -31,17 +31,7 @@ def get_sample_service(session: Session = Depends(get_session)) -> SampleService
     "/{sample_id}",
     response_model=SampleResponse,
     response_model_by_alias=False,
-    response_model_exclude={
-        "analyses": {"__all__": {"genotypes": True, "source": True, "created_at": True}},
-        "detail": {
-            "sex": True,
-            "nocalls": True,
-            "snps": True,
-            "matches": True,
-            "mismatches": True,
-            "unknown": True,
-        },
-    },
+    response_model_exclude={"analyses", "detail"},
 )
 def read_sample(
     sample_id: str,
@@ -60,15 +50,8 @@ def read_sample(
     "/",
     response_model=list[SampleResponse],
     response_model_exclude={
-        "analyses": {"__all__": {"genotypes": True, "source": True, "created_at": True}},
-        "detail": {
-            "sex": True,
-            "nocalls": True,
-            "snps": True,
-            "matches": True,
-            "mismatches": True,
-            "unknown": True,
-        },
+        "analyses",
+        "detail",
     },
 )
 def read_samples(
