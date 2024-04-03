@@ -20,7 +20,7 @@ class AnalysisOnSample(BaseModel):
 
 
 class SampleResponse(BaseModel):
-    sample_id: str
+    id: str
     status: Status | None
     comment: str | None
     sex: Sexes | None
