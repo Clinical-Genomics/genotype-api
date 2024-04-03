@@ -15,7 +15,7 @@ class AnalysisOnSample(BaseModel):
     sample_id: str | None = None
     plate_id: str | None = None
     id: int | None = None
-    genotypes: GenotypeResponse
+    genotypes: list[GenotypeResponse]
 
 
 class SampleResponse(BaseModel):
