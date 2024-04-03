@@ -50,5 +50,5 @@ class MatchCounts(BaseModel):
 
 
 class MatchResult(BaseModel):
-    sample_id: str = None
+    sample_id: str
     match_results: MatchCounts | None = None
