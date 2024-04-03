@@ -9,15 +9,15 @@ from genotype_api.services.match_genotype_service.utils import check_snps, check
 
 
 class AnalysisOnSample(BaseModel):
-    type: Types | None
-    sex: Sexes | None
-    sample_id: str | None
-    plate_id: str | None
-    id: int | None
+    type: Types | None = None
+    sex: Sexes | None = None
+    sample_id: str | None = None
+    plate_id: str | None = None
+    id: int | None = None
 
 
 class SampleResponse(BaseModel):
-    id: str
+    id: str | None = None
     status: Status | None
     comment: str | None
     sex: Sexes | None

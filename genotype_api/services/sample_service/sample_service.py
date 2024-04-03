@@ -22,7 +22,6 @@ from genotype_api.database.crud.update import (
 )
 from genotype_api.database.filter_models.sample_models import SampleFilterParams, SampleSexesUpdate
 from genotype_api.database.models import Sample, Analysis
-from genotype_api.dto.genotype import GenotypeResponse
 from genotype_api.dto.sample import AnalysisOnSample, SampleResponse
 from genotype_api.exceptions import SampleNotFoundError
 from genotype_api.models import SampleDetail, MatchResult
@@ -34,7 +33,8 @@ class SampleService:
     def __init__(self, session: Session):
         self.session = session
 
-    def _get_analysis_on_sample(self, sample: Sample) -> list[AnalysisOnSample] | None:
+    @staticmethod
+    def _get_analysis_on_sample(sample: Sample) -> list[AnalysisOnSample] | None:
         analyses: list[AnalysisOnSample] = []
         if not sample.analyses:
             return None
