@@ -22,7 +22,7 @@ class SampleResponse(BaseModel):
     comment: str | None
     sex: Sexes | None
     created_at: datetime | None = datetime.now()
-    analyses: list[AnalysisOnSample]
+    analyses: list[AnalysisOnSample] | None
     detail: SampleDetail | None
 
     @validator("detail")

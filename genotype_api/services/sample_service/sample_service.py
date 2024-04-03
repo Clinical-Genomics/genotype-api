@@ -34,7 +34,7 @@ class SampleService:
         self.session = session
 
     @staticmethod
-    def _get_analysis_on_sample(sample: Sample) -> list[AnalysisOnSample] | None:
+    def _get_analyses_on_sample(sample: Sample) -> list[AnalysisOnSample] | None:
         analyses: list[AnalysisOnSample] = []
         if not sample.analyses:
             return None
@@ -50,7 +50,7 @@ class SampleService:
         return analyses
 
     def _get_sample_response(self, sample: Sample) -> SampleResponse:
-        analyses: list[AnalysisOnSample] = self._get_analysis_on_sample(sample)
+        analyses: list[AnalysisOnSample] = self._get_analyses_on_sample(sample)
         return SampleResponse(
             id=sample.id,
             status=sample.status,
