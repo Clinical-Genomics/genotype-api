@@ -127,11 +127,17 @@ class SampleService:
 
     def set_sample_status(
         self, sample_id: str, status: Literal["pass", "fail", "cancel"] | None
-    ) -> None:
-        update_sample_status(session=self.session, sample_id=sample_id, status=status)
+    ) -> SampleResponse:
+        sample: Sample = update_sample_status(
+            session=self.session, sample_id=sample_id, status=status
+        )
+        return self._get_sample_response(sample)
 
-    def set_sample_comment(self, sample_id: str, comment: str):
-        update_sample_comment(session=self.session, sample_id=sample_id, comment=comment)
+    def set_sample_comment(self, sample_id: str, comment: str) -> SampleResponse:
+        sample: Sample = update_sample_comment(
+            session=self.session, sample_id=sample_id, comment=comment
+        )
+        return self._get_sample_response(sample)
 
     def set_sex(self, sample_id: str, sex: Sexes, genotype_sex: Sexes, sequence_sex: Sexes):
         sexes_update = SampleSexesUpdate(
