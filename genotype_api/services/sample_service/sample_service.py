@@ -5,10 +5,9 @@ from typing import Literal
 
 from sqlmodel import Session
 
-from genotype_api.api.endpoints.analyses import delete_analysis
-from genotype_api.api.endpoints.samples import delete_sample
 from genotype_api.constants import Types, Sexes
 from genotype_api.database.crud.create import create_sample
+from genotype_api.database.crud.delete import delete_analysis, delete_sample
 from genotype_api.database.crud.read import (
     get_sample,
     get_filtered_samples,
