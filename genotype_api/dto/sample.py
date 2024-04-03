@@ -1,10 +1,53 @@
 """Module for the sample DTOs."""
 
-from pydantic import BaseModel
+from datetime import datetime
+from pydantic import BaseModel, validator
+from genotype_api.constants import Sexes, Status, Types
+from genotype_api.dto.genotype import GenotypeResponse
+from genotype_api.models import SampleDetail
+from genotype_api.services.match_genotype_service.utils import check_snps, check_sex
 
-from genotype_api.constants import Status
+
+class AnalysisOnSample(BaseModel):
+    type: Types | None
+    source: str | None
+    sex: Sexes | None
+    created_at: datetime | None
+    sample_id: str | None
+    plate_id: str | None
+    id: int | None
+    genotypes: list[GenotypeResponse] | None = None
 
 
-class SampleStatusResponse(BaseModel):
-    status: Status | None = None
-    comment: str | None = None
+class SampleResponse(BaseModel):
+    sample_id: str
+    status: Status | None
+    comment: str | None
+    sex: Sexes | None
+    created_at: datetime | None = datetime.now()
+    analyses: list[AnalysisOnSample]
+    detail: SampleDetail | None
+
+    @validator("detail")
+    def get_detail(cls, value, values) -> SampleDetail | None:
+        analyses = values.get("analyses")
+        if analyses:
+            if len(analyses) != 2:
+                return SampleDetail()
+            genotype_analysis = [analysis for analysis in analyses if analysis.type == "genotype"][
+                0
+            ]
+            sequence_analysis = [analysis for analysis in analyses if analysis.type == "sequence"][
+                0
+            ]
+            status = check_snps(
+                genotype_analysis=genotype_analysis, sequence_analysis=sequence_analysis
+            )
+            sex = check_sex(
+                sample_sex=values.get("sex"),
+                genotype_analysis=genotype_analysis,
+                sequence_analysis=sequence_analysis,
+            )
+
+            return SampleDetail(**status, sex=sex)
+        return None

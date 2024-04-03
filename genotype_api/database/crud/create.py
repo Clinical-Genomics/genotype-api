@@ -5,8 +5,9 @@ from sqlmodel import Session
 from sqlmodel.sql.expression import Select, SelectOfScalar
 
 from genotype_api.database.models import Analysis, Plate, Sample, User, SNP
-from genotype_api.dto.dto import UserCreate, PlateCreate
+from genotype_api.dto.dto import PlateCreate
 from genotype_api.dto.user import UserRequest
+from genotype_api.exceptions import SampleExistsError
 
 SelectOfScalar.inherit_cache = True
 Select.inherit_cache = True
@@ -36,7 +37,7 @@ def create_sample(session: Session, sample: Sample) -> Sample:
 
     sample_in_db = session.get(Sample, sample.id)
     if sample_in_db:
-        raise HTTPException(status_code=409, detail="Sample already registered")
+        raise SampleExistsError
     session.add(sample)
     session.commit()
     session.refresh(sample)
