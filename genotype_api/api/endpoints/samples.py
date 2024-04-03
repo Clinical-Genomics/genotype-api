@@ -8,7 +8,7 @@ from sqlmodel import Session
 from starlette import status
 
 from genotype_api.constants import Sexes, Types
-from genotype_api.database.filter_models.sample_models import SampleFilterParams, SampleSexesUpdate
+from genotype_api.database.filter_models.sample_models import SampleFilterParams
 from genotype_api.database.models import (
     Sample,
     User,
@@ -44,6 +44,29 @@ def read_sample(
         )
 
 
+@router.post(
+    "/",
+)
+def create_sample(
+    sample: Sample,
+    sample_service: SampleService = Depends(get_sample_service),
+    current_user: User = Depends(get_active_user),
+):
+    try:
+        sample_service.create_sample(sample=sample)
+        new_sample: SampleResponse = sample_service.get_sample(sample_id=sample.id)
+        if not new_sample:
+            return JSONResponse(
+                content="Failed to create sample.", status_code=HTTPStatus.BAD_REQUEST
+            )
+        return JSONResponse(f"Sample with id: {sample.id} was created.", status_code=HTTPStatus.OK)
+    except SampleExistsError:
+        return JSONResponse(
+            status_code=HTTPStatus.BAD_REQUEST,
+            content=f"Sample with id: {sample.id} already registered.",
+        )
+
+
 @router.get(
     "/",
     response_model=list[SampleResponse],
@@ -69,35 +92,8 @@ def read_samples(
         skip=skip,
         limit=limit,
     )
-    try:
-        return sample_service.get_samples(filter_params)
-    except SampleNotFoundError:
-        return JSONResponse(
-            content="Samples could not be retrieved.", status_code=HTTPStatus.BAD_REQUEST
-        )
 
-
-@router.post(
-    "/",
-)
-def create_sample(
-    sample: Sample,
-    sample_service: SampleService = Depends(get_sample_service),
-    current_user: User = Depends(get_active_user),
-):
-    try:
-        sample_service.create_sample(sample=sample)
-        new_sample: SampleResponse = sample_service.get_sample(sample_id=sample.id)
-        if not new_sample:
-            return JSONResponse(
-                content="Failed to create sample.", status_code=HTTPStatus.BAD_REQUEST
-            )
-        return JSONResponse(f"Sample with id: {sample.id} was created.", status_code=HTTPStatus.OK)
-    except SampleExistsError:
-        return JSONResponse(
-            status_code=HTTPStatus.BAD_REQUEST,
-            content=f"Sample with id: {sample.id} already registered.",
-        )
+    return sample_service.get_samples(filter_params)
 
 
 @router.put("/{sample_id}/sex")

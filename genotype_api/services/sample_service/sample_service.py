@@ -72,8 +72,6 @@ class SampleService:
         samples: list[Sample] = get_filtered_samples(
             session=self.session, filter_params=filter_params
         )
-        if not samples:
-            raise SampleNotFoundError
         return [self._get_sample_response(sample) for sample in samples]
 
     def create_sample(self, sample: Sample):
