@@ -11,3 +11,27 @@ class UnknownAllelesError(Exception):
 
 class InsufficientAnalysesError(Exception):
     pass
+
+
+class PlateExistsError(Exception):
+    pass
+
+
+class PlateNotFoundError(Exception):
+    pass
+
+
+class UserNotFoundError(Exception):
+    pass
+
+
+class UserArchiveError(Exception):
+    pass
+
+
+class UserExistsError(Exception):
+    pass
+
+
+class AnalysisNotFoundError(Exception):
+    pass

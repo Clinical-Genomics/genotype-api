@@ -6,6 +6,7 @@ from sqlmodel.sql.expression import Select, SelectOfScalar
 
 from genotype_api.database.models import Analysis, Plate, Sample, User, SNP
 from genotype_api.dto.dto import UserCreate, PlateCreate
+from genotype_api.dto.user import UserRequest
 
 SelectOfScalar.inherit_cache = True
 Select.inherit_cache = True
@@ -51,7 +52,7 @@ def create_analyses_samples(session: Session, analyses: list[Analysis]) -> list[
     ]
 
 
-def create_user(session: Session, user: UserCreate):
+def create_user(session: Session, user: UserRequest):
     db_user = User.from_orm(user)
     session.add(db_user)
     session.commit()
