@@ -144,7 +144,10 @@ def update_sex(
         )
 
 
-@router.put("/{sample_id}/comment")
+@router.put(
+    "/{sample_id}/comment",
+    response_model=SampleResponse,
+)
 def update_comment(
     sample_id: str,
     comment: str = Query(...),
@@ -161,7 +164,10 @@ def update_comment(
         )
 
 
-@router.put("/{sample_id}/status")
+@router.put(
+    "/{sample_id}/status",
+    response_model=SampleResponse,
+)
 def set_sample_status(
     sample_id: str,
     sample_service: SampleService = Depends(get_sample_service),
