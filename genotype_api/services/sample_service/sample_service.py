@@ -57,9 +57,7 @@ class SampleService:
             genotypes: list[GenotypeResponse] = self._get_genotype_on_analysis(analysis)
             analysis_on_sample = AnalysisOnSample(
                 type=analysis.type,
-                source=analysis.source,
                 sex=analysis.sex,
-                created_at=analysis.created_at,
                 sample_id=analysis.sample_id,
                 plate_id=analysis.plate_id,
                 id=analysis.id,

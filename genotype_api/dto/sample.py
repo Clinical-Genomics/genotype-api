@@ -3,6 +3,7 @@
 from datetime import datetime
 from pydantic import BaseModel, validator
 from genotype_api.constants import Sexes, Status, Types
+from genotype_api.dto.genotype import GenotypeResponse
 
 from genotype_api.models import SampleDetail
 from genotype_api.services.match_genotype_service.utils import check_snps, check_sex
@@ -14,6 +15,7 @@ class AnalysisOnSample(BaseModel):
     sample_id: str | None = None
     plate_id: str | None = None
     id: int | None = None
+    genotypes: GenotypeResponse
 
 
 class SampleResponse(BaseModel):
