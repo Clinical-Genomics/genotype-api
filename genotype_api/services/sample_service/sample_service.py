@@ -34,7 +34,7 @@ class SampleService:
         self.session = session
 
     @staticmethod
-    def _get_analyses_on_sample(sample: Sample) -> list[AnalysisOnSample] | None:
+    def _get_analyses_on_sample(sample: Sample, plate_id=None) -> list[AnalysisOnSample] | None:
         analyses: list[AnalysisOnSample] = []
         if not sample.analyses:
             return None
@@ -43,14 +43,16 @@ class SampleService:
                 type=analysis.type,
                 sex=analysis.sex,
                 sample_id=analysis.sample_id,
-                plate_id=analysis.plate_id,
+                plate_id=plate_id,
                 id=analysis.id,
             )
             analyses.append(analysis_on_sample)
         return analyses
 
-    def _get_sample_response(self, sample: Sample) -> SampleResponse:
-        analyses: list[AnalysisOnSample] = self._get_analyses_on_sample(sample)
+    def _get_sample_response(self, sample: Sample, plate_id=None) -> SampleResponse:
+        analyses: list[AnalysisOnSample] = self._get_analyses_on_sample(
+            sample=sample, plate_id=plate_id
+        )
         return SampleResponse(
             id=sample.id,
             status=sample.status,
@@ -72,7 +74,9 @@ class SampleService:
         samples: list[Sample] = get_filtered_samples(
             session=self.session, filter_params=filter_params
         )
-        return [self._get_sample_response(sample) for sample in samples]
+        return [
+            self._get_sample_response(sample, plate_id=filter_params.plate_id) for sample in samples
+        ]
 
     def create_sample(self, sample: Sample):
         create_sample(session=self.session, sample=sample)
