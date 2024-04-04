@@ -2,23 +2,23 @@
 
 from fastapi import APIRouter, Depends, Query, HTTPException
 from pydantic import EmailStr
-from sqlmodel import Session
+from sqlalchemy.orm import Session
 from starlette import status
 
 from starlette.responses import JSONResponse
 
 from genotype_api.database.models import User
-from genotype_api.database.session_handler import get_session
+from genotype_api.database.store import get_store, Store
 from genotype_api.dto.user import UserRequest, UserResponse
 from genotype_api.exceptions import UserNotFoundError, UserArchiveError, UserExistsError
 from genotype_api.security import get_active_user
-from genotype_api.services.user_service.user_service import UserService
+from genotype_api.services.endpoint_services.user_service import UserService
 
 router = APIRouter()
 
 
-def get_user_service(session: Session = Depends(get_session)) -> UserService:
-    return UserService(session)
+def get_user_service(store: Store = Depends(get_store)) -> UserService:
+    return UserService(store)
 
 
 @router.get("/{user_id}", response_model=UserResponse)

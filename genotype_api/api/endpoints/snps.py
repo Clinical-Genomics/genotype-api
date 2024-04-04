@@ -1,29 +1,27 @@
 """Routes for the snps"""
 
-from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile
-from sqlmodel import Session
-from sqlmodel.sql.expression import Select, SelectOfScalar
+from fastapi import APIRouter, Depends, Query, UploadFile
+from sqlalchemy.orm import Session
+
 from starlette.responses import JSONResponse
 
-from genotype_api.database.crud.create import create_snps
-from genotype_api.database.crud.read import get_snps, get_snps_by_limit_and_skip
+
 from genotype_api.database.models import SNP, User
-from genotype_api.database.crud import delete
-from genotype_api.database.session_handler import get_session
+
+
+from genotype_api.database.store import Store, get_store
 from genotype_api.dto.snp import SNPResponse
 from genotype_api.exceptions import SNPExistsError
 from genotype_api.security import get_active_user
-from genotype_api.services.snp_reader_service.snp_reader import SNPReaderService
-from genotype_api.services.snp_service.snp_service import SNPService
 
-SelectOfScalar.inherit_cache = True
-Select.inherit_cache = True
+from genotype_api.services.endpoint_services.snp_service import SNPService
+
 
 router = APIRouter()
 
 
-def get_snp_service(session: Session = Depends(get_session)) -> SNPService:
-    return SNPService(session)
+def get_snp_service(store: Store = Depends(get_store)) -> SNPService:
+    return SNPService(store)
 
 
 @router.get("/", response_model=list[SNPResponse])

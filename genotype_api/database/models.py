@@ -1,135 +1,154 @@
 from collections import Counter
 from datetime import datetime
+from sqlalchemy import Column, ForeignKey, Integer, String, DateTime
+from sqlalchemy.orm import relationship
 
-from pydantic import EmailStr, constr
-from sqlalchemy import Index
-from sqlmodel import Field, Relationship, SQLModel
+from sqlalchemy_utils import EmailType
+from typing import Annotated
 
-from genotype_api.constants import Sexes, Status, Types
+from sqlalchemy import (
+    BLOB,
+    DECIMAL,
+    VARCHAR,
+    BigInteger,
+    Column,
+    ForeignKey,
+    Numeric,
+    String,
+    Table,
+)
+from sqlalchemy import Text as SLQText
+from sqlalchemy import UniqueConstraint, orm, types
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy.orm.attributes import InstrumentedAttribute
+
+BigInt = Annotated[int, None]
+Blob = Annotated[bytes, None]
+Decimal = Annotated[float, None]
+Num_6_2 = Annotated[float, 6]
+Str32 = Annotated[str, 32]
+Str64 = Annotated[str, 64]
+Str128 = Annotated[str, 128]
+Str255 = Annotated[str, 255]
+Str256 = Annotated[str, 256]
+Text = Annotated[str, None]
+VarChar128 = Annotated[str, 128]
+
+PrimaryKeyInt = Annotated[int, mapped_column(primary_key=True)]
+UniqueStr = Annotated[str, mapped_column(String(32), unique=True)]
 
 
-class GenotypeBase(SQLModel):
-    rsnumber: constr(max_length=10) | None
-    analysis_id: int | None = Field(default=None, foreign_key="analysis.id")
-    allele_1: constr(max_length=1) | None
-    allele_2: constr(max_length=1) | None
+class Base(DeclarativeBase):
+    type_annotation_map = {
+        BigInt: BigInteger,
+        Blob: BLOB,
+        Decimal: DECIMAL,
+        Num_6_2: Numeric(6, 2),
+        Str32: String(32),
+        Str64: String(64),
+        Str128: String(128),
+        Str255: String(255),
+        Str256: String(256),
+        Text: SLQText,
+        VarChar128: VARCHAR(128),
+    }
 
 
-class Genotype(GenotypeBase, table=True):
+class Genotype(Base):
     __tablename__ = "genotype"
-    __table_args__ = (Index("_analysis_rsnumber", "analysis_id", "rsnumber", unique=True),)
-    id: int | None = Field(default=None, primary_key=True)
 
-    analysis: "Analysis" = Relationship(back_populates="genotypes")
+    id = Column(Integer, primary_key=True)
+    rsnumber = Column(String(length=10))
+    analysis_id = Column(Integer, ForeignKey("analysis.id"))
+    allele_1 = Column(String(length=1))
+    allele_2 = Column(String(length=1))
+
+    analysis = relationship("Analysis", back_populates="genotypes")
 
     @property
-    def alleles(self) -> list[str]:
-        """Return sorted because we are not dealing with phased data."""
-
+    def alleles(self):
         return sorted([self.allele_1, self.allele_2])
 
     @property
-    def is_ok(self) -> bool:
-        """Check that the allele determination is ok."""
+    def is_ok(self):
         return "0" not in self.alleles
 
 
-class AnalysisBase(SQLModel):
-    type: Types
-    source: str | None
-    sex: Sexes | None
-    created_at: datetime | None = datetime.now()
-    sample_id: constr(max_length=32) | None = Field(default=None, foreign_key="sample.id")
-    plate_id: str | None = Field(default=None, foreign_key="plate.id")
-
-
-class Analysis(AnalysisBase, table=True):
+class Analysis(Base):
     __tablename__ = "analysis"
-    __table_args__ = (Index("_sample_type", "sample_id", "type", unique=True),)
-    id: int | None = Field(default=None, primary_key=True)
 
-    sample: "Sample" = Relationship(back_populates="analyses")
-    plate: list["Plate"] = Relationship(back_populates="analyses")
-    genotypes: list["Genotype"] = Relationship(back_populates="analysis")
+    id = Column(Integer, primary_key=True)
+    type = Column(String)
+    source = Column(String)
+    sex = Column(String)
+    created_at = Column(DateTime, default=datetime.now)
+    sample_id = Column(String(length=32), ForeignKey("sample.id"))
+    plate_id = Column(String, ForeignKey("plate.id"))
 
-    def check_no_calls(self) -> dict[str, int]:
-        """Check that genotypes look ok."""
+    sample = relationship("Sample", back_populates="analyses")
+    plate = relationship("Plate", back_populates="analyses")
+    genotypes = relationship("Genotype", back_populates="analysis")
+
+    def check_no_calls(self):
         calls = ["known" if genotype.is_ok else "unknown" for genotype in self.genotypes]
         return Counter(calls)
 
 
-class SampleSlim(SQLModel):
-    status: Status | None
-    comment: str | None
-
-
-class SampleBase(SampleSlim):
-    sex: Sexes | None
-    created_at: datetime | None = datetime.now()
-
-
-class Sample(SampleBase, table=True):
+class Sample(Base):
     __tablename__ = "sample"
-    id: constr(max_length=32) | None = Field(default=None, primary_key=True)
 
-    analyses: list["Analysis"] = Relationship(back_populates="sample")
+    id = Column(String(length=32), primary_key=True)
+    status = Column(String)
+    comment = Column(String)
+    sex = Column(String)
+    created_at = Column(DateTime, default=datetime.now)
+
+    analyses = relationship("Analysis", back_populates="sample")
 
     @property
-    def genotype_analysis(self) -> Analysis | None:
-        """Return genotype analysis."""
-
+    def genotype_analysis(self):
         for analysis in self.analyses:
             if analysis.type == "genotype":
                 return analysis
-
         return None
 
     @property
-    def sequence_analysis(self) -> Analysis | None:
-        """Return sequence analysis."""
-
+    def sequence_analysis(self):
         for analysis in self.analyses:
             if analysis.type == "sequence":
                 return analysis
-
         return None
 
 
-class SNPBase(SQLModel):
-    ref: constr(max_length=1) | None
-    chrom: constr(max_length=5) | None
-    pos: int | None
-
-
-class SNP(SNPBase, table=True):
+class SNP(Base):
     __tablename__ = "snp"
-    """Represent a SNP position under investigation."""
 
-    id: constr(max_length=32) | None = Field(default=None, primary_key=True)
-
-
-class UserBase(SQLModel):
-    email: EmailStr = Field(index=True, unique=True)
-    name: str | None = ""
+    id = Column(String(length=32), primary_key=True)
+    ref = Column(String(length=1))
+    chrom = Column(String(length=5))
+    pos = Column(Integer)
 
 
-class User(UserBase, table=True):
+class User(Base):
     __tablename__ = "user"
-    id: int | None = Field(default=None, primary_key=True)
-    plates: list["Plate"] = Relationship(back_populates="user")
+
+    id = Column(Integer, primary_key=True)
+    email = Column(EmailType, unique=True, index=True)
+    name = Column(String, default="")
+
+    plates = relationship("Plate", back_populates="user")
 
 
-class PlateBase(SQLModel):
-    created_at: datetime | None = datetime.now()
-    plate_id: constr(max_length=16) = Field(index=True, unique=True)
-    signed_by: int | None = Field(default=None, foreign_key="user.id")
-    signed_at: datetime | None
-    method_document: str | None
-    method_version: str | None
-
-
-class Plate(PlateBase, table=True):
+class Plate(Base):
     __tablename__ = "plate"
-    id: int | None = Field(default=None, primary_key=True)
-    user: "User" = Relationship(back_populates="plates")
-    analyses: list["Analysis"] = Relationship(back_populates="plate")
+
+    id = Column(Integer, primary_key=True)
+    created_at = Column(DateTime, default=datetime.now)
+    plate_id = Column(String(length=16), unique=True, index=True)
+    signed_by = Column(Integer, ForeignKey("user.id"))
+    signed_at = Column(DateTime)
+    method_document = Column(String)
+    method_version = Column(String)
+
+    user = relationship("User", back_populates="plates")
+    analyses = relationship("Analysis", back_populates="plate")

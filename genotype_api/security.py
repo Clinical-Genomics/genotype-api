@@ -2,14 +2,15 @@ import requests
 from fastapi import Depends, HTTPException, Security
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import jwt
-from sqlmodel import Session
+from sqlalchemy.orm import Session
+
 from starlette import status
 from starlette.requests import Request
 
 from genotype_api.config import security_settings
 from genotype_api.database.crud.read import get_user_by_email
 from genotype_api.database.models import User
-from genotype_api.database.session_handler import get_session
+from genotype_api.database.database import get_session
 
 
 def decode_id_token(token: str):

@@ -8,39 +8,18 @@ from pathlib import Path
 
 from fastapi import UploadFile
 from pydantic import EmailStr
-from sqlmodel import Session
 from starlette import status
-
-
 from genotype_api.constants import Types
-from genotype_api.database.crud.create import create_analyses_samples, create_plate
-from genotype_api.database.crud.delete import delete_analysis, delete_plate
-from genotype_api.database.crud.read import (
-    check_analyses_objects,
-    get_plate_by_id,
-    get_ordered_plates,
-    get_analyses_from_plate,
-    get_user_by_id,
-    get_user_by_email,
-)
-from genotype_api.database.crud.update import (
-    refresh_sample_status,
-    refresh_plate,
-    update_plate_sign_off,
-)
 from genotype_api.database.filter_models.plate_models import PlateSignOff, PlateOrderParams
 from genotype_api.database.models import Plate, Analysis, User
-from genotype_api.dto.dto import PlateCreate
 from genotype_api.dto.plate import PlateResponse, UserOnPlate, AnalysisOnPlate, SampleStatus
 from genotype_api.exceptions import PlateNotFoundError, UserNotFoundError
 from genotype_api.file_parsing.excel import GenotypeAnalysis
 from genotype_api.file_parsing.files import check_file
+from genotype_api.services.endpoint_services.base_service import BaseService
 
 
-class PlateService:
-
-    def __init__(self, session: Session):
-        self.session: Session = session
+class PlateService(BaseService):
 
     @staticmethod
     def _get_analyses_on_plate(plate: Plate) -> list[AnalysisOnPlate] | None:
@@ -65,7 +44,7 @@ class PlateService:
 
     def _get_plate_user(self, plate: Plate) -> UserOnPlate | None:
         if plate.signed_by:
-            user: User = get_user_by_id(session=self.session, user_id=plate.signed_by)
+            user: User = self.store.get_user_by_id(user_id=plate.signed_by)
             return UserOnPlate(email=user.email, name=user.name, id=user.id)
         return None
 
@@ -92,7 +71,7 @@ class PlateService:
     def upload_plate(self, file: UploadFile) -> PlateResponse:
         file_name: Path = check_file(file_path=file.filename, extension=".xlsx")
         plate_id: str = self._get_plate_id_from_file(file_name)
-        db_plate = self.session.get(Plate, plate_id)
+        db_plate = self.store.get_plate_by_plate_id(plate_id)
         if db_plate:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
@@ -105,26 +84,24 @@ class PlateService:
             include_key="-CG-",
         )
         analyses: list[Analysis] = list(excel_parser.generate_analyses())
-        check_analyses_objects(
-            session=self.session, analyses=analyses, analysis_type=Types.GENOTYPE
-        )
-        create_analyses_samples(session=self.session, analyses=analyses)
-        plate_obj = PlateCreate(plate_id=plate_id)
+        self.store.check_analyses_objects(analyses=analyses, analysis_type=Types.GENOTYPE)
+        self.store.create_analyses_samples(analyses=analyses)
+        plate_obj = Plate(plate_id=plate_id)
         plate_obj.analyses = analyses
-        plate: Plate = create_plate(session=self.session, plate=plate_obj)
+        plate: Plate = self.store.create_plate(plate=plate_obj)
         for analysis in plate.analyses:
-            refresh_sample_status(sample=analysis.sample, session=self.session)
-        refresh_plate(session=self.session, plate=plate)
+            self.store.refresh_sample_status(sample=analysis.sample)
+        self.store.refresh_plate(plate=plate)
 
         return self._create_plate_response(plate)
 
     def update_plate_sign_off(
         self, plate_id: int, user_email: EmailStr, method_document: str, method_version: str
     ) -> PlateResponse:
-        plate: Plate = get_plate_by_id(session=self.session, plate_id=plate_id)
+        plate: Plate = self.store.get_plate_by_id(plate_id=plate_id)
         if not plate:
             raise PlateNotFoundError
-        user: User = get_user_by_email(session=self.session, email=user_email)
+        user: User = self.store.get_user_by_email(email=user_email)
         if not user:
             raise UserNotFoundError
         plate_sign_off = PlateSignOff(
@@ -133,29 +110,29 @@ class PlateService:
             method_document=method_document,
             method_version=method_version,
         )
-        update_plate_sign_off(session=self.session, plate=plate, plate_sign_off=plate_sign_off)
+        self.store.update_plate_sign_off(plate=plate, plate_sign_off=plate_sign_off)
         return self._create_plate_response(plate)
 
     def get_plate(self, plate_id: int) -> PlateResponse:
-        plate: Plate = get_plate_by_id(session=self.session, plate_id=plate_id)
+        plate: Plate = self.store.get_plate_by_id(plate_id=plate_id)
         if not plate:
             raise PlateNotFoundError
         return self._create_plate_response(plate)
 
     def get_plates(self, order_params: PlateOrderParams) -> list[PlateResponse]:
-        plates: list[Plate] = get_ordered_plates(session=self.session, order_params=order_params)
+        plates: list[Plate] = self.store.get_ordered_plates(order_params=order_params)
         if not plates:
             raise PlateNotFoundError
         return [self._create_plate_response(plate) for plate in plates]
 
     def delete_plate(self, plate_id) -> list[int]:
         """Delete a plate with the given plate id and return associated analysis ids."""
-        plate = get_plate_by_id(session=self.session, plate_id=plate_id)
+        plate = self.store.get_plate_by_id(plate_id=plate_id)
         if not plate:
             raise PlateNotFoundError
-        analyses: list[Analysis] = get_analyses_from_plate(session=self.session, plate_id=plate_id)
+        analyses: list[Analysis] = self.store.get_analyses_from_plate(plate_id=plate_id)
         analysis_ids: list[int] = [analyse.id for analyse in analyses]
         for analysis in analyses:
-            delete_analysis(session=self.session, analysis=analysis)
-        delete_plate(session=self.session, plate=plate)
+            self.store.delete_analysis(analysis=analysis)
+        self.store.delete_plate(plate=plate)
         return analysis_ids

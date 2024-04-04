@@ -4,7 +4,7 @@ from typing import Literal
 
 from fastapi import APIRouter, Depends, Query
 from fastapi.responses import JSONResponse
-from sqlmodel import Session
+from sqlalchemy.orm import Session
 from starlette import status
 
 from genotype_api.constants import Sexes, Types
@@ -13,18 +13,19 @@ from genotype_api.database.models import (
     Sample,
     User,
 )
-from genotype_api.database.session_handler import get_session
+
+from genotype_api.database.store import Store, get_store
 from genotype_api.dto.sample import SampleResponse
 from genotype_api.exceptions import SampleNotFoundError, SampleExistsError
 from genotype_api.models import MatchResult, SampleDetail
 from genotype_api.security import get_active_user
-from genotype_api.services.sample_service.sample_service import SampleService
+from genotype_api.services.endpoint_services.sample_service import SampleService
 
 router = APIRouter()
 
 
-def get_sample_service(session: Session = Depends(get_session)) -> SampleService:
-    return SampleService(session)
+def get_sample_service(store: Store = Depends(get_store)) -> SampleService:
+    return SampleService(store)
 
 
 @router.get(

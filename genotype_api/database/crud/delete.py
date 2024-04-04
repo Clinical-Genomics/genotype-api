@@ -1,38 +1,32 @@
 import logging
-
 from sqlalchemy import delete
-from sqlmodel import Session
-from sqlmodel.sql.expression import Select, SelectOfScalar
 
+
+from genotype_api.database.base_handler import BaseHandler
 from genotype_api.database.models import Analysis, Plate, Sample, User, SNP
-
-SelectOfScalar.inherit_cache = True
-Select.inherit_cache = True
 
 LOG = logging.getLogger(__name__)
 
 
-def delete_analysis(session: Session, analysis: Analysis) -> None:
-    session.delete(analysis)
-    session.commit()
+class DeleteHandler(BaseHandler):
 
+    def delete_analysis(self, analysis: Analysis) -> None:
+        self.session.delete(analysis)
+        self.session.commit()
 
-def delete_plate(session: Session, plate: Plate) -> None:
-    session.delete(plate)
-    session.commit()
+    def delete_plate(self, plate: Plate) -> None:
+        self.session.delete(plate)
+        self.session.commit()
 
+    def delete_sample(self, sample: Sample) -> None:
+        self.session.delete(sample)
+        self.session.commit()
 
-def delete_sample(session: Session, sample: Sample) -> None:
-    session.delete(sample)
-    session.commit()
+    def delete_user(self, user: User) -> None:
+        self.session.delete(user)
+        self.session.commit()
 
-
-def delete_user(session: Session, user: User) -> None:
-    session.delete(user)
-    session.commit()
-
-
-def delete_snps(session) -> any:
-    result = session.exec(delete(SNP))
-    session.commit()
-    return result
+    def delete_snps(self) -> any:
+        result = self.session.execute(delete(SNP))
+        self.session.commit()
+        return result

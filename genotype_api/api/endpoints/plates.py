@@ -4,21 +4,21 @@ from http import HTTPStatus
 from typing import Literal
 from fastapi import APIRouter, Depends, File, Query, UploadFile, status, HTTPException
 from fastapi.responses import JSONResponse
-from sqlmodel import Session
 from genotype_api.database.filter_models.plate_models import PlateOrderParams
 from genotype_api.database.models import User
-from genotype_api.database.session_handler import get_session
+
+from genotype_api.database.store import Store, get_store
 from genotype_api.dto.plate import PlateResponse
 from genotype_api.exceptions import PlateNotFoundError
 from genotype_api.security import get_active_user
-from genotype_api.services.plate_service.plate_service import PlateService
+from genotype_api.services.endpoint_services.plate_service import PlateService
 
 
 router = APIRouter()
 
 
-def get_plate_service(session: Session = Depends(get_session)) -> PlateService:
-    return PlateService(session)
+def get_plate_service(store: Store = Depends(get_store)) -> PlateService:
+    return PlateService(store)
 
 
 @router.post(

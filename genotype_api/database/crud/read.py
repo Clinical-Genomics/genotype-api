@@ -1,12 +1,9 @@
 import logging
 from datetime import timedelta, date
-
 from sqlalchemy import func, desc, asc
 from sqlalchemy.orm import Query
-from sqlmodel import Session, select
-from sqlmodel.sql.expression import Select, SelectOfScalar
-
 from genotype_api.constants import Types
+from genotype_api.database.base_handler import BaseHandler
 from genotype_api.database.filter_models.plate_models import PlateOrderParams
 from genotype_api.database.filter_models.sample_models import SampleFilterParams
 from genotype_api.database.models import (
@@ -17,175 +14,141 @@ from genotype_api.database.models import (
     SNP,
 )
 
-SelectOfScalar.inherit_cache = True
-Select.inherit_cache = True
-
 LOG = logging.getLogger(__name__)
 
 
-def get_analyses_from_plate(plate_id: int, session: Session) -> list[Analysis]:
-    statement = select(Analysis).where(Analysis.plate_id == plate_id)
-    return session.exec(statement).all()
+class ReadHandler(BaseHandler):
 
+    def get_analyses_from_plate(self, plate_id: int) -> list[Analysis]:
+        return self.session.query(Analysis).filter(Analysis.plate_id == plate_id).all()
 
-def get_analysis_by_type_sample(
-    sample_id: str, analysis_type: str, session: Session
-) -> Analysis | None:
-    statement = select(Analysis).where(
-        Analysis.sample_id == sample_id, Analysis.type == analysis_type
-    )
-    return session.exec(statement).first()
-
-
-def get_analysis_by_id(session: Session, analysis_id: int) -> Analysis:
-    """Get analysis"""
-    statement = select(Analysis).where(Analysis.id == analysis_id)
-    return session.exec(statement).one()
-
-
-def get_analyses(session: Session) -> list[Analysis]:
-    statement = select(Analysis)
-    return session.exec(statement).all()
-
-
-def get_analyses_with_skip_and_limit(session: Session, skip: int, limit: int) -> list[Analysis]:
-    statement = select(Analysis).offset(skip).limit(limit)
-    return session.exec(statement).all()
-
-
-def get_analyses_by_type_between_dates(
-    session, analysis_type: str, date_min: date, date_max: date
-) -> list[Analysis]:
-    analyses: Query = session.query(Analysis).filter(
-        Analysis.type == analysis_type,
-        Analysis.created_at > date_min - timedelta(days=1),
-        Analysis.created_at < date_max + timedelta(days=1),
-    )
-    return analyses.all()
-
-
-def get_analysis_by_type_and_sample_id(
-    session: Session, analysis_type: str, sample_id: str
-) -> Analysis:
-    return (
-        session.query(Analysis).filter(
-            Analysis.sample_id == sample_id, Analysis.type == analysis_type
+    def get_analysis_by_type_sample(
+        self,
+        sample_id: str,
+        analysis_type: str,
+    ) -> Analysis | None:
+        return (
+            self.session.query(Analysis)
+            .filter(Analysis.sample_id == sample_id, Analysis.type == analysis_type)
+            .first()
         )
-    ).one()
 
+    def get_analysis_by_id(self, analysis_id: int) -> Analysis:
+        return self.session.query(Analysis).filter(Analysis.id == analysis_id).one()
 
-def get_plate_by_id(session: Session, plate_id: int) -> Plate:
-    statement = select(Plate).where(Plate.id == plate_id)
-    return session.exec(statement).one()
+    def get_analyses(self) -> list[Analysis]:
+        return self.session.query(Analysis).all()
 
+    def get_analyses_with_skip_and_limit(self, skip: int, limit: int) -> list[Analysis]:
+        return self.session.query(Analysis).offset(skip).limit(limit).all()
 
-def get_ordered_plates(session: Session, order_params: PlateOrderParams) -> list[Plate]:
-    sort_func = desc if order_params.sort_order == "descend" else asc
-    return session.exec(
-        select(Plate)
-        .order_by(sort_func(order_params.order_by))
-        .offset(order_params.skip)
-        .limit(order_params.limit)
-    ).all()
-
-
-def get_incomplete_samples(statement: SelectOfScalar) -> SelectOfScalar:
-    """Returning sample query statement for samples with less than two analyses."""
-    return (
-        statement.group_by(Analysis.sample_id)
-        .order_by(Analysis.created_at)
-        .having(func.count(Analysis.sample_id) < 2)
-    )
-
-
-def get_filtered_samples(session: Session, filter_params: SampleFilterParams) -> list[Sample]:
-    statement: SelectOfScalar = select(Sample).distinct().join(Analysis)
-    if filter_params.sample_id:
-        statement: SelectOfScalar = get_samples(
-            statement=statement, sample_id=filter_params.sample_id
+    def get_analyses_by_type_between_dates(
+        self, analysis_type: str, date_min: date, date_max: date
+    ) -> list[Analysis]:
+        return (
+            self.session.query(Analysis)
+            .filter(
+                Analysis.type == analysis_type,
+                Analysis.created_at > date_min - timedelta(days=1),
+                Analysis.created_at < date_max + timedelta(days=1),
+            )
+            .all()
         )
-    if filter_params.plate_id:
-        statement: SelectOfScalar = get_plate_samples(
-            statement=statement, plate_id=filter_params.plate_id
+
+    def get_analysis_by_type_and_sample_id(self, analysis_type: str, sample_id: str) -> Analysis:
+        return (
+            self.session.query(Analysis)
+            .filter(Analysis.sample_id == sample_id, Analysis.type == analysis_type)
+            .one()
         )
-    if filter_params.is_incomplete:
-        statement: SelectOfScalar = get_incomplete_samples(statement=statement)
-    if filter_params.is_commented:
-        statement: SelectOfScalar = get_commented_samples(statement=statement)
-    if filter_params.is_missing:
-        statement: SelectOfScalar = get_status_missing_samples(statement=statement)
-    return session.exec(
-        statement.order_by(Sample.created_at.desc())
-        .offset(filter_params.skip)
-        .limit(filter_params.limit)
-    ).all()
 
+    def get_plate_by_id(self, plate_id: int) -> Plate:
+        return self.session.query(Plate).filter(Plate.id == plate_id).one()
 
-def get_plate_samples(statement: SelectOfScalar, plate_id: str) -> SelectOfScalar:
-    """Returning sample query statement for samples analysed on a specific plate."""
-    return statement.where(Analysis.plate_id == plate_id)
+    def get_plate_by_plate_id(self, plate_id: str) -> Plate:
+        return self.session.query(Plate).filter(Plate.plate_id == plate_id).one()
 
-
-def get_commented_samples(statement: SelectOfScalar) -> SelectOfScalar:
-    """Returning sample query statement for samples with no comment."""
-
-    return statement.where(Sample.comment != None)
-
-
-def get_status_missing_samples(statement: SelectOfScalar) -> SelectOfScalar:
-    """Returning sample query statement for samples with no comment."""
-
-    return statement.where(Sample.status == None)
-
-
-def get_sample(session: Session, sample_id: str) -> Sample:
-    """Get sample or raise 404."""
-
-    statement = select(Sample).where(Sample.id == sample_id)
-    return session.exec(statement).one()
-
-
-def get_samples(statement: SelectOfScalar, sample_id: str) -> SelectOfScalar:
-    """Returns a query for samples containing the given sample_id."""
-    return statement.where(Sample.id.contains(sample_id))
-
-
-def get_user_by_id(session: Session, user_id: int):
-    statement = select(User).where(User.id == user_id)
-    return session.exec(statement).one()
-
-
-def get_user_by_email(session: Session, email: str) -> User | None:
-    statement = select(User).where(User.email == email)
-    return session.exec(statement).first()
-
-
-def get_users(session: Session, skip: int = 0, limit: int = 100) -> list[User]:
-    statement = select(User).offset(skip).limit(limit)
-    return session.exec(statement).all()
-
-
-def get_users_with_skip_and_limit(session: Session, skip: int, limit: int) -> list[User]:
-    return session.exec(select(User).offset(skip).limit(limit)).all()
-
-
-def check_analyses_objects(
-    session: Session, analyses: list[Analysis], analysis_type: Types
-) -> None:
-    """Raising 400 if any analysis in the list already exist in the database"""
-    for analysis_obj in analyses:
-        existing_analysis: Analysis = get_analysis_by_type_sample(
-            session=session,
-            sample_id=analysis_obj.sample_id,
-            analysis_type=analysis_type,
+    def get_ordered_plates(self, order_params: PlateOrderParams) -> list[Plate]:
+        sort_func = desc if order_params.sort_order == "descend" else asc
+        return (
+            self.session.query(Plate)
+            .order_by(sort_func(order_params.order_by))
+            .offset(order_params.skip)
+            .limit(order_params.limit)
+            .all()
         )
-        if existing_analysis:
-            session.delete(existing_analysis)
 
+    def get_incomplete_samples(query: Query) -> Query:
+        """Returning sample query statement for samples with less than two analyses."""
+        return (
+            query.group_by(Analysis.sample_id)
+            .order_by(Analysis.created_at)
+            .having(func.count(Analysis.sample_id) < 2)
+        )
 
-def get_snps(session) -> list[SNP]:
-    return session.exec(select(SNP)).all()
+    def get_filtered_samples(self, filter_params: SampleFilterParams) -> list[Sample]:
+        query = self.session.query(Sample).distinct().join(Analysis)
+        if filter_params.sample_id:
+            query = self.get_samples(query, filter_params.sample_id)
+        if filter_params.plate_id:
+            query = self.get_plate_samples(query, filter_params.plate_id)
+        if filter_params.is_incomplete:
+            query = self.get_incomplete_samples(query)
+        if filter_params.is_commented:
+            query = self.get_commented_samples(query)
+        if filter_params.is_missing:
+            query = self.get_status_missing_samples(query)
+        return (
+            query.order_by(Sample.created_at.desc())
+            .offset(filter_params.skip)
+            .limit(filter_params.limit)
+            .all()
+        )
 
+    def get_plate_samples(query: Query, plate_id: str) -> Query:
+        """Returning sample query statement for samples analysed on a specific plate."""
+        return query.filter(Analysis.plate_id == plate_id)
 
-def get_snps_by_limit_and_skip(session: Session, skip: int, limit: int) -> list[SNP]:
-    return session.exec(select(SNP).offset(skip).limit(limit)).all()
+    def get_commented_samples(query: Query) -> Query:
+        """Returning sample query statement for samples with no comment."""
+        return query.filter(Sample.comment != None)
+
+    def get_status_missing_samples(query: Query) -> Query:
+        """Returning sample query statement for samples with no comment."""
+        return query.filter(Sample.status == None)
+
+    def get_sample(self, sample_id: str) -> Sample:
+        """Get sample or raise 404."""
+        return self.session.query(Sample).filter(Sample.id == sample_id).one()
+
+    def get_samples(query: Query, sample_id: str) -> Query:
+        """Returns a query for samples containing the given sample_id."""
+        return query.filter(Sample.id.contains(sample_id))
+
+    def get_user_by_id(self, user_id: int) -> User:
+        return self.session.query(User).filter(User.id == user_id).one()
+
+    def get_user_by_email(self, email: str) -> User | None:
+        return self.session.query(User).filter(User.email == email).first()
+
+    def get_users(self, skip: int = 0, limit: int = 100) -> list[User]:
+        return self.session.query(User).offset(skip).limit(limit).all()
+
+    def get_users_with_skip_and_limit(self, skip: int, limit: int) -> list[User]:
+        return self.session.query(User).offset(skip).limit(limit).all()
+
+    def check_analyses_objects(self, analyses: list[Analysis], analysis_type: Types) -> None:
+        """Raising 400 if any analysis in the list already exist in the database"""
+        for analysis_obj in analyses:
+            existing_analysis = self.get_analysis_by_type_sample(
+                sample_id=analysis_obj.sample_id,
+                analysis_type=analysis_type,
+            )
+            if existing_analysis:
+                self.session.delete(existing_analysis)
+
+    def get_snps(self) -> list[SNP]:
+        return self.session.query(SNP).all()
+
+    def get_snps_by_limit_and_skip(self, skip: int, limit: int) -> list[SNP]:
+        return self.session.query(SNP).offset(skip).limit(limit).all()
