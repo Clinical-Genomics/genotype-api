@@ -26,7 +26,7 @@ class UserOnPlate(BaseModel):
     id: int | None = None
 
 
-class SampleOnAnalysis(BaseModel):
+class SampleStatus(BaseModel):
     status: Status | None = None
     comment: str | None = None
 
@@ -39,7 +39,7 @@ class AnalysisOnPlate(BaseModel):
     sample_id: str | None
     plate_id: str | None
     id: int | None
-    sample: SampleOnAnalysis | None = None
+    sample: SampleStatus | None = None
 
 
 class PlateResponse(BaseModel):
