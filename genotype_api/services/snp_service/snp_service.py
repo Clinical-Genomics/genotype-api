@@ -17,7 +17,7 @@ class SNPService:
         self.session = session
 
     @staticmethod
-    def _get_snp_response(snp: SNP):
+    def _get_snp_response(snp: SNP) -> SNPResponse:
         return SNPResponse(ref=snp.ref, chrom=snp.chrom, pos=snp.pos, id=snp.id)
 
     def get_snps(self, skip: int, limit: int) -> list[SNPResponse]:
@@ -25,13 +25,14 @@ class SNPService:
         return [self._get_snp_response(snp) for snp in snps]
 
     def upload_snps(self, snps_file: UploadFile) -> list[SNPResponse]:
+        """Upload snps to the database, raises an error when SNPs already exist."""
         existing_snps: list[SNP] = get_snps(self.session)
         if existing_snps:
             raise SNPExistsError
         snps: list[SNP] = SNPReaderService.read_snps_from_file(snps_file)
-        new_snps: list[snps] = create_snps(session=self.session, snps=snps)
+        new_snps: list[SNP] = create_snps(session=self.session, snps=snps)
         return [self._get_snp_response(new_snp) for new_snp in new_snps]
 
-    def delete_snps(self) -> int:
+    def delete_all_snps(self) -> int:
         result = delete_snps(self.session)
         return result.rowcount

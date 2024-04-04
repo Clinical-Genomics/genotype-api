@@ -55,5 +55,5 @@ def delete_snps(
 ):
     """Delete all SNPs"""
 
-    result = snp_service.delete_snps()
+    result = snp_service.delete_all_snps()
     return {"message": f"all snps deleted ({result} snps)"}
