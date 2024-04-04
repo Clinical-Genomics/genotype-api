@@ -43,3 +43,7 @@ class SampleNotFoundError(Exception):
 
 class SampleExistsError(Exception):
     pass
+
+
+class SNPExistsError(Exception):
+    pass
