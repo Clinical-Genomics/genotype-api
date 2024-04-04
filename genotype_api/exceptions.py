@@ -35,3 +35,7 @@ class UserExistsError(Exception):
 
 class AnalysisNotFoundError(Exception):
     pass
+
+
+class SNPExistsError(Exception):
+    pass
