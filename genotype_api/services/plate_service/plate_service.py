@@ -31,8 +31,7 @@ from genotype_api.database.crud.update import (
 from genotype_api.database.filter_models.plate_models import PlateSignOff, PlateOrderParams
 from genotype_api.database.models import Plate, Analysis, User
 from genotype_api.dto.dto import PlateCreate
-from genotype_api.dto.plate import PlateResponse, UserOnPlate, AnalysisOnPlate
-from genotype_api.dto.sample import SampleStatusResponse
+from genotype_api.dto.plate import PlateResponse, UserOnPlate, AnalysisOnPlate, SampleStatus
 from genotype_api.exceptions import PlateNotFoundError, UserNotFoundError
 from genotype_api.file_parsing.excel import GenotypeAnalysis
 from genotype_api.file_parsing.files import check_file
@@ -48,7 +47,7 @@ class PlateService:
         analyses_response: list[AnalysisOnPlate] = []
         for analysis in plate.analyses:
             if analysis:
-                sample_status = SampleStatusResponse(
+                sample_status = SampleStatus(
                     status=analysis.sample.status, comment=analysis.sample.comment
                 )
                 analysis_response = AnalysisOnPlate(

@@ -37,5 +37,13 @@ class AnalysisNotFoundError(Exception):
     pass
 
 
+class SampleNotFoundError(Exception):
+    pass
+
+
+class SampleExistsError(Exception):
+    pass
+
+
 class SNPExistsError(Exception):
     pass

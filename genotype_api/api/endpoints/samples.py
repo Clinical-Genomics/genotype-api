@@ -1,78 +1,76 @@
 from datetime import date
+from http import HTTPStatus
 from typing import Literal
 
 from fastapi import APIRouter, Depends, Query
 from fastapi.responses import JSONResponse
 from sqlmodel import Session
-from sqlmodel.sql.expression import Select, SelectOfScalar
 from starlette import status
 
-from genotype_api.database.crud import create, delete
 from genotype_api.constants import Sexes, Types
-from genotype_api.database.crud.read import (
-    get_sample,
-    get_filtered_samples,
-    get_analyses_by_type_between_dates,
-    get_analysis_by_type_and_sample_id,
-)
-from genotype_api.database.crud.update import (
-    refresh_sample_status,
-    update_sample_comment,
-    update_sample_status,
-    update_sample_sex,
-)
-from genotype_api.database.filter_models.sample_models import SampleFilterParams, SampleSexesUpdate
+from genotype_api.database.filter_models.sample_models import SampleFilterParams
 from genotype_api.database.models import (
-    Analysis,
     Sample,
     User,
 )
-from genotype_api.dto.dto import SampleRead, SampleReadWithAnalysisDeep
 from genotype_api.database.session_handler import get_session
+from genotype_api.dto.sample import SampleResponse
+from genotype_api.exceptions import SampleNotFoundError, SampleExistsError
 from genotype_api.models import MatchResult, SampleDetail
 from genotype_api.security import get_active_user
-from genotype_api.services.match_genotype_service.match_genotype import MatchGenotypeService
-
-SelectOfScalar.inherit_cache = True
-Select.inherit_cache = True
-
+from genotype_api.services.sample_service.sample_service import SampleService
 
 router = APIRouter()
 
 
+def get_sample_service(session: Session = Depends(get_session)) -> SampleService:
+    return SampleService(session)
+
+
 @router.get(
     "/{sample_id}",
-    response_model=SampleReadWithAnalysisDeep,
-    response_model_by_alias=False,
-    response_model_exclude={
-        "analyses": {"__all__": {"genotypes": True, "source": True, "created_at": True}},
-        "detail": {
-            "sex": True,
-            "nocalls": True,
-            "snps": True,
-            "matches": True,
-            "mismatches": True,
-            "unknown": True,
-        },
-    },
+    response_model=SampleResponse,
 )
 def read_sample(
     sample_id: str,
-    session: Session = Depends(get_session),
+    sample_service: SampleService = Depends(get_sample_service),
     current_user: User = Depends(get_active_user),
 ):
-    sample: Sample = get_sample(session=session, sample_id=sample_id)
-    if len(sample.analyses) == 2 and not sample.status:
-        sample: Sample = refresh_sample_status(session=session, sample=sample)
-    return sample
+    try:
+        return sample_service.get_sample(sample_id)
+    except SampleNotFoundError:
+        return JSONResponse(
+            content=f"Sample with id: {sample_id} not found.", status_code=HTTPStatus.BAD_REQUEST
+        )
+
+
+@router.post(
+    "/",
+)
+def create_sample(
+    sample: Sample,
+    sample_service: SampleService = Depends(get_sample_service),
+    current_user: User = Depends(get_active_user),
+):
+    try:
+        sample_service.create_sample(sample=sample)
+        new_sample: SampleResponse = sample_service.get_sample(sample_id=sample.id)
+        if not new_sample:
+            return JSONResponse(
+                content="Failed to create sample.", status_code=HTTPStatus.BAD_REQUEST
+            )
+        return JSONResponse(f"Sample with id: {sample.id} was created.", status_code=HTTPStatus.OK)
+    except SampleExistsError:
+        return JSONResponse(
+            status_code=HTTPStatus.BAD_REQUEST,
+            content=f"Sample with id: {sample.id} already registered.",
+        )
 
 
 @router.get(
     "/",
-    response_model=list[SampleReadWithAnalysisDeep],
-    response_model_by_alias=False,
+    response_model=list[SampleResponse],
     response_model_exclude={
-        "analyses": {"__all__": {"genotypes": True, "source": True, "created_at": True}},
         "detail": {
             "sex": True,
             "nocalls": True,
@@ -91,9 +89,9 @@ def read_samples(
     incomplete: bool | None = False,
     commented: bool | None = False,
     status_missing: bool | None = False,
-    session: Session = Depends(get_session),
+    sample_service: SampleService = Depends(get_sample_service),
     current_user: User = Depends(get_active_user),
-) -> list[Sample]:
+):
     """Returns a list of samples matching the provided filters."""
     filter_params = SampleFilterParams(
         sample_id=sample_id,
@@ -104,56 +102,69 @@ def read_samples(
         skip=skip,
         limit=limit,
     )
-    return get_filtered_samples(session=session, filter_params=filter_params)
+
+    return sample_service.get_samples(filter_params)
 
 
-@router.post("/", response_model=SampleRead)
-def create_sample(
-    sample: Sample,
-    session: Session = Depends(get_session),
-    current_user: User = Depends(get_active_user),
-):
-    return create.create_sample(session=session, sample=sample)
-
-
-@router.put("/{sample_id}/sex", response_model=SampleRead)
+@router.put("/{sample_id}/sex")
 def update_sex(
     sample_id: str,
     sex: Sexes = Query(...),
     genotype_sex: Sexes | None = None,
     sequence_sex: Sexes | None = None,
-    session: Session = Depends(get_session),
+    sample_service: SampleService = Depends(get_sample_service),
     current_user: User = Depends(get_active_user),
 ):
     """Updating sex field on sample and sample analyses."""
-    sexes_update = SampleSexesUpdate(
-        sample_id=sample_id, sex=sex, genotype_sex=genotype_sex, sequence_sex=sequence_sex
-    )
-    sample: Sample = update_sample_sex(session=session, sexes_update=sexes_update)
-    return sample
+    try:
+        sample_service.set_sex(
+            sample_id=sample_id, sex=sex, genotype_sex=genotype_sex, sequence_sex=sequence_sex
+        )
+    except SampleNotFoundError:
+        return JSONResponse(
+            content=f"Could not find sample with id: {sample_id}",
+            status_code=HTTPStatus.BAD_REQUEST,
+        )
 
 
-@router.put("/{sample_id}/comment", response_model=SampleRead)
+@router.put(
+    "/{sample_id}/comment",
+    response_model=SampleResponse,
+)
 def update_comment(
     sample_id: str,
     comment: str = Query(...),
-    session: Session = Depends(get_session),
+    sample_service: SampleService = Depends(get_sample_service),
     current_user: User = Depends(get_active_user),
-) -> Sample:
+):
     """Updating comment field on sample."""
-    return update_sample_comment(session=session, sample_id=sample_id, comment=comment)
+    try:
+        return sample_service.set_sample_comment(sample_id=sample_id, comment=comment)
+    except SampleNotFoundError:
+        return JSONResponse(
+            content=f"Could not find sample with id: {sample_id}",
+            status_code=HTTPStatus.BAD_REQUEST,
+        )
 
 
-@router.put("/{sample_id}/status", response_model=SampleRead)
+@router.put(
+    "/{sample_id}/status",
+    response_model=SampleResponse,
+)
 def set_sample_status(
     sample_id: str,
-    session: Session = Depends(get_session),
+    sample_service: SampleService = Depends(get_sample_service),
     status: Literal["pass", "fail", "cancel"] | None = None,
     current_user: User = Depends(get_active_user),
-) -> Sample:
+):
     """Check sample analyses and update sample status accordingly."""
-
-    return update_sample_status(session=session, sample_id=sample_id, status=status)
+    try:
+        return sample_service.set_sample_status(sample_id=sample_id, status=status)
+    except SampleNotFoundError:
+        return JSONResponse(
+            content=f"Could not find sample with id: {sample_id}",
+            status_code=HTTPStatus.BAD_REQUEST,
+        )
 
 
 @router.get("/{sample_id}/match", response_model=list[MatchResult])
@@ -163,20 +174,17 @@ def match(
     comparison_set: Types,
     date_min: date | None = date.min,
     date_max: date | None = date.max,
-    session: Session = Depends(get_session),
+    sample_service: SampleService = Depends(get_sample_service),
     current_user: User = Depends(get_active_user),
 ) -> list[MatchResult]:
     """Match sample genotype against all other genotypes."""
-    analyses: list[Analysis] = get_analyses_by_type_between_dates(
-        session=session, analysis_type=comparison_set, date_max=date_max, date_min=date_min
+    return sample_service.get_match_results(
+        sample_id=sample_id,
+        analysis_type=analysis_type,
+        comparison_set=comparison_set,
+        date_max=date_max,
+        date_min=date_min,
     )
-    sample_analysis: Analysis = get_analysis_by_type_and_sample_id(
-        session=session, analysis_type=analysis_type, sample_id=sample_id
-    )
-    matches: list[MatchResult] = MatchGenotypeService.get_matches(
-        analyses=analyses, sample_analysis=sample_analysis
-    )
-    return matches
 
 
 @router.get(
@@ -187,25 +195,25 @@ def match(
 )
 def get_status_detail(
     sample_id: str,
-    session: Session = Depends(get_session),
+    sample_service: SampleService = Depends(get_sample_service),
     current_user: User = Depends(get_active_user),
 ):
-    sample: Sample = get_sample(session=session, sample_id=sample_id)
-    if len(sample.analyses) != 2:
-        return SampleDetail()
-    return MatchGenotypeService.check_sample(sample=sample)
+    try:
+        return sample_service.get_status_detail(sample_id)
+    except SampleNotFoundError:
+        return JSONResponse(
+            content=f"Sample with id: {sample_id} not found.", status_code=HTTPStatus.BAD_REQUEST
+        )
 
 
-@router.delete("/{sample_id}", response_model=Sample)
+@router.delete("/{sample_id}")
 def delete_sample(
     sample_id: str,
-    session: Session = Depends(get_session),
+    sample_service: SampleService = Depends(get_sample_service),
     current_user: User = Depends(get_active_user),
 ):
     """Delete sample and its Analyses."""
-
-    sample: Sample = get_sample(session=session, sample_id=sample_id)
-    for analysis in sample.analyses:
-        delete.delete_analysis(session=session, analysis=analysis)
-    delete.delete_sample(session=session, sample=sample)
-    return JSONResponse("Deleted", status_code=status.HTTP_200_OK)
+    sample_service.delete_sample(sample_id)
+    return JSONResponse(
+        content=f"Deleted sample with id: {sample_id}", status_code=status.HTTP_200_OK
+    )

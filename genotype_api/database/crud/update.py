@@ -10,6 +10,7 @@ from genotype_api.database.filter_models.sample_models import SampleSexesUpdate
 from genotype_api.database.models import Sample, Plate, User
 from sqlmodel.sql.expression import Select, SelectOfScalar
 
+from genotype_api.exceptions import SampleNotFoundError
 from genotype_api.services.match_genotype_service.match_genotype import MatchGenotypeService
 
 SelectOfScalar.inherit_cache = True
@@ -31,6 +32,8 @@ def refresh_sample_status(sample: Sample, session: Session) -> Sample:
 
 def update_sample_comment(session: Session, sample_id: str, comment: str) -> Sample:
     sample: Sample = get_sample(session=session, sample_id=sample_id)
+    if not sample:
+        raise SampleNotFoundError
     sample.comment = comment
     session.add(sample)
     session.commit()
@@ -40,6 +43,8 @@ def update_sample_comment(session: Session, sample_id: str, comment: str) -> Sam
 
 def update_sample_status(session: Session, sample_id: str, status: str | None) -> Sample:
     sample: Sample = get_sample(session=session, sample_id=sample_id)
+    if not sample:
+        raise SampleNotFoundError
     sample.status = status
     session.add(sample)
     session.commit()
@@ -63,6 +68,8 @@ def update_plate_sign_off(session: Session, plate: Plate, plate_sign_off: PlateS
 
 def update_sample_sex(session: Session, sexes_update: SampleSexesUpdate) -> Sample:
     sample: Sample = get_sample(session=session, sample_id=sexes_update.sample_id)
+    if not sample:
+        raise SampleNotFoundError
     sample.sex = sexes_update.sex
     for analysis in sample.analyses:
         if sexes_update.genotype_sex and analysis.type == Types.GENOTYPE:

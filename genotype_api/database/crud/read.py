@@ -1,6 +1,5 @@
 import logging
 from datetime import timedelta, date
-from typing import Callable, Sequence
 
 from sqlalchemy import func, desc, asc
 from sqlalchemy.orm import Query
@@ -17,7 +16,6 @@ from genotype_api.database.models import (
     User,
     SNP,
 )
-from genotype_api.dto.dto import PlateReadWithAnalysisDetailSingle
 
 SelectOfScalar.inherit_cache = True
 Select.inherit_cache = True
