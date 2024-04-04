@@ -33,16 +33,16 @@ class SampleResponse(BaseModel):
         if analyses:
             if len(analyses) != 2:
                 return SampleDetail()
-            genotype_analysis = [analysis for analysis in analyses if analysis.type == "genotype"][
-                0
-            ]
-            sequence_analysis = [analysis for analysis in analyses if analysis.type == "sequence"][
-                0
-            ]
-            status = check_snps(
+            genotype_analysis: list[AnalysisOnSample] = [
+                analysis for analysis in analyses if analysis.type == "genotype"
+            ][0]
+            sequence_analysis: list[AnalysisOnSample] = [
+                analysis for analysis in analyses if analysis.type == "sequence"
+            ][0]
+            status: dict = check_snps(
                 genotype_analysis=genotype_analysis, sequence_analysis=sequence_analysis
             )
-            sex = check_sex(
+            sex: str = check_sex(
                 sample_sex=values.get("sex"),
                 genotype_analysis=genotype_analysis,
                 sequence_analysis=sequence_analysis,

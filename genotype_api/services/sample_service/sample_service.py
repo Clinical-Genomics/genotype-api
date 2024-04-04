@@ -91,10 +91,10 @@ class SampleService:
         )
         return [self._get_sample_response(sample) for sample in samples]
 
-    def create_sample(self, sample: Sample):
+    def create_sample(self, sample: Sample) -> None:
         create_sample(session=self.session, sample=sample)
 
-    def delete_sample(self, sample_id: str):
+    def delete_sample(self, sample_id: str) -> None:
         sample: Sample = get_sample(session=self.session, sample_id=sample_id)
         for analysis in sample.analyses:
             delete_analysis(session=self.session, analysis=analysis)
@@ -114,6 +114,7 @@ class SampleService:
         date_min: date,
         date_max: date,
     ) -> list[MatchResult]:
+        """Get the match results for an analysis type and the comparison type in a given time frame."""
         analyses: list[Analysis] = get_analyses_by_type_between_dates(
             session=self.session, analysis_type=comparison_set, date_max=date_max, date_min=date_min
         )
@@ -139,7 +140,7 @@ class SampleService:
         )
         return self._get_sample_response(sample)
 
-    def set_sex(self, sample_id: str, sex: Sexes, genotype_sex: Sexes, sequence_sex: Sexes):
+    def set_sex(self, sample_id: str, sex: Sexes, genotype_sex: Sexes, sequence_sex: Sexes) -> None:
         sexes_update = SampleSexesUpdate(
             sample_id=sample_id, sex=sex, genotype_sex=genotype_sex, sequence_sex=sequence_sex
         )
