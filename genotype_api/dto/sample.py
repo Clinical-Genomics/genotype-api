@@ -28,6 +28,7 @@ class SampleResponse(BaseModel):
     detail: SampleDetail | None
 
     @field_validator("detail")
+    @classmethod
     def get_detail(cls, value, values) -> SampleDetail | None:
         analyses = values.get("analyses")
         if analyses:
