@@ -121,7 +121,7 @@ class ReadHandler(BaseHandler):
         """Get sample or raise 404."""
         return self.session.query(Sample).filter(Sample.id == sample_id).one()
 
-    def get_samples(query: Query, sample_id: str) -> Query:
+    def get_samples(self, query: Query, sample_id: str) -> Query:
         """Returns a query for samples containing the given sample_id."""
         return query.filter(Sample.id.contains(sample_id))
 

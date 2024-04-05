@@ -50,3 +50,11 @@ class SampleResponse(BaseModel):
 
             return SampleDetail(**status, sex=sex)
         return None
+
+
+class SampleCreate(BaseModel):
+    id: str
+    status: str | None = None
+    comment: str | None = None
+    sex: Sexes
+    created_at: datetime = datetime.now()

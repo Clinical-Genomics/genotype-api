@@ -7,7 +7,7 @@ from genotype_api.database.filter_models.sample_models import SampleFilterParams
 from genotype_api.database.models import Sample, Analysis
 
 from genotype_api.dto.genotype import GenotypeResponse
-from genotype_api.dto.sample import AnalysisOnSample, SampleResponse
+from genotype_api.dto.sample import AnalysisOnSample, SampleResponse, SampleCreate
 from genotype_api.exceptions import SampleNotFoundError
 from genotype_api.models import SampleDetail, MatchResult
 from genotype_api.services.endpoint_services.base_service import BaseService
@@ -71,8 +71,15 @@ class SampleService(BaseService):
         samples: list[Sample] = self.store.get_filtered_samples(filter_params=filter_params)
         return [self._get_sample_response(sample) for sample in samples]
 
-    def create_sample(self, sample: Sample) -> None:
-        self.store.create_sample(sample=sample)
+    def create_sample(self, sample: SampleCreate) -> None:
+        new_sample: Sample = Sample(
+            id=sample.id,
+            status=sample.status,
+            comment=sample.comment,
+            sex=sample.sex,
+            created_at=sample.created_at,
+        )
+        self.store.create_sample(sample=new_sample)
 
     def delete_sample(self, sample_id: str) -> None:
         sample: Sample = self.store.get_sample(sample_id=sample_id)

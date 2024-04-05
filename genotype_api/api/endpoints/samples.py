@@ -15,7 +15,7 @@ from genotype_api.database.models import (
 )
 
 from genotype_api.database.store import Store, get_store
-from genotype_api.dto.sample import SampleResponse
+from genotype_api.dto.sample import SampleResponse, SampleCreate
 from genotype_api.exceptions import SampleNotFoundError, SampleExistsError
 from genotype_api.models import MatchResult, SampleDetail
 from genotype_api.security import get_active_user
@@ -49,7 +49,7 @@ def read_sample(
     "/",
 )
 def create_sample(
-    sample: Sample,
+    sample: SampleCreate,
     sample_service: SampleService = Depends(get_sample_service),
     current_user: User = Depends(get_active_user),
 ):

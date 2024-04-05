@@ -8,6 +8,7 @@ from sqlalchemy import (
     String,
 )
 from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy_utils import EmailType
 
 
 class Base(DeclarativeBase):

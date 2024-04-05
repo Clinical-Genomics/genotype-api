@@ -8,9 +8,9 @@ from starlette import status
 from starlette.requests import Request
 
 from genotype_api.config import security_settings
-from genotype_api.database.crud.read import get_user_by_email
 from genotype_api.database.models import User
 from genotype_api.database.database import get_session
+from genotype_api.database.store import get_store, Store
 
 
 def decode_id_token(token: str):
@@ -63,11 +63,11 @@ jwt_scheme = JWTBearer()
 
 async def get_active_user(
     token: str = Security(jwt_scheme),
-    session: Session = Depends(get_session),
+    store: Store = Depends(get_store),
 ):
     """Dependency for secure endpoints"""
     user = User.parse_obj(decode_id_token(token))
-    db_user: User = get_user_by_email(session=session, email=user.email)
+    db_user: User = store.get_user_by_email(email=user.email)
     if not db_user:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User not in DB")
     return user

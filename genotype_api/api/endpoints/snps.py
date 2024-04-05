@@ -1,7 +1,7 @@
 """Routes for the snps"""
 
 from fastapi import APIRouter, Depends, Query, UploadFile
-from sqlalchemy.orm import Session
+
 
 from starlette.responses import JSONResponse
 
@@ -34,7 +34,7 @@ def read_snps(
     return snp_service.get_snps(skip=skip, limit=limit)
 
 
-@router.post("/", response_model=list[SNP])
+@router.post("/", response_model=list[SNPResponse])
 async def upload_snps(
     snps_file: UploadFile,
     snp_service: SNPService = Depends(get_snp_service),

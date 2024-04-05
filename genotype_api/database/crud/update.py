@@ -2,7 +2,6 @@ from pydantic import EmailStr
 
 
 from genotype_api.constants import Types
-from genotype_api.database.store import Store
 from genotype_api.database.base_handler import BaseHandler
 from genotype_api.database.filter_models.plate_models import PlateSignOff
 from genotype_api.database.filter_models.sample_models import SampleSexesUpdate
