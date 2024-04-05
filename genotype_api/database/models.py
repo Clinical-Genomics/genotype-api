@@ -44,7 +44,7 @@ class Analysis(Base):
     sex = Column(String)
     created_at = Column(DateTime, default=datetime.now)
     sample_id = Column(String(length=32), ForeignKey("sample.id"))
-    plate_id = Column(String, ForeignKey("plate.id"))
+    plate_id = Column(Integer, ForeignKey("plate.id"))
 
     sample = relationship("Sample", back_populates="analyses")
     plate = relationship("Plate", back_populates="analyses")

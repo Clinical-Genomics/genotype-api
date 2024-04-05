@@ -38,7 +38,7 @@ class AnalysisOnPlate(BaseModel):
     sex: Sexes | None = None
     created_at: datetime | None = None
     sample_id: str | None = None
-    plate_id: str | None = None
+    plate_id: int | None = None
     id: int | None = None
     sample: SampleStatus | None = None
 
