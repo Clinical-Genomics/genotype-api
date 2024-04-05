@@ -1,6 +1,0 @@
-bump2version
-coveralls
-pre-commit
-pylint
-pytest-cov
-pytest>=5.2<
