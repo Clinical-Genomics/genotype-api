@@ -10,7 +10,7 @@ class PlateOnUser(BaseModel):
     plate_id: str | None = None
     signed_by: int | None = None
     signed_at: datetime | None = None
-    id: str | None = None
+    id: int | None = None
 
 
 class UserResponse(BaseModel):
