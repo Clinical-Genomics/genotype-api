@@ -72,7 +72,7 @@ class SampleService(BaseService):
         return [self._get_sample_response(sample) for sample in samples]
 
     def create_sample(self, sample_create: SampleCreate) -> None:
-        sample: Sample = Sample(
+        sample = Sample(
             id=sample_create.id,
             status=sample_create.status,
             comment=sample_create.comment,
