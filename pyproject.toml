@@ -1,0 +1,48 @@
+[tool.poetry]
+name = "genotype-api"
+version = "3.0.0"
+description = "Genotype-api"
+authors = ["Christian Oertlin <c.oertlin@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+sqlalchemy = "^2.0.29"
+aiofiles = "^23.2.1"
+bcrypt = "^4.1.2"
+bump2version = "^1.0.1"
+click = "^8.1.7"
+starlette = "^0.37.2"
+coloredlogs = "^15.0.1"
+email-validator = "^2.1.1"
+fastapi = ">=0.109.1"
+google-auth = "^2.29.0"
+gunicorn = "^21.2.0"
+httptools = "^0.6.1"
+numpy = "^1.26.4"
+openpyxl = "^3.1.2"
+passlib = "^1.7.4"
+pydantic = "^2.6.4"
+pymysql = "^1.1.0"
+python-dotenv = "^1.0.1"
+python-jose = {extras = ["cryptography"], version = "^3.3.0"}
+python-multipart = "^0.0.9"
+pyyaml = "^6.0.1"
+requests = "^2.31.0"
+uvicorn = "^0.29.0"
+uvloop = "^0.19.0"
+sqlalchemy-utils = "^0.41.2"
+pydantic-settings = "^2.2.1"
+
+
+[tool.poetry.group.dev.dependencies]
+bump2version = "^1.0.1"
+coveralls = "^3.3.1"
+pre-commit = "^3.7.0"
+pylint = "^3.1.0"
+pytest-cov = "^5.0.0"
+pytest = ">=5.2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

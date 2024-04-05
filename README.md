@@ -11,7 +11,8 @@ install [poetry]
 ```
 git clone https://github.com/Clinical-Genomics/genotype-api
 cd genotype-api
-pip install -e . -r requirements.txt
+pip install poetry
+poetry install
 ```
 
 ## Usage
