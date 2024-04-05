@@ -6,6 +6,7 @@ from datetime import datetime
 from pydantic import BaseModel, validator, Field, EmailStr
 
 from genotype_api.constants import Types, Sexes, Status
+from genotype_api.database.models import Analysis
 
 
 class PlateStatusCounts(BaseModel):
@@ -17,7 +18,7 @@ class PlateStatusCounts(BaseModel):
     commented: int = Field(0, nullable=True)
 
     class Config:
-        allow_population_by_field_name = True
+        populate_by_name = True
 
 
 class UserOnPlate(BaseModel):
@@ -32,13 +33,13 @@ class SampleStatus(BaseModel):
 
 
 class AnalysisOnPlate(BaseModel):
-    type: Types | None
-    source: str | None
-    sex: Sexes | None
-    created_at: datetime | None
-    sample_id: str | None
-    plate_id: str | None
-    id: int | None
+    type: Types | None = None
+    source: str | None = None
+    sex: Sexes | None = None
+    created_at: datetime | None = None
+    sample_id: str | None = None
+    plate_id: int | None = None
+    id: int | None = None
     sample: SampleStatus | None = None
 
 
@@ -49,7 +50,7 @@ class PlateResponse(BaseModel):
     signed_at: datetime | None = None
     method_document: str | None = None
     method_version: str | None = None
-    id: str | None = None
+    id: int | None = None
     user: UserOnPlate | None = None
     analyses: list[AnalysisOnPlate] | None = None
     plate_status_counts: PlateStatusCounts | None = None
@@ -65,4 +66,4 @@ class PlateResponse(BaseModel):
         return PlateStatusCounts(**status_counts, total=len(analyses), commented=commented)
 
     class Config:
-        validate_all = True
+        validate_default = True

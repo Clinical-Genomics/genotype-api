@@ -1,67 +1,55 @@
 import logging
 
-from fastapi import HTTPException
-from sqlmodel import Session
-from sqlmodel.sql.expression import Select, SelectOfScalar
 
+from genotype_api.database.base_handler import BaseHandler
 from genotype_api.database.models import Analysis, Plate, Sample, User, SNP
-from genotype_api.dto.dto import PlateCreate
 from genotype_api.dto.user import UserRequest
 from genotype_api.exceptions import SampleExistsError
-
-SelectOfScalar.inherit_cache = True
-Select.inherit_cache = True
 
 LOG = logging.getLogger(__name__)
 
 
-def create_analysis(session: Session, analysis: Analysis) -> Analysis:
-    session.add(analysis)
-    session.commit()
-    session.refresh(analysis)
-    return analysis
+class CreateHandler(BaseHandler):
 
+    def create_analysis(self, analysis: Analysis) -> Analysis:
+        self.session.add(analysis)
+        self.session.commit()
+        self.session.refresh(analysis)
+        return analysis
 
-def create_plate(session: Session, plate: PlateCreate) -> Plate:
-    db_plate = Plate.from_orm(plate)
-    db_plate.analyses = plate.analyses  # not sure why from_orm wont pick up the analyses
-    session.add(db_plate)
-    session.commit()
-    session.refresh(db_plate)
-    LOG.info(f"Creating plate with id {db_plate.plate_id}.")
-    return db_plate
+    def create_plate(self, plate: Plate) -> Plate:
+        self.session.add(plate)
+        self.session.commit()
+        self.session.refresh(plate)
+        LOG.info(f"Creating plate with id {plate.plate_id}.")
+        return plate
 
+    def create_sample(self, sample: Sample) -> Sample:
+        """Creates a sample in the database."""
+        sample_in_db = self.session.query(Sample).filter(Sample.id == sample.id).one_or_none()
+        if sample_in_db:
+            raise SampleExistsError
+        self.session.add(sample)
+        self.session.commit()
+        self.session.refresh(sample)
+        return sample
 
-def create_sample(session: Session, sample: Sample) -> Sample:
-    """Creates a sample in the database."""
+    def create_analyses_samples(self, analyses: list[Analysis]) -> list[Sample]:
+        """creating samples in an analysis if not already in db."""
+        return [
+            self.create_sample(sample=Sample(id=analysis.sample_id))
+            for analysis in analyses
+            if not self.session.query(Sample).filter(Sample.id == analysis.sample_id).one_or_none()
+        ]
 
-    sample_in_db = session.get(Sample, sample.id)
-    if sample_in_db:
-        raise SampleExistsError
-    session.add(sample)
-    session.commit()
-    session.refresh(sample)
-    return sample
+    def create_user(self, user: UserRequest) -> User:
+        db_user = User(email=user.email, name=user.name)
+        self.session.add(db_user)
+        self.session.commit()
+        self.session.refresh(db_user)
+        return db_user
 
-
-def create_analyses_samples(session: Session, analyses: list[Analysis]) -> list[Sample]:
-    """creating samples in an analysis if not already in db."""
-    return [
-        create_sample(session=session, sample=Sample(id=analysis.sample_id))
-        for analysis in analyses
-        if not session.get(Sample, analysis.sample_id)
-    ]
-
-
-def create_user(session: Session, user: UserRequest):
-    db_user = User.from_orm(user)
-    session.add(db_user)
-    session.commit()
-    session.refresh(db_user)
-    return db_user
-
-
-def create_snps(session: Session, snps: list[SNP]) -> list[SNP]:
-    session.add_all(snps)
-    session.commit()
-    return snps
+    def create_snps(self, snps: list[SNP]) -> list[SNP]:
+        self.session.add_all(snps)
+        self.session.commit()
+        return snps

@@ -1,6 +1,10 @@
 """Genotype specific exceptions"""
 
 
+class GenotypeDBError(Exception):
+    pass
+
+
 class SexConflictError(Exception):
     pass
 

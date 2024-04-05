@@ -4,27 +4,24 @@ from typing import Literal
 
 from fastapi import APIRouter, Depends, Query
 from fastapi.responses import JSONResponse
-from sqlmodel import Session
 from starlette import status
 
 from genotype_api.constants import Sexes, Types
 from genotype_api.database.filter_models.sample_models import SampleFilterParams
-from genotype_api.database.models import (
-    Sample,
-    User,
-)
-from genotype_api.database.session_handler import get_session
-from genotype_api.dto.sample import SampleResponse
+
+from genotype_api.database.store import Store, get_store
+from genotype_api.dto.sample import SampleResponse, SampleCreate
+from genotype_api.dto.user import CurrentUser
 from genotype_api.exceptions import SampleNotFoundError, SampleExistsError
 from genotype_api.models import MatchResult, SampleDetail
 from genotype_api.security import get_active_user
-from genotype_api.services.sample_service.sample_service import SampleService
+from genotype_api.services.endpoint_services.sample_service import SampleService
 
 router = APIRouter()
 
 
-def get_sample_service(session: Session = Depends(get_session)) -> SampleService:
-    return SampleService(session)
+def get_sample_service(store: Store = Depends(get_store)) -> SampleService:
+    return SampleService(store)
 
 
 @router.get(
@@ -34,7 +31,7 @@ def get_sample_service(session: Session = Depends(get_session)) -> SampleService
 def read_sample(
     sample_id: str,
     sample_service: SampleService = Depends(get_sample_service),
-    current_user: User = Depends(get_active_user),
+    current_user: CurrentUser = Depends(get_active_user),
 ):
     try:
         return sample_service.get_sample(sample_id)
@@ -48,12 +45,12 @@ def read_sample(
     "/",
 )
 def create_sample(
-    sample: Sample,
+    sample: SampleCreate,
     sample_service: SampleService = Depends(get_sample_service),
-    current_user: User = Depends(get_active_user),
+    current_user: CurrentUser = Depends(get_active_user),
 ):
     try:
-        sample_service.create_sample(sample=sample)
+        sample_service.create_sample(sample_create=sample)
         new_sample: SampleResponse = sample_service.get_sample(sample_id=sample.id)
         if not new_sample:
             return JSONResponse(
@@ -90,7 +87,7 @@ def read_samples(
     commented: bool | None = False,
     status_missing: bool | None = False,
     sample_service: SampleService = Depends(get_sample_service),
-    current_user: User = Depends(get_active_user),
+    current_user: CurrentUser = Depends(get_active_user),
 ):
     """Returns a list of samples matching the provided filters."""
     filter_params = SampleFilterParams(
@@ -113,7 +110,7 @@ def update_sex(
     genotype_sex: Sexes | None = None,
     sequence_sex: Sexes | None = None,
     sample_service: SampleService = Depends(get_sample_service),
-    current_user: User = Depends(get_active_user),
+    current_user: CurrentUser = Depends(get_active_user),
 ):
     """Updating sex field on sample and sample analyses."""
     try:
@@ -135,7 +132,7 @@ def update_comment(
     sample_id: str,
     comment: str = Query(...),
     sample_service: SampleService = Depends(get_sample_service),
-    current_user: User = Depends(get_active_user),
+    current_user: CurrentUser = Depends(get_active_user),
 ):
     """Updating comment field on sample."""
     try:
@@ -155,7 +152,7 @@ def set_sample_status(
     sample_id: str,
     sample_service: SampleService = Depends(get_sample_service),
     status: Literal["pass", "fail", "cancel"] | None = None,
-    current_user: User = Depends(get_active_user),
+    current_user: CurrentUser = Depends(get_active_user),
 ):
     """Check sample analyses and update sample status accordingly."""
     try:
@@ -175,7 +172,7 @@ def match(
     date_min: date | None = date.min,
     date_max: date | None = date.max,
     sample_service: SampleService = Depends(get_sample_service),
-    current_user: User = Depends(get_active_user),
+    current_user: CurrentUser = Depends(get_active_user),
 ) -> list[MatchResult]:
     """Match sample genotype against all other genotypes."""
     return sample_service.get_match_results(
@@ -196,7 +193,7 @@ def match(
 def get_status_detail(
     sample_id: str,
     sample_service: SampleService = Depends(get_sample_service),
-    current_user: User = Depends(get_active_user),
+    current_user: CurrentUser = Depends(get_active_user),
 ):
     try:
         return sample_service.get_status_detail(sample_id)
@@ -210,7 +207,7 @@ def get_status_detail(
 def delete_sample(
     sample_id: str,
     sample_service: SampleService = Depends(get_sample_service),
-    current_user: User = Depends(get_active_user),
+    current_user: CurrentUser = Depends(get_active_user),
 ):
     """Delete sample and its Analyses."""
     sample_service.delete_sample(sample_id)
