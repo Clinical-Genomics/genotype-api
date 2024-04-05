@@ -13,7 +13,7 @@ class AnalysisOnSample(BaseModel):
     type: Types | None = None
     sex: Sexes | None = None
     sample_id: str | None = None
-    plate_id: str | None = None
+    plate_id: int | None = None
     id: int | None = None
     genotypes: list[GenotypeResponse]
 
