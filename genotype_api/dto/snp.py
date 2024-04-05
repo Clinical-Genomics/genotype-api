@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 
 class SNPResponse(BaseModel):
-    ref: str
-    chrom: str
-    pos: int | None
-    id: str
+    ref: str | None = None
+    chrom: str | None = None
+    pos: int | None = None
+    id: str | None = None

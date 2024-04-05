@@ -33,13 +33,13 @@ class SampleStatus(BaseModel):
 
 
 class AnalysisOnPlate(BaseModel):
-    type: Types | None
-    source: str | None
-    sex: Sexes | None
-    created_at: datetime | None
-    sample_id: str | None
-    plate_id: str | None
-    id: int | None
+    type: Types | None = None
+    source: str | None = None
+    sex: Sexes | None = None
+    created_at: datetime | None = None
+    sample_id: str | None = None
+    plate_id: str | None = None
+    id: int | None = None
     sample: SampleStatus | None = None
 
 

@@ -20,12 +20,12 @@ class AnalysisOnSample(BaseModel):
 
 class SampleResponse(BaseModel):
     id: str | None = None
-    status: Status | None
-    comment: str | None
-    sex: Sexes | None
+    status: Status | None = None
+    comment: str | None = None
+    sex: Sexes | None = None
     created_at: datetime | None = datetime.now()
-    analyses: list[AnalysisOnSample] | None
-    detail: SampleDetail | None
+    analyses: list[AnalysisOnSample] | None = None
+    detail: SampleDetail | None = None
 
     @validator("detail")
     def get_detail(cls, value, values) -> SampleDetail | None:
