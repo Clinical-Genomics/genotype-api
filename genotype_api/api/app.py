@@ -7,7 +7,7 @@ from fastapi import FastAPI, status, Request
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
-from genotype_api.config import security_settings, DBSettings, settings
+from genotype_api.config import security_settings, settings
 from genotype_api.database.database import create_all_tables, initialise_database, close_session
 from genotype_api.api.endpoints import samples, snps, users, plates, analyses
 from sqlalchemy.exc import NoResultFound
@@ -15,7 +15,6 @@ from sqlalchemy.exc import NoResultFound
 app = FastAPI(
     root_path=security_settings.api_root_path,
     root_path_in_servers=True,
-    openapi_prefix=security_settings.api_root_path,
 )
 app.add_middleware(
     CORSMiddleware,

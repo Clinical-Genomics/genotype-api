@@ -18,7 +18,7 @@ class PlateStatusCounts(BaseModel):
     commented: int = Field(0, nullable=True)
 
     class Config:
-        allow_population_by_field_name = True
+        populate_by_name = True
 
 
 class UserOnPlate(BaseModel):
@@ -66,4 +66,4 @@ class PlateResponse(BaseModel):
         return PlateStatusCounts(**status_counts, total=len(analyses), commented=commented)
 
     class Config:
-        validate_all = True
+        validate_default = True

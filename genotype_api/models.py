@@ -40,7 +40,7 @@ class SampleDetail(BaseModel):
         return SampleDetailStatus(sex=sex, snps=snps, nocalls=nocalls)
 
     class Config:
-        validate_all = True
+        validate_default = True
 
 
 class MatchCounts(BaseModel):
