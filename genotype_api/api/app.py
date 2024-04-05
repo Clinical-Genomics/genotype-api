@@ -15,6 +15,7 @@ from sqlalchemy.exc import NoResultFound
 app = FastAPI(
     root_path=security_settings.api_root_path,
     root_path_in_servers=True,
+    openapi_prefix=security_settings.api_root_path,
 )
 app.add_middleware(
     CORSMiddleware,
