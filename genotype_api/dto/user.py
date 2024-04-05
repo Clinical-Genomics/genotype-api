@@ -27,4 +27,4 @@ class UserRequest(BaseModel):
 
 class CurrentUser(BaseModel):
     email: EmailStr
-    username: str
+    name: str
