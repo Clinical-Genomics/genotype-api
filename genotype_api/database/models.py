@@ -1,57 +1,17 @@
 from collections import Counter
 from datetime import datetime
-from sqlalchemy import Column, ForeignKey, Integer, String, DateTime
+from sqlalchemy import Integer, DateTime
 from sqlalchemy.orm import relationship
-
-from sqlalchemy_utils import EmailType
-from typing import Annotated
-
 from sqlalchemy import (
-    BLOB,
-    DECIMAL,
-    VARCHAR,
-    BigInteger,
     Column,
     ForeignKey,
-    Numeric,
     String,
-    Table,
 )
-from sqlalchemy import Text as SLQText
-from sqlalchemy import UniqueConstraint, orm, types
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-from sqlalchemy.orm.attributes import InstrumentedAttribute
-
-BigInt = Annotated[int, None]
-Blob = Annotated[bytes, None]
-Decimal = Annotated[float, None]
-Num_6_2 = Annotated[float, 6]
-Str32 = Annotated[str, 32]
-Str64 = Annotated[str, 64]
-Str128 = Annotated[str, 128]
-Str255 = Annotated[str, 255]
-Str256 = Annotated[str, 256]
-Text = Annotated[str, None]
-VarChar128 = Annotated[str, 128]
-
-PrimaryKeyInt = Annotated[int, mapped_column(primary_key=True)]
-UniqueStr = Annotated[str, mapped_column(String(32), unique=True)]
+from sqlalchemy.orm import DeclarativeBase
 
 
 class Base(DeclarativeBase):
-    type_annotation_map = {
-        BigInt: BigInteger,
-        Blob: BLOB,
-        Decimal: DECIMAL,
-        Num_6_2: Numeric(6, 2),
-        Str32: String(32),
-        Str64: String(64),
-        Str128: String(128),
-        Str255: String(255),
-        Str256: String(256),
-        Text: SLQText,
-        VarChar128: VARCHAR(128),
-    }
+    pass
 
 
 class Genotype(Base):

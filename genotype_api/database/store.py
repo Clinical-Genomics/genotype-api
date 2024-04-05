@@ -25,5 +25,4 @@ class Store(
 
 def get_store() -> Store:
     """Return a store."""
-    initialise_database(DBSettings.db_uri)
     return Store()

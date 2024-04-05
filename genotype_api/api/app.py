@@ -8,7 +8,7 @@ from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 from genotype_api.config import security_settings, DBSettings
-from genotype_api.database.database import create_all_tables, initialise_database
+from genotype_api.database.database import create_all_tables, initialise_database, close_session
 from genotype_api.api.endpoints import samples, snps, users, plates, analyses
 from sqlalchemy.exc import NoResultFound
 
@@ -76,3 +76,8 @@ app.include_router(
 def on_startup():
     initialise_database(DBSettings.db_uri)
     create_all_tables()
+
+
+@app.on_event("shutdown")
+async def on_shutdown():
+    close_session()

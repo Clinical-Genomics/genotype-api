@@ -57,3 +57,8 @@ def get_tables() -> list[str]:
     engine: Engine = get_engine()
     inspector: Inspector = inspect(engine)
     return inspector.get_table_names()
+
+
+def close_session():
+    """Close the global database session of the genotype api."""
+    SESSION.close()
