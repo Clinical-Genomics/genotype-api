@@ -6,7 +6,7 @@ click
 starlette
 coloredlogs
 email-validator
-fastapi==0.75.0
+fastapi>=0.109.1
 google-auth
 gunicorn
 httptools
