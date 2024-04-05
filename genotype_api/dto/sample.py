@@ -25,7 +25,7 @@ class SampleResponse(BaseModel):
     sex: Sexes | None = None
     created_at: datetime | None = datetime.now()
     analyses: list[AnalysisOnSample] | None = None
-    detail: SampleDetail | None = None
+    detail: SampleDetail | None
 
     @field_validator("detail")
     def get_detail(cls, value, values) -> SampleDetail | None:
