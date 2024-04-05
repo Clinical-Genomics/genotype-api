@@ -22,7 +22,7 @@ COPY . /home/worker/app
 # Install app requirements
 RUN pip install poetry
 RUN poetry config virtualenvs.create false \
-  && poetry install
+  && poetry install --no-interaction --no-ansi
 
 CMD gunicorn \
     --workers=$GUNICORN_WORKERS \
