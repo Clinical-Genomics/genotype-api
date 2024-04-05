@@ -67,7 +67,8 @@ async def get_active_user(
     store: Store = Depends(get_store),
 ):
     """Dependency for secure endpoints"""
-    user = CurrentUser.parse_obj(decode_id_token(token))
+    payload: dict = decode_id_token(token)
+    user = CurrentUser(name=payload.get("username"), email=payload.get("email"))
     db_user: User = store.get_user_by_email(email=user.email)
     if not db_user:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User not in DB")
