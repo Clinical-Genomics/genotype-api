@@ -1,7 +1,7 @@
 """Module for the sample DTOs."""
 
 from datetime import datetime
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, field_validator
 from genotype_api.constants import Sexes, Status, Types
 from genotype_api.dto.genotype import GenotypeResponse
 
@@ -27,7 +27,7 @@ class SampleResponse(BaseModel):
     analyses: list[AnalysisOnSample] | None = None
     detail: SampleDetail | None = None
 
-    @validator("detail")
+    @field_validator("detail")
     def get_detail(cls, value, values) -> SampleDetail | None:
         analyses = values.get("analyses")
         if analyses:
