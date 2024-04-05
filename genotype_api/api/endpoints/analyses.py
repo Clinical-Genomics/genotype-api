@@ -4,12 +4,10 @@ from http import HTTPStatus
 
 from fastapi import APIRouter, Depends, File, Query, UploadFile, status, HTTPException
 from fastapi.responses import JSONResponse
-from sqlalchemy.orm import Session
 
-from genotype_api.database.models import User
 from genotype_api.database.store import Store, get_store
 from genotype_api.dto.analysis import AnalysisResponse
-
+from genotype_api.dto.user import CurrentUser
 
 from genotype_api.exceptions import AnalysisNotFoundError
 from genotype_api.security import get_active_user
@@ -29,7 +27,7 @@ def get_analysis_service(store: Store = Depends(get_store)) -> AnalysisService:
 def read_analysis(
     analysis_id: int,
     analysis_service: AnalysisService = Depends(get_analysis_service),
-    current_user: User = Depends(get_active_user),
+    current_user: CurrentUser = Depends(get_active_user),
 ):
     """Return analysis."""
     try:
@@ -46,7 +44,7 @@ def read_analyses(
     skip: int = 0,
     limit: int = Query(default=100, lte=100),
     analysis_service: AnalysisService = Depends(get_analysis_service),
-    current_user: User = Depends(get_active_user),
+    current_user: CurrentUser = Depends(get_active_user),
 ):
     """Return all analyses."""
     try:
@@ -62,7 +60,7 @@ def read_analyses(
 def delete_analysis(
     analysis_id: int,
     analysis_service: AnalysisService = Depends(get_analysis_service),
-    current_user: User = Depends(get_active_user),
+    current_user: CurrentUser = Depends(get_active_user),
 ):
     """Delete analysis based on analysis id."""
     try:
@@ -81,7 +79,7 @@ def delete_analysis(
 def upload_sequence_analysis(
     file: UploadFile = File(...),
     analysis_service: AnalysisService = Depends(get_analysis_service),
-    current_user: User = Depends(get_active_user),
+    current_user: CurrentUser = Depends(get_active_user),
 ):
     """Reading VCF file, creating and uploading sequence analyses and sample objects to the database."""
 

@@ -5,10 +5,11 @@ from typing import Literal
 from fastapi import APIRouter, Depends, File, Query, UploadFile, status, HTTPException
 from fastapi.responses import JSONResponse
 from genotype_api.database.filter_models.plate_models import PlateOrderParams
-from genotype_api.database.models import User
+
 
 from genotype_api.database.store import Store, get_store
 from genotype_api.dto.plate import PlateResponse
+from genotype_api.dto.user import CurrentUser
 from genotype_api.exceptions import PlateNotFoundError
 from genotype_api.security import get_active_user
 from genotype_api.services.endpoint_services.plate_service import PlateService
@@ -29,7 +30,7 @@ def get_plate_service(store: Store = Depends(get_store)) -> PlateService:
 def upload_plate(
     file: UploadFile = File(...),
     plate_service: PlateService = Depends(get_plate_service),
-    current_user: User = Depends(get_active_user),
+    current_user: CurrentUser = Depends(get_active_user),
 ):
     return plate_service.upload_plate(file)
 
@@ -44,10 +45,10 @@ def sign_off_plate(
     method_document: str = Query(...),
     method_version: str = Query(...),
     plate_service: PlateService = Depends(get_plate_service),
-    current_user: User = Depends(get_active_user),
+    current_user: CurrentUser = Depends(get_active_user),
 ):
     """Sign off a plate.
-    This means that current User sign off that the plate is checked
+    This means that current CurrentUser sign off that the plate is checked
     Add Depends with current user
     """
 
@@ -84,7 +85,7 @@ def sign_off_plate(
 def read_plate(
     plate_id: int,
     plate_service: PlateService = Depends(get_plate_service),
-    current_user: User = Depends(get_active_user),
+    current_user: CurrentUser = Depends(get_active_user),
 ):
     """Display information about a plate."""
     try:
@@ -107,7 +108,7 @@ async def read_plates(
     skip: int | None = 0,
     limit: int | None = 10,
     plate_service: PlateService = Depends(get_plate_service),
-    current_user: User = Depends(get_active_user),
+    current_user: CurrentUser = Depends(get_active_user),
 ):
     """Display all plates"""
     order_params = PlateOrderParams(
@@ -125,7 +126,7 @@ async def read_plates(
 def delete_plate(
     plate_id: int,
     plate_service: PlateService = Depends(get_plate_service),
-    current_user: User = Depends(get_active_user),
+    current_user: CurrentUser = Depends(get_active_user),
 ):
     """Delete plate."""
     try:

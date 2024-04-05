@@ -23,3 +23,8 @@ class UserResponse(BaseModel):
 class UserRequest(BaseModel):
     email: EmailStr
     name: str
+
+
+class CurrentUser(BaseModel):
+    email: EmailStr
+    name: str

@@ -4,13 +4,9 @@ from fastapi import APIRouter, Depends, Query, UploadFile
 
 
 from starlette.responses import JSONResponse
-
-
-from genotype_api.database.models import SNP, User
-
-
 from genotype_api.database.store import Store, get_store
 from genotype_api.dto.snp import SNPResponse
+from genotype_api.dto.user import CurrentUser
 from genotype_api.exceptions import SNPExistsError
 from genotype_api.security import get_active_user
 
@@ -29,7 +25,7 @@ def read_snps(
     skip: int = 0,
     limit: int = Query(default=100, lte=100),
     snp_service: SNPService = Depends(get_snp_service),
-    current_user: User = Depends(get_active_user),
+    current_user: CurrentUser = Depends(get_active_user),
 ):
     return snp_service.get_snps(skip=skip, limit=limit)
 
@@ -38,7 +34,7 @@ def read_snps(
 async def upload_snps(
     snps_file: UploadFile,
     snp_service: SNPService = Depends(get_snp_service),
-    current_user: User = Depends(get_active_user),
+    current_user: CurrentUser = Depends(get_active_user),
 ):
     try:
         return snp_service.upload_snps(snps_file)
@@ -49,7 +45,7 @@ async def upload_snps(
 @router.delete("/")
 def delete_snps(
     snp_service: SNPService = Depends(get_snp_service),
-    current_user: User = Depends(get_active_user),
+    current_user: CurrentUser = Depends(get_active_user),
 ):
     """Delete all SNPs"""
 
