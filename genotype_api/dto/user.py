@@ -7,7 +7,7 @@ from pydantic import BaseModel, EmailStr
 
 class PlateOnUser(BaseModel):
     created_at: datetime | None = None
-    plate_id: str | None = None
+    plate_id: int | None = None
     signed_by: int | None = None
     signed_at: datetime | None = None
     id: str | None = None
