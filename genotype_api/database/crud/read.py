@@ -43,7 +43,7 @@ class ReadHandler(BaseHandler):
         return self.session.query(Analysis).offset(skip).limit(limit).all()
 
     def get_analyses_by_type_between_dates(
-        self, analysis_type: str, date_min: date, date_max: date
+        self, analysis_type: Types, date_min: date, date_max: date
     ) -> list[Analysis]:
         return (
             self.session.query(Analysis)
