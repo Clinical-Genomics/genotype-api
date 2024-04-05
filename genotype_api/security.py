@@ -49,8 +49,8 @@ class JWTBearer(HTTPBearer):
     def verify_jwt(self, jwtoken: str) -> dict | None:
         try:
             payload = decode_id_token(jwtoken)
-            if payload and "email" in payload and "username" in payload:
-                return {"email": payload["email"], "username": payload["username"]}
+            if payload and "email" in payload:
+                return {"email": payload["email"]}
             else:
                 return None
         except jwt.JWTError:
@@ -66,12 +66,14 @@ jwt_scheme = JWTBearer()
 async def get_active_user(
     token_info: dict = Security(jwt_scheme),
     store: Store = Depends(get_store),
-):
+) -> CurrentUser:
     """Dependency for secure endpoints"""
     user_email = token_info["payload"]["email"]
-    username = token_info["payload"]["username"]
-    user = CurrentUser(name=username, email=user_email)
-    db_user: User = store.get_user_by_email(email=user.email)
+    db_user: User = store.get_user_by_email(email=user_email)
     if not db_user:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User not in DB")
-    return user
+    return CurrentUser(
+        id=db_user.id,
+        email=db_user.email,
+        name=db_user.name,
+    )
