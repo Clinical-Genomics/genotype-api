@@ -71,15 +71,15 @@ class SampleService(BaseService):
         samples: list[Sample] = self.store.get_filtered_samples(filter_params=filter_params)
         return [self._get_sample_response(sample) for sample in samples]
 
-    def create_sample(self, sample: SampleCreate) -> None:
-        new_sample: Sample = Sample(
-            id=sample.id,
-            status=sample.status,
-            comment=sample.comment,
-            sex=sample.sex,
-            created_at=sample.created_at,
+    def create_sample(self, sample_create: SampleCreate) -> None:
+        sample: Sample = Sample(
+            id=sample_create.id,
+            status=sample_create.status,
+            comment=sample_create.comment,
+            sex=sample_create.sex,
+            created_at=sample_create.created_at,
         )
-        self.store.create_sample(sample=new_sample)
+        self.store.create_sample(sample=sample)
 
     def delete_sample(self, sample_id: str) -> None:
         sample: Sample = self.store.get_sample(sample_id=sample_id)

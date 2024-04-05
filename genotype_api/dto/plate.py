@@ -50,7 +50,7 @@ class PlateResponse(BaseModel):
     signed_at: datetime | None = None
     method_document: str | None = None
     method_version: str | None = None
-    id: str | None = None
+    id: int | None = None
     user: UserOnPlate | None = None
     analyses: list[AnalysisOnPlate] | None = None
     plate_status_counts: PlateStatusCounts | None = None

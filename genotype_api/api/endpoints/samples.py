@@ -50,7 +50,7 @@ def create_sample(
     current_user: CurrentUser = Depends(get_active_user),
 ):
     try:
-        sample_service.create_sample(sample=sample)
+        sample_service.create_sample(sample_create=sample)
         new_sample: SampleResponse = sample_service.get_sample(sample_id=sample.id)
         if not new_sample:
             return JSONResponse(
