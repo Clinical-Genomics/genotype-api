@@ -78,26 +78,18 @@ class ReadHandler(BaseHandler):
             .all()
         )
 
-    def get_incomplete_samples(query: Query) -> Query:
-        """Returning sample query statement for samples with less than two analyses."""
-        return (
-            query.group_by(Analysis.sample_id)
-            .order_by(Analysis.created_at)
-            .having(func.count(Analysis.sample_id) < 2)
-        )
-
     def get_filtered_samples(self, filter_params: SampleFilterParams) -> list[Sample]:
         query = self.session.query(Sample).distinct().join(Analysis)
         if filter_params.sample_id:
-            query = self.get_samples(query, filter_params.sample_id)
+            query = self._get_samples(query, filter_params.sample_id)
         if filter_params.plate_id:
-            query = self.get_plate_samples(query, filter_params.plate_id)
+            query = self._get_plate_samples(query, filter_params.plate_id)
         if filter_params.is_incomplete:
-            query = self.get_incomplete_samples(query)
+            query = self._get_incomplete_samples(query)
         if filter_params.is_commented:
-            query = self.get_commented_samples(query)
+            query = self._get_commented_samples(query)
         if filter_params.is_missing:
-            query = self.get_status_missing_samples(query)
+            query = self._get_status_missing_samples(query)
         return (
             query.order_by(Sample.created_at.desc())
             .offset(filter_params.skip)
@@ -105,25 +97,38 @@ class ReadHandler(BaseHandler):
             .all()
         )
 
-    def get_plate_samples(query: Query, plate_id: str) -> Query:
+    @staticmethod
+    def _get_incomplete_samples(query: Query) -> Query:
+        """Returning sample query statement for samples with less than two analyses."""
+        return (
+            query.group_by(Analysis.sample_id)
+            .order_by(Analysis.created_at)
+            .having(func.count(Analysis.sample_id) < 2)
+        )
+
+    @staticmethod
+    def _get_plate_samples(query: Query, plate_id: str) -> Query:
         """Returning sample query statement for samples analysed on a specific plate."""
         return query.filter(Analysis.plate_id == plate_id)
 
-    def get_commented_samples(query: Query) -> Query:
+    @staticmethod
+    def _get_commented_samples(query: Query) -> Query:
         """Returning sample query statement for samples with no comment."""
         return query.filter(Sample.comment != None)
 
-    def get_status_missing_samples(query: Query) -> Query:
+    @staticmethod
+    def _get_status_missing_samples(query: Query) -> Query:
         """Returning sample query statement for samples with no comment."""
         return query.filter(Sample.status == None)
+
+    @staticmethod
+    def _get_samples(query: Query, sample_id: str) -> Query:
+        """Returns a query for samples containing the given sample_id."""
+        return query.filter(Sample.id.contains(sample_id))
 
     def get_sample(self, sample_id: str) -> Sample:
         """Get sample or raise 404."""
         return self.session.query(Sample).filter(Sample.id == sample_id).one()
-
-    def get_samples(self, query: Query, sample_id: str) -> Query:
-        """Returns a query for samples containing the given sample_id."""
-        return query.filter(Sample.id.contains(sample_id))
 
     def get_user_by_id(self, user_id: int) -> User:
         return self.session.query(User).filter(User.id == user_id).one()
