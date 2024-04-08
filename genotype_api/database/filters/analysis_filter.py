@@ -18,7 +18,7 @@ def filter_analyses_by_type(type: str, analyses: Query, **kwargs) -> Query:
     return analyses.filter(Analysis.type == type)
 
 
-def filter_analyses_by_plate_id(plate_id: str, analyses: Query, **kwargs) -> Query:
+def filter_analyses_by_plate_id(plate_id: int, analyses: Query, **kwargs) -> Query:
     """Return analysis by plate id."""
     return analyses.filter(Analysis.plate_id == plate_id)
 

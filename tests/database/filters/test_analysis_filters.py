@@ -50,7 +50,7 @@ def test_filter_analyses_by_plate_id(
     # WHEN filtering analyses by plate id
     query: Query = base_store._get_query(Analysis)
     analyses: list[Analysis] = filter_analyses_by_plate_id(
-        analysis_id=test_analysis.plate_id, analyses=query
+        plate_id=test_analysis.plate_id, analyses=query
     ).all()
 
     # THEN assert the analysis is returned
