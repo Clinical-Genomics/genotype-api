@@ -9,7 +9,7 @@ from genotype_api.database.models import Analysis
 
 
 def filter_analyses_by_id(analysis_id: int, analyses: Query, **kwargs) -> Query:
-    """Return analysis by internal id."""
+    """Return analysis by id."""
     return analyses.filter(Analysis.id == analysis_id)
 
 

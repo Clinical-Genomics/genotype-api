@@ -6,7 +6,7 @@ from genotype_api.database.models import Plate
 
 
 def filter_plates_by_id(entry_id: int, plates: Query, **kwargs) -> Query:
-    """Return plate by internal id."""
+    """Return plate by id."""
     return plates.filter(Plate.id == entry_id)
 
 

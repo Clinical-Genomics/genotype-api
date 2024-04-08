@@ -7,7 +7,7 @@ from genotype_api.database.models import User
 
 
 def filter_users_by_id(user_id: int, users: Query, **kwargs) -> Query:
-    """Return user by internal id."""
+    """Return user by id."""
     return users.filter(User.id == user_id)
 
 

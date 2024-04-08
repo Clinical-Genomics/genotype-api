@@ -9,12 +9,12 @@ from genotype_api.database.models import Sample
 
 
 def filter_samples_by_id(sample_id: str, samples: Query, **kwargs) -> Query:
-    """Return sample by internal id."""
+    """Return sample by id."""
     return samples.filter(Sample.id == sample_id)
 
 
 def filter_samples_contain_id(sample_id: str, samples: Query, **kwargs) -> Query:
-    """Return sample by internal id."""
+    """Return sample by id."""
     return samples.filter(Sample.id.contains(sample_id))
 
 
