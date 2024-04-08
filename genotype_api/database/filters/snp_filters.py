@@ -5,7 +5,7 @@ from sqlalchemy.orm import Query
 from genotype_api.database.models import SNP
 
 
-def filter_snps_by_id(snp_id: int, snps: Query, **kwargs) -> Query:
+def filter_snps_by_id(snp_id: str, snps: Query, **kwargs) -> Query:
     """Return SNP by id."""
     return snps.filter(SNP.id == snp_id)
 

@@ -44,7 +44,11 @@ class StoreHelpers:
         self.add_entity(user)
 
     def ensure_analysis(
-        self, analysis: Analysis, sample: Sample, plate: Plate, genotypes: list[Genotype]
+        self,
+        analysis: Analysis,
+        sample: Sample = None,
+        plate: Plate = None,
+        genotypes: list[Genotype] = None,
     ):
         """Add an analysis to the store and ensure the associated sample, plate and genotypes are present."""
         if sample and not self.store.get_sample(sample.id):
