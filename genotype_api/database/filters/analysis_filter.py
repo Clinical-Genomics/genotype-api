@@ -15,7 +15,7 @@ def filter_analyses_by_id(analysis_id: int, analyses: Query, **kwargs) -> Query:
 
 def filter_analyses_by_type(analysis_type: str, analyses: Query, **kwargs) -> Query:
     """Return analysis by type."""
-    return analyses.filter(Analysis.analysis_type == analysis_type)
+    return analyses.filter(Analysis.type == analysis_type)
 
 
 def filter_analyses_by_plate_id(plate_id: str, analyses: Query, **kwargs) -> Query:
@@ -38,7 +38,7 @@ def filter_analyses_by_type_between_dates(
 ) -> Query:
     """Return analysis by type between dates."""
     return analyses.filter(
-        Analysis.analysis_type == analysis_type,
+        Analysis.type == analysis_type,
         Analysis.created_at > date_min - timedelta(days=1),
         Analysis.created_at < date_max + timedelta(days=1),
     )
