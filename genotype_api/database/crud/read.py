@@ -67,7 +67,7 @@ class ReadHandler(BaseHandler):
         return self.session.query(Plate).filter(Plate.id == plate_id).first()
 
     def get_plate_by_plate_id(self, plate_id: str) -> Plate:
-        return self.session.query(Plate).filter(Plate.plate_id == plate_id).one()
+        return self.session.query(Plate).filter(Plate.plate_id == plate_id).first()
 
     def get_ordered_plates(self, order_params: PlateOrderParams) -> list[Plate]:
         sort_func = desc if order_params.sort_order == "descend" else asc
