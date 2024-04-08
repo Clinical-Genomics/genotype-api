@@ -1,8 +1,7 @@
 from dataclasses import dataclass
 from typing import Type
 
-import ModelBase
-from sqlalchemy.orm import Session, Query
+from sqlalchemy.orm import Session, Query, DeclarativeBase
 
 from genotype_api.database.models import Analysis, Sample
 
@@ -14,7 +13,7 @@ class BaseHandler:
     def __init__(self, session: Session):
         self.session = session
 
-    def _get_query(self, table: Type[ModelBase]) -> Query:
+    def _get_query(self, table: Type[DeclarativeBase]) -> Query:
         """Return a query for the given table."""
         return self.session.query(table)
 

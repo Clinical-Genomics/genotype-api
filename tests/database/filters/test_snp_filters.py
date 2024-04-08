@@ -24,12 +24,15 @@ def test_filter_snps_by_id(base_store: Store, test_snp: SNP):
 def test_add_skip_and_limit(base_store: Store, test_snp: SNP):
     """Test add_skip_and_limit function."""
 
-    # GIVEN a store with a SNP
+    # GIVEN a store with two SNPs
+    new_snp: SNP = test_snp
+    new_snp.id = 2
+    base_store.create_snps([new_snp])
 
     # WHEN adding skip and limit to the query
     query: Query = base_store._get_query(SNP)
     snps: list[SNP] = add_skip_and_limit(query, skip=0, limit=1).all()
 
-    # THEN the SNP is returned
+    # THEN one SNP is returned
     assert snps
-    assert snp.id == test_snp.id
+    assert len(snps) == 1
