@@ -12,6 +12,7 @@ from genotype_api.database.models import (
     Sample,
     User,
     SNP,
+    Genotype,
 )
 
 LOG = logging.getLogger(__name__)
@@ -34,7 +35,7 @@ class ReadHandler(BaseHandler):
         )
 
     def get_analysis_by_id(self, analysis_id: int) -> Analysis:
-        return self.session.query(Analysis).filter(Analysis.id == analysis_id).one()
+        return self.session.query(Analysis).filter(Analysis.id == analysis_id).first()
 
     def get_analyses(self) -> list[Analysis]:
         return self.session.query(Analysis).all()
@@ -63,10 +64,10 @@ class ReadHandler(BaseHandler):
         )
 
     def get_plate_by_id(self, plate_id: int) -> Plate:
-        return self.session.query(Plate).filter(Plate.id == plate_id).one()
+        return self.session.query(Plate).filter(Plate.id == plate_id).first()
 
     def get_plate_by_plate_id(self, plate_id: str) -> Plate:
-        return self.session.query(Plate).filter(Plate.plate_id == plate_id).one()
+        return self.session.query(Plate).filter(Plate.plate_id == plate_id).first()
 
     def get_ordered_plates(self, order_params: PlateOrderParams) -> list[Plate]:
         sort_func = desc if order_params.sort_order == "descend" else asc
@@ -77,6 +78,9 @@ class ReadHandler(BaseHandler):
             .limit(order_params.limit)
             .all()
         )
+
+    def get_genotype_by_id(self, entry_id: int) -> Genotype:
+        return self.session.query(Genotype).filter(Genotype.id == entry_id).first()
 
     def get_filtered_samples(self, filter_params: SampleFilterParams) -> list[Sample]:
         query = self.session.query(Sample).distinct().join(Analysis)
@@ -127,11 +131,10 @@ class ReadHandler(BaseHandler):
         return query.filter(Sample.id.contains(sample_id))
 
     def get_sample(self, sample_id: str) -> Sample:
-        """Get sample or raise 404."""
-        return self.session.query(Sample).filter(Sample.id == sample_id).one()
+        return self.session.query(Sample).filter(Sample.id == sample_id).first()
 
     def get_user_by_id(self, user_id: int) -> User:
-        return self.session.query(User).filter(User.id == user_id).one()
+        return self.session.query(User).filter(User.id == user_id).first()
 
     def get_user_by_email(self, email: str) -> User | None:
         return self.session.query(User).filter(User.email == email).first()
