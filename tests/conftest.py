@@ -94,6 +94,35 @@ def test_analysis(sex_male, timestamp_now: datetime, test_sample_id: str) -> Ana
     )
 
 
+@pytest.fixture
+def base_store(
+    store: Store,
+    helpers: StoreHelpers,
+    test_snp: SNP,
+    test_genotype: Genotype,
+    test_plate: Plate,
+    test_user: User,
+    test_sample: Sample,
+    test_analysis: Analysis,
+):
+    helpers.ensure_snp(store=store, snp=test_snp)
+    helpers.ensure_genotype(store=store, genotype=test_genotype)
+    helpers.ensure_plate(
+        store=store,
+        plate=test_plate,
+    )
+    helpers.ensure_sample(store=store, sample=test_sample)
+    helpers.ensure_analysis(
+        store=store,
+        analysis=test_analysis,
+    )
+    helpers.ensure_user(
+        store=store,
+        user=test_user,
+    )
+    return store
+
+
 @pytest.fixture(name="fixtures_dir")
 def fixture_fixtures_dir() -> Path:
     """Return the path to fixtures dir."""
