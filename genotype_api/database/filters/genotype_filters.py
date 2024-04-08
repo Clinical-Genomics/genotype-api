@@ -25,4 +25,4 @@ def apply_genotype_filter(
 class GenotypeFilter(Enum):
     """Enum for the genotype filters."""
 
-    BY_ID = filter_genotype_by_id
+    BY_ID = filter_genotypes_by_id
