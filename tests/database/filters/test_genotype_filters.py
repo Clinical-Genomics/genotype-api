@@ -15,7 +15,7 @@ def test_filter_genotypes_by_id(store: Store, test_genotype: Genotype, helpers: 
     # WHEN filtering genotypes by id
     query: Query = store._get_query(Genotype)
     genotypes: list[Genotype] = filter_genotypes_by_id(
-        genotype_id=test_genotype.id, genotypes=query
+        entry_id=test_genotype.id, genotypes=query
     ).all()
 
     # THEN assert the genotype is returned

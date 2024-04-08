@@ -7,9 +7,9 @@ from sqlalchemy.orm import Query
 from genotype_api.database.models import Genotype
 
 
-def filter_genotypes_by_id(genotype_id: int, genotypes: Query, **kwargs) -> Query:
+def filter_genotypes_by_id(entry_id: int, genotypes: Query, **kwargs) -> Query:
     """Return genotype by id."""
-    return genotypes.filter(Genotype.id == genotype_id)
+    return genotypes.filter(Genotype.id == entry_id)
 
 
 def apply_genotype_filter(
@@ -18,7 +18,7 @@ def apply_genotype_filter(
     genotypes: Query,
 ) -> Query:
     for filter_function in filter_functions:
-        genotypes: Query = filter_function(genotypes=genotypes, id=id)
+        genotypes: Query = filter_function(genotypes=genotypes, entry_id=entry_id)
     return genotypes
 
 
