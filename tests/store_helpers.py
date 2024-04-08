@@ -27,9 +27,8 @@ class StoreHelpers:
 
     def ensure_plate(self, plate: Plate, analyses: list[Analysis] = None, user: User = None):
         """Add a plate to the store ensure the associated user and analyses are present."""
-        if user:
-            if not self.store.get_user_by_email(user.email):
-                self.add_entity(user)
+        if user and not self.store.get_user_by_email(user.email):
+            self.add_entity(user)
         if analyses:
             for analysis in analyses:
                 if not self.store.get_analysis_by_id(analysis.id):
@@ -48,12 +47,10 @@ class StoreHelpers:
         self, analysis: Analysis, sample: Sample, plate: Plate, genotypes: list[Genotype]
     ):
         """Add an analysis to the store and ensure the associated sample, plate and genotypes are present."""
-        if sample:
-            if not self.store.get_sample(sample.id):
-                self.add_entity(sample)
-        if plate:
-            if not self.store.get_plate_by_id(plate.id):
-                self.add_entity(plate)
+        if sample and not self.store.get_sample(sample.id):
+            self.add_entity(sample)
+        if plate and not self.store.get_plate_by_id(plate.id):
+            self.add_entity(plate)
         if genotypes:
             for genotype in genotypes:
                 if not self.store.get_genotype_by_id(genotype.id):
