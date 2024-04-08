@@ -5,7 +5,7 @@ from genotype_api.database.store import Store
 
 
 class StoreHelpers:
-    """Class to hold helper functions that needs to be used all over."""
+    """Class to hold helper functions to setup the store testing environment."""
 
     @classmethod
     def add_entity(cls, store: Store, entity: Sample | Analysis | SNP | Plate | User | Genotype):
