@@ -29,7 +29,7 @@ def store() -> Generator[Store, None, None]:
 
 @pytest.fixture
 def helpers(store: Store):
-    return StoreHelpers(store)
+    return StoreHelpers()
 
 
 @pytest.fixture
@@ -92,26 +92,6 @@ def test_analysis(sex_male, timestamp_now: datetime, test_sample_id: str) -> Ana
         sample_id=test_sample_id,
         plate_id=1,
     )
-
-
-@pytest.fixture
-def base_store(
-    helpers: StoreHelpers,
-    test_user: User,
-    test_plate: Plate,
-    test_snp: SNP,
-    test_sample: Sample,
-    test_genotype: Genotype,
-    test_analysis: Analysis,
-):
-    helpers.ensure_snp(test_snp)
-    helpers.ensure_user(test_user)
-    helpers.ensure_plate(test_plate)
-    helpers.ensure_sample(test_sample)
-    helpers.ensure_genotype(test_genotype)
-    helpers.ensure_analysis(test_analysis)
-    store: Store = helpers.store
-    return store
 
 
 @pytest.fixture(name="fixtures_dir")
