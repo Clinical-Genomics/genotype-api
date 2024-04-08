@@ -131,7 +131,6 @@ class ReadHandler(BaseHandler):
         return query.filter(Sample.id.contains(sample_id))
 
     def get_sample(self, sample_id: str) -> Sample:
-        """Get sample or raise 404."""
         return self.session.query(Sample).filter(Sample.id == sample_id).first()
 
     def get_user_by_id(self, user_id: int) -> User:
