@@ -136,9 +136,6 @@ class ReadHandler(BaseHandler):
     def get_user_by_email(self, email: str) -> User | None:
         return self.session.query(User).filter(User.email == email).first()
 
-    def get_users(self, skip: int = 0, limit: int = 100) -> list[User]:
-        return self.session.query(User).offset(skip).limit(limit).all()
-
     def get_users_with_skip_and_limit(self, skip: int, limit: int) -> list[User]:
         return self.session.query(User).offset(skip).limit(limit).all()
 
