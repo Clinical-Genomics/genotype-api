@@ -38,7 +38,7 @@ jobs:
       - name: Test with pytest & Coveralls
         run: |
           pytest --cov=genotype-api/
-          coveralls
+          coveralls --service=github
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
 
