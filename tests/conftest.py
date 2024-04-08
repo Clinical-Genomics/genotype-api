@@ -29,7 +29,7 @@ def store() -> Generator[Store, None, None]:
 
 @pytest.fixture
 def helpers(store: Store):
-    return StoreHelpers(store)
+    return StoreHelpers()
 
 
 @pytest.fixture
