@@ -21,7 +21,7 @@ def filter_users_by_name(name: str, users: Query, **kwargs) -> Query:
     return users.filter(User.name == name)
 
 
-def add_skip_and_limit(users: Query, skip: int, limit: int) -> Query:
+def add_skip_and_limit(users: Query, skip: int, limit: int, **kwargs) -> Query:
     """Add skip and limit to the query."""
     return users.offset(skip).limit(limit)
 

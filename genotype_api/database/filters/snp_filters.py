@@ -10,7 +10,7 @@ def filter_snps_by_id(snp_id: str, snps: Query, **kwargs) -> Query:
     return snps.filter(SNP.id == snp_id)
 
 
-def add_skip_and_limit(snps: Query, skip: int, limit: int) -> Query:
+def add_skip_and_limit(snps: Query, skip: int, limit: int, **kwargs) -> Query:
     """Add skip and limit to the query."""
     return snps.offset(skip).limit(limit)
 

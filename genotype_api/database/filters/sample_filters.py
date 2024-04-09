@@ -38,7 +38,7 @@ def apply_sample_filter(
     for filter_function in filter_functions:
         samples: Query = filter_function(
             samples=samples,
-            samples_id=sample_id,
+            sample_id=sample_id,
         )
     return samples
 

@@ -28,7 +28,7 @@ def filter_analyses_by_sample_id(sample_id: str, analyses: Query, **kwargs) -> Q
     return analyses.filter(Analysis.sample_id == sample_id)
 
 
-def add_skip_and_limit(analyses: Query, skip: int, limit: int) -> Query:
+def add_skip_and_limit(analyses: Query, skip: int, limit: int, **kwargs) -> Query:
     """Add skip and limit to the query."""
     return analyses.offset(skip).limit(limit)
 

@@ -15,7 +15,7 @@ def filter_plates_by_plate_id(plate_id: str, plates: Query, **kwargs) -> Query:
     return plates.filter(Plate.plate_id == plate_id)
 
 
-def add_skip_and_limit(plates: Query, skip: int, limit: int) -> Query:
+def add_skip_and_limit(plates: Query, skip: int, limit: int, **kwargs) -> Query:
     """Add skip and limit to the query."""
     return plates.offset(skip).limit(limit)
 
