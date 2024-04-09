@@ -50,9 +50,9 @@ class StoreHelpers:
         self,
         store: Store,
         analysis: Analysis,
-        sample: Sample,
-        plate: Plate,
-        genotypes: list[Genotype],
+        sample: Sample = None,
+        plate: Plate = None,
+        genotypes: list[Genotype] = None,
     ):
         """Add an analysis to the store and ensure the associated sample, plate and genotypes are present."""
         if sample and not store.get_sample(sample.id):
