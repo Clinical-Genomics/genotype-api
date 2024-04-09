@@ -12,7 +12,7 @@ def test_get_analysis_by_plate_id(base_store: Store, test_analysis: Analysis):
     # GIVEN an analysis and a store with the analysis
 
     # WHEN getting the analysis by plate id
-    analyses: list[Analysis] = base_store.get_analyses_from_plate(plate_id=test_analysis.plate_id)
+    analyses: list[Analysis] = base_store.get_analyses_by_plate_id(plate_id=test_analysis.plate_id)
 
     # THEN the analysis is returned
     for analysis in analyses:
@@ -56,7 +56,7 @@ def test_get_analyses_with_skip_and_limit(base_store: Store, test_analyses: list
     # GIVEN an analysis and a store with the analysis
 
     # WHEN getting the analyses with skip and limit
-    analyses = base_store.get_analyses_with_skip_and_limit(skip=0, limit=2)
+    analyses: list[Analysis] = base_store.get_analyses_with_skip_and_limit(skip=0, limit=2)
 
     # THEN the analyses are returned
     assert analyses == test_analyses[:2]

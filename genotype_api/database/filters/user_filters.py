@@ -29,11 +29,11 @@ def add_skip_and_limit(users: Query, skip: int, limit: int, **kwargs) -> Query:
 def apply_user_filter(
     filter_functions: list[Callable],
     users: Query,
-    user_id: int,
-    email: str,
-    name: str,
-    skip: int,
-    limit: int,
+    user_id: int = None,
+    email: str = None,
+    name: str = None,
+    skip: int = None,
+    limit: int = None,
 ) -> Query:
     """Apply filtering functions to the user queries and return filtered results."""
 

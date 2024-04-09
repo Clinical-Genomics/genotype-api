@@ -34,11 +34,11 @@ def add_skip_and_limit(analyses: Query, skip: int, limit: int, **kwargs) -> Quer
 
 
 def filter_analyses_by_type_between_dates(
-    analyses: Query, analysis_type: str, date_min: date, date_max: date, **kwargs
+    analyses: Query, type: str, date_min: date, date_max: date, **kwargs
 ) -> Query:
     """Return analysis by type between dates."""
     return analyses.filter(
-        Analysis.type == analysis_type,
+        Analysis.type == type,
         Analysis.created_at > date_min - timedelta(days=1),
         Analysis.created_at < date_max + timedelta(days=1),
     )
@@ -47,14 +47,14 @@ def filter_analyses_by_type_between_dates(
 def apply_analysis_filter(
     filter_functions: list[callable],
     analyses: Query,
-    analysis_id: int,
-    analysis_type: str,
-    plate_id: str,
-    sample_id: str,
-    skip: int,
-    limit: int,
-    date_min: date,
-    date_max: date,
+    analysis_id: int = None,
+    type: str = None,
+    plate_id: int = None,
+    sample_id: str = None,
+    skip: int = None,
+    limit: int = None,
+    date_min: date = None,
+    date_max: date = None,
 ) -> Query:
     """Apply filtering functions to the analysis queries and return filtered results."""
 
@@ -62,7 +62,7 @@ def apply_analysis_filter(
         analyses: Query = filter_function(
             analyses=analyses,
             analysis_id=analysis_id,
-            analysis_type=analysis_type,
+            type=type,
             plate_id=plate_id,
             sample_id=sample_id,
             skip=skip,

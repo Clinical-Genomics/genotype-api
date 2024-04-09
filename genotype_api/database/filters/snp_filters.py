@@ -18,9 +18,9 @@ def add_skip_and_limit(snps: Query, skip: int, limit: int, **kwargs) -> Query:
 def apply_snp_filter(
     filter_functions: list[callable],
     snps: Query,
-    snp_id: int,
-    skip: int,
-    limit: int,
+    snp_id: int = None,
+    skip: int = None,
+    limit: int = None,
 ) -> Query:
     """Apply filtering functions to the SNP queries and return filtered results."""
 
@@ -34,7 +34,7 @@ def apply_snp_filter(
     return snps
 
 
-class SnpFilter:
+class SNPFilter:
     """Define SNP filter functions."""
 
     BY_ID: callable = filter_snps_by_id

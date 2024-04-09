@@ -20,27 +20,27 @@ def add_skip_and_limit(plates: Query, skip: int, limit: int, **kwargs) -> Query:
     return plates.offset(skip).limit(limit)
 
 
-def order_plates(plates: Query, order_by: str, sort_func: callable) -> Query:
+def order_plates(plates: Query, order_by: str, sort_func: callable, **kwargs) -> Query:
     """Order the plates by the given column."""
     return plates.order_by(sort_func(order_by))
 
 
 def apply_plate_filter(
     filter_functions: list[callable],
-    plates: Query,
-    entry_id: int,
-    plate_id: str,
-    skip: int,
-    limit: int,
-    order_by: str,
-    sort_func: callable,
+    plates: Query = None,
+    entry_id: int = None,
+    plate_id: str = None,
+    skip: int = None,
+    limit: int = None,
+    order_by: str = None,
+    sort_func: callable = None,
 ) -> Query:
     """Apply filtering functions to the plate queries and return filtered results."""
 
     for filter_function in filter_functions:
         plates: Query = filter_function(
             plates=plates,
-            id=entry_id,
+            entry_id=entry_id,
             plate_id=plate_id,
             skip=skip,
             limit=limit,
