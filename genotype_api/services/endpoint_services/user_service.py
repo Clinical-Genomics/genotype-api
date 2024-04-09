@@ -34,7 +34,8 @@ class UserService(BaseService):
         existing_user: User = self.store.get_user_by_email(email=user.email)
         if existing_user:
             raise UserExistsError
-        new_user: User = self.store.create_user(user=user)
+        db_user = User(email=user.email, name=user.name)
+        new_user: User = self.store.create_user(user=db_user)
         return self._create_user_response(new_user)
 
     def get_users(self, skip: int, limit: int) -> list[UserResponse]:
