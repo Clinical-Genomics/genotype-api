@@ -34,7 +34,7 @@ def add_skip_and_limit(analyses: Query, skip: int, limit: int, **kwargs) -> Quer
 
 
 def filter_analyses_by_type_between_dates(
-    analyses: Query, analysis_type: str, date_min: date, date_max: date
+    analyses: Query, analysis_type: str, date_min: date, date_max: date, **kwargs
 ) -> Query:
     """Return analysis by type between dates."""
     return analyses.filter(
