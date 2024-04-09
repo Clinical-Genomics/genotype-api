@@ -2,6 +2,7 @@
 
 from datetime import date
 
+from genotype_api.database.filter_models.plate_models import PlateOrderParams
 from genotype_api.database.models import Analysis, Plate, SNP, User, Genotype
 from genotype_api.database.store import Store
 from tests.store_helpers import StoreHelpers
@@ -163,3 +164,17 @@ def test_get_snps_by_limit_and_skip(base_store: Store, test_snps: list[SNP]):
 
     # THEN the SNPs are returned
     assert len(snps) == len(test_snps)
+
+
+def test_get_ordered_plates(base_store: Store, test_plates: list[Plate], helpers: StoreHelpers):
+    # GIVEN a plate and a store with the plate and plate order params and a plate not fulfilling the limit
+    plate_order_params = PlateOrderParams(sort_order="acs", order_by="plate_id", skip=0, limit=2)
+    out_of_limit_plate: Plate = test_plates[0]
+    out_of_limit_plate.plate_id = "ID3"
+    out_of_limit_plate.id = 3
+    helpers.ensure_plate(store=base_store, plate=out_of_limit_plate)
+    # WHEN getting the ordered plates
+
+    plates = base_store.get_ordered_plates(order_params=plate_order_params)
+    # THEN the plates are returned
+    assert len(plates) == len(test_plates)
