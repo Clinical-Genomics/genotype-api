@@ -7,6 +7,8 @@ from typing import Generator
 import pytest
 
 from genotype_api.database.database import initialise_database, create_all_tables, drop_all_tables
+from genotype_api.database.filter_models.plate_models import PlateSignOff
+from genotype_api.database.filter_models.sample_models import SampleSexesUpdate
 from genotype_api.database.models import User, Plate, SNP, Sample, Genotype, Analysis
 from genotype_api.database.store import Store
 from tests.store_helpers import StoreHelpers
@@ -121,6 +123,39 @@ def base_store(
         user=test_user,
     )
     return store
+
+
+@pytest.fixture
+def unsigned_plate() -> Plate:
+    return Plate(
+        id=1,
+        plate_id="ID_1",
+        signed_by=None,
+        method_document=None,
+        method_version=None,
+        created_at=datetime.datetime.now(),
+        signed_at=None,
+    )
+
+
+@pytest.fixture
+def plate_sign_off() -> PlateSignOff:
+    return PlateSignOff(
+        user_id=1,
+        signed_at=datetime.datetime.now(),
+        method_document="mdoc",
+        method_version="mdoc_ver",
+    )
+
+
+@pytest.fixture
+def sample_sex_update(test_sample_id) -> SampleSexesUpdate:
+    return SampleSexesUpdate(
+        sample_id=test_sample_id,
+        sex="female",
+        genotype_sex="female",
+        sequence_sex="female",
+    )
 
 
 @pytest.fixture(name="fixtures_dir")
