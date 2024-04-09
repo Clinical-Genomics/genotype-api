@@ -159,48 +159,76 @@ def another_test_analysis(sex_male, timestamp_now: datetime, test_sample_id: str
 
 
 @pytest.fixture
+def test_users(
+    test_user: User,
+    another_test_user: User,
+) -> list[User]:
+    return [test_user, another_test_user]
+
+
+@pytest.fixture
+def test_plates(
+    test_plate: Plate,
+    another_test_plate: Plate,
+) -> list[Plate]:
+    return [test_plate, another_test_plate]
+
+
+@pytest.fixture
+def test_snps(
+    test_snp: SNP,
+    another_test_snp: SNP,
+) -> list[SNP]:
+    return [test_snp, another_test_snp]
+
+
+@pytest.fixture
+def test_samples(
+    test_sample: Sample,
+    another_test_sample: Sample,
+) -> list[Sample]:
+    return [test_sample, another_test_sample]
+
+
+@pytest.fixture
+def test_genotypes(
+    test_genotype: Genotype,
+    another_test_genotype: Genotype,
+) -> list[Genotype]:
+    return [test_genotype, another_test_genotype]
+
+
+@pytest.fixture
+def test_analyses(
+    test_analysis: Analysis,
+    another_test_analysis: Analysis,
+) -> list[Analysis]:
+    return [test_analysis, another_test_analysis]
+
+
+@pytest.fixture
 def base_store(
     store: Store,
     helpers: StoreHelpers,
-    test_snp: SNP,
-    another_test_snp: SNP,
-    test_genotype: Genotype,
-    another_test_genotype: Genotype,
-    test_plate: Plate,
-    another_test_plate: Plate,
-    test_user: User,
-    another_test_user: User,
-    test_sample: Sample,
-    another_test_sample: Sample,
-    test_analysis: Analysis,
-    another_test_analysis: Analysis,
+    test_snps: list[SNP],
+    test_genotypes: list[Genotype],
+    test_plates: list[Plate],
+    test_users: list[User],
+    test_samples: list[Sample],
+    test_analyses: list[Analysis],
 ):
-    helpers.ensure_snp(store=store, snp=test_snp)
-    helpers.ensure_genotype(store=store, genotype=test_genotype)
-    helpers.ensure_plate(
-        store=store,
-        plate=test_plate,
-    )
-    helpers.ensure_sample(store=store, sample=test_sample)
-    helpers.ensure_analysis(
-        store=store,
-        analysis=test_analysis,
-    )
-    helpers.ensure_user(
-        store=store,
-        user=test_user,
-    )
-    helpers.ensure_snp(store=store, snp=another_test_snp)
-    helpers.ensure_genotype(store=store, genotype=another_test_genotype)
-    helpers.ensure_plate(
-        store=store,
-        plate=another_test_plate,
-    )
-    helpers.ensure_sample(store=store, sample=another_test_sample)
-    helpers.ensure_analysis(
-        store=store,
-        analysis=another_test_analysis,
-    )
+    for snp in test_snps:
+        helpers.ensure_snp(store=store, snp=snp)
+    for genotype in test_genotypes:
+        helpers.ensure_genotype(store=store, genotype=genotype)
+    for plate in test_plates:
+        helpers.ensure_plate(store=store, plate=plate)
+    for user in test_users:
+        helpers.ensure_user(store=store, user=user)
+    for sample in test_samples:
+        helpers.ensure_sample(store=store, sample=sample)
+    for analysis in test_analyses:
+        helpers.ensure_analysis(store=store, analysis=analysis)
     return store
 
 
