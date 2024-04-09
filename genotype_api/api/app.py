@@ -76,8 +76,3 @@ app.include_router(
 def on_startup():
     initialise_database(settings.db_uri)
     create_all_tables()
-
-
-@app.on_event("shutdown")
-async def on_shutdown():
-    close_session()
