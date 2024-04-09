@@ -1,4 +1,4 @@
-"""Module to test the create functionality of the genotype API CRUD."""
+"""Module to test the delete functionality of the genotype API CRUD."""
 
 from genotype_api.database.models import Analysis, Sample, User, Plate, SNP
 from genotype_api.database.store import Store

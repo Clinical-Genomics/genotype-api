@@ -17,7 +17,7 @@ def test_refresh_sample_status(store: Store, test_sample: Sample, helpers: Store
     store.refresh_sample_status(sample=test_sample)
 
     # THEN the sample status is updated
-    updated_sample = store.get_sample(sample_id=test_sample.id)
+    updated_sample = store.get_sample_by_id(sample_id=test_sample.id)
     assert updated_sample.status != initial_status
 
 
@@ -32,7 +32,7 @@ def test_update_sample_comment(store: Store, test_sample: Sample, helpers: Store
     store.update_sample_comment(sample_id=test_sample.id, comment=new_comment)
 
     # THEN the sample comment is updated
-    updated_sample = store.get_sample(sample_id=test_sample.id)
+    updated_sample = store.get_sample_by_id(sample_id=test_sample.id)
     assert updated_sample.comment == new_comment
 
 
@@ -47,7 +47,7 @@ def test_update_sample_status(store: Store, test_sample: Sample, helpers: StoreH
     store.update_sample_status(sample_id=test_sample.id, status=new_status)
 
     # THEN the sample status is updated
-    updated_sample = store.get_sample(sample_id=test_sample.id)
+    updated_sample = store.get_sample_by_id(sample_id=test_sample.id)
     assert updated_sample.status == new_status
 
 
@@ -90,7 +90,7 @@ def test_update_sample_sex(base_store: Store, sample_sex_update: SampleSexesUpda
     base_store.update_sample_sex(sample_sex_update)
 
     # THEN the sex of the sample and analysis
-    updated_sample = base_store.get_sample(sample_id=sample_sex_update.sample_id)
+    updated_sample = base_store.get_sample_by_id(sample_id=sample_sex_update.sample_id)
     assert updated_sample.sex == sample_sex_update.sex
     for analysis in updated_sample.analyses:
         assert analysis.sex == sample_sex_update.genotype_sex

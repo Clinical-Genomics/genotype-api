@@ -20,6 +20,21 @@ def timestamp_now() -> datetime:
 
 
 @pytest.fixture
+def date_two_weeks_future() -> datetime.date:
+    return datetime.date.today() + datetime.timedelta(days=14)
+
+
+@pytest.fixture
+def date_yesterday() -> datetime:
+    return datetime.date.today() - datetime.timedelta(days=1)
+
+
+@pytest.fixture
+def date_tomorrow() -> datetime:
+    return datetime.date.today() + datetime.timedelta(days=1)
+
+
+@pytest.fixture
 def store() -> Generator[Store, None, None]:
     """Return a CG store."""
     initialise_database("sqlite:///")

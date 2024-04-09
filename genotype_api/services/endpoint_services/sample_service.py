@@ -60,7 +60,7 @@ class SampleService(BaseService):
         )
 
     def get_sample(self, sample_id: str) -> SampleResponse:
-        sample: Sample = self.store.get_sample(sample_id=sample_id)
+        sample: Sample = self.store.get_sample_by_id(sample_id=sample_id)
         if not sample:
             raise SampleNotFoundError
         if len(sample.analyses) == 2 and not sample.status:
@@ -82,13 +82,13 @@ class SampleService(BaseService):
         self.store.create_sample(sample=sample)
 
     def delete_sample(self, sample_id: str) -> None:
-        sample: Sample = self.store.get_sample(sample_id=sample_id)
+        sample: Sample = self.store.get_sample_by_id(sample_id=sample_id)
         for analysis in sample.analyses:
             self.store.delete_analysis(analysis=analysis)
         self.store.delete_sample(sample=sample)
 
     def get_status_detail(self, sample_id: str) -> SampleDetail:
-        sample: Sample = self.store.get_sample(sample_id=sample_id)
+        sample: Sample = self.store.get_sample_by_id(sample_id=sample_id)
         if len(sample.analyses) != 2:
             return SampleDetail()
         return MatchGenotypeService.check_sample(sample=sample)
