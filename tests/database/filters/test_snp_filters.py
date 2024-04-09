@@ -25,9 +25,6 @@ def test_add_skip_and_limit(base_store: Store, test_snp: SNP):
     """Test add_skip_and_limit function."""
 
     # GIVEN a store with two SNPs
-    new_snp: SNP = test_snp
-    new_snp.id = 2
-    base_store.create_snps([new_snp])
 
     # WHEN adding skip and limit to the query
     query: Query = base_store._get_query(SNP)
