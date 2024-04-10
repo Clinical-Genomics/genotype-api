@@ -180,8 +180,9 @@ def test_get_ordered_plates(base_store: Store, test_plates: list[Plate], helpers
     out_of_limit_plate.plate_id = "ID3"
     out_of_limit_plate.id = 3
     helpers.ensure_plate(store=base_store, plate=out_of_limit_plate)
-    # WHEN getting the ordered plates
 
+    # WHEN getting the ordered plates
     plates: list[Plate] = base_store.get_ordered_plates(order_params=plate_order_params)
+
     # THEN the plates are returned
     assert len(plates) == len(test_plates)
