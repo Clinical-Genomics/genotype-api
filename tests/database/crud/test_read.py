@@ -2,6 +2,8 @@
 
 from datetime import date
 
+from astroid import helpers
+
 from genotype_api.database.filter_models.plate_models import PlateOrderParams
 from genotype_api.database.models import Analysis, Plate, SNP, User, Genotype
 from genotype_api.database.store import Store
@@ -126,14 +128,17 @@ def get_user_by_email(base_store: Store, test_user: User):
     assert user.email == test_user.email
 
 
-def get_user_with_skip_and_limit(base_store: Store, test_user: User):
+def get_user_with_skip_and_limit(base_store: Store, test_users: list[User], helpers: StoreHelpers):
     # GIVEN store with a user
+    out_of_limit_user: User = test_users[0]
+    out_of_limit_user.id = 3
+    helpers.ensure_user(store=base_store, user=out_of_limit_user)
 
     # WHEN getting the user with skip and limit
-    user: User = base_store.get_users_with_skip_and_limit(skip=0, limit=2)
+    users: list[User] = base_store.get_users_with_skip_and_limit(skip=0, limit=2)
 
     # THEN the user is returned
-    assert user == test_user
+    assert users == test_users
 
 
 def test_get_genotype_by_id(base_store: Store, test_genotype: Genotype):
@@ -160,7 +165,7 @@ def test_get_snps_by_limit_and_skip(base_store: Store, test_snps: list[SNP]):
     # GIVEN store with SNPs
     out_of_limit_snp: SNP = test_snps[0]
     out_of_limit_snp.id = 3
-    base_store.create_snps(snps=out_of_limit_snp)
+    base_store.create_snps(snps=[out_of_limit_snp])
     # WHEN getting the SNPs
     snps: list[SNP] = base_store.get_snps_by_limit_and_skip(skip=0, limit=2)
 
