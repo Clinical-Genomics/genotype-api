@@ -8,7 +8,7 @@ from tests.store_helpers import StoreHelpers
 
 
 def test_refresh_sample_status(store: Store, test_sample: Sample, helpers: StoreHelpers):
-    # GIVEN a sample and a store with the sample with an initial status
+    # GIVEN a store with a sample with an initial status
     initial_status: str = "initial_status"
     test_sample.status = initial_status
     helpers.ensure_sample(store=store, sample=test_sample)
