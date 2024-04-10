@@ -45,6 +45,11 @@ def filter_samples_analysed_on_plate(samples: Query, plate_id: str | None, **kwa
     return samples.filter(Analysis.plate_id == plate_id) if plate_id else samples
 
 
+def add_skip_and_limit(samples: Query, skip: int, limit: int, **kwargs) -> Query:
+    """Add skip and limit to the query."""
+    return samples.offset(skip).limit(limit)
+
+
 def apply_sample_filter(
     filter_functions: list[Callable],
     samples: Query,
@@ -53,9 +58,10 @@ def apply_sample_filter(
     is_commented: bool | None = None,
     is_missing: bool | None = None,
     is_incomplete: bool | None = None,
+    skip: int = None,
+    limit: int = None,
 ) -> Query:
     """Apply filtering functions to the sample queries and return filtered results."""
-
     for filter_function in filter_functions:
         samples: Query = filter_function(
             samples=samples,
@@ -64,8 +70,10 @@ def apply_sample_filter(
             is_commented=is_commented,
             is_missing=is_missing,
             is_incomplete=is_incomplete,
+            skip=skip,
+            limit=limit,
         )
-    return samples
+        return samples
 
 
 class SampleFilter(Enum):
@@ -77,3 +85,4 @@ class SampleFilter(Enum):
     WITHOUT_STATUS: Callable = filter_samples_without_status
     INCOMPLETE: Callable = filter_incomplete_samples
     ANALYSED_ON_PLATE: Callable = filter_samples_analysed_on_plate
+    SKIP_AND_LIMIT: Callable = add_skip_and_limit
