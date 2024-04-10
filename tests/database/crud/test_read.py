@@ -127,7 +127,7 @@ def get_user_by_email(base_store: Store, test_user: User):
 
 
 def get_user_with_skip_and_limit(base_store: Store, test_user: User):
-    # GIVEN a user and a store with the user
+    # GIVEN store with a user
 
     # WHEN getting the user with skip and limit
     user: User = base_store.get_users_with_skip_and_limit(skip=0, limit=2)
@@ -137,7 +137,7 @@ def get_user_with_skip_and_limit(base_store: Store, test_user: User):
 
 
 def test_get_genotype_by_id(base_store: Store, test_genotype: Genotype):
-    # GIVEN a genotype and a store with the genotype
+    # GIVEN store with a genotype
 
     # WHEN getting the genotype by id
     genotype: Genotype = base_store.get_genotype_by_id(entry_id=test_genotype.id)
@@ -147,7 +147,7 @@ def test_get_genotype_by_id(base_store: Store, test_genotype: Genotype):
 
 
 def test_get_snps(base_store: Store, test_snps: list[SNP]):
-    # GIVEN a SNP and a store with the SNP
+    # GIVEN a store with a SNP
 
     # WHEN getting the SNPs
     snps: list[SNP] = base_store.get_snps()
@@ -157,8 +157,10 @@ def test_get_snps(base_store: Store, test_snps: list[SNP]):
 
 
 def test_get_snps_by_limit_and_skip(base_store: Store, test_snps: list[SNP]):
-    # GIVEN a SNP and a store with the SNP
-
+    # GIVEN store with SNPs
+    out_of_limit_snp: SNP = test_snps[0]
+    out_of_limit_snp.id = 3
+    base_store.create_snps(snps=out_of_limit_snp)
     # WHEN getting the SNPs
     snps: list[SNP] = base_store.get_snps_by_limit_and_skip(skip=0, limit=2)
 
@@ -167,7 +169,7 @@ def test_get_snps_by_limit_and_skip(base_store: Store, test_snps: list[SNP]):
 
 
 def test_get_ordered_plates(base_store: Store, test_plates: list[Plate], helpers: StoreHelpers):
-    # GIVEN a plate and a store with the plate and plate order params and a plate not fulfilling the limit
+    # GIVEN a store with the plates and plate not fulfilling the limit
     plate_order_params = PlateOrderParams(sort_order="acs", order_by="plate_id", skip=0, limit=2)
     out_of_limit_plate: Plate = test_plates[0]
     out_of_limit_plate.plate_id = "ID3"
