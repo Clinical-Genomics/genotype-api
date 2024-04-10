@@ -134,35 +134,6 @@ class ReadHandler(BaseHandler):
         )
         return samples
 
-    @staticmethod
-    def _get_incomplete_samples(query: Query) -> Query:
-        """Returning sample query statement for samples with less than two analyses."""
-        return (
-            query.group_by(Analysis.sample_id)
-            .order_by(Analysis.created_at)
-            .having(func.count(Analysis.sample_id) < 2)
-        )
-
-    @staticmethod
-    def _get_plate_samples(query: Query, plate_id: str) -> Query:
-        """Returning sample query statement for samples analysed on a specific plate."""
-        return query.filter(Analysis.plate_id == plate_id)
-
-    @staticmethod
-    def _get_commented_samples(query: Query) -> Query:
-        """Returning sample query statement for samples with no comment."""
-        return query.filter(Sample.comment != None)
-
-    @staticmethod
-    def _get_status_missing_samples(query: Query) -> Query:
-        """Returning sample query statement for samples with no comment."""
-        return query.filter(Sample.status == None)
-
-    @staticmethod
-    def _get_samples(query: Query, sample_id: str) -> Query:
-        """Returns a query for samples containing the given sample_id."""
-        return query.filter(Sample.id.contains(sample_id))
-
     def get_sample_by_id(self, sample_id: str) -> Sample:
         samples: Query = self._get_query(Sample)
         filter_functions = [SampleFilter.BY_ID]

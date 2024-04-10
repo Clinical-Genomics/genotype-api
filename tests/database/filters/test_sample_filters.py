@@ -108,7 +108,6 @@ def test_filter_samples_analysed_on_plate(
 
     # WHEN filtering samples by having comment
     query: Query = base_store._get_join_analysis_on_sample()
-    test = query.all()
     sample: Sample = filter_samples_analysed_on_plate(
         samples=query, plate_id=test_plate.plate_id
     ).first()
