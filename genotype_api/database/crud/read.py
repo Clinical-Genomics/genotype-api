@@ -107,23 +107,19 @@ class ReadHandler(BaseHandler):
             genotypes=genotypes, filter_functions=filter_functions, entry_id=entry_id
         ).first()
 
-    def get_filtered_samples(self, filter_params: SampleFilterParams) -> list[Sample]:
-        samples = self._get_join_analysis_on_sample()
-        return self._get_filtered_samples(samples=samples, filter_params=filter_params).all()
-
     @staticmethod
     def _get_filtered_samples(samples: Query, filter_params: SampleFilterParams) -> Query:
         filter_functions = [
             SampleFilter.CONTAINS_ID,
-            SampleFilter.BY_PLATE_ID,
+            SampleFilter.ANALYSED_ON_PLATE,
             SampleFilter.INCOMPLETE,
-            SampleFilter.COMMENTED,
-            SampleFilter.STATUS_MISSING,
+            SampleFilter.HAVING_COMMENT,
+            SampleFilter.WITHOUT_STATUS,
             SampleFilter.SKIP_AND_LIMIT,
         ]
         return apply_sample_filter(
-            samples=samples,
             filter_functions=filter_functions,
+            samples=samples,
             sample_id=filter_params.sample_id,
             plate_id=filter_params.plate_id,
             is_incomplete=filter_params.is_incomplete,
@@ -132,7 +128,10 @@ class ReadHandler(BaseHandler):
             skip=filter_params.skip,
             limit=filter_params.limit,
         )
-        return samples
+
+    def get_filtered_samples(self, filter_params: SampleFilterParams) -> list[Sample]:
+        samples = self._get_join_analysis_on_sample()
+        return self._get_filtered_samples(samples=samples, filter_params=filter_params).all()
 
     def get_sample_by_id(self, sample_id: str) -> Sample:
         samples: Query = self._get_query(Sample)
