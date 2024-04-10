@@ -163,14 +163,16 @@ def test_analysis(sex_male, timestamp_now: datetime, test_sample_id: str) -> Ana
 
 
 @pytest.fixture
-def another_test_analysis(sex_male, timestamp_now: datetime, test_sample_id: str) -> Analysis:
+def another_test_analysis(
+    sex_male, timestamp_now: datetime, another_test_sample_id: str
+) -> Analysis:
     return Analysis(
         id=2,
         type="sequence",
         source="source",
         sex=sex_male,
         created_at=timestamp_now,
-        sample_id=test_sample_id,
+        sample_id=another_test_sample_id,
         plate_id=2,
     )
 
