@@ -22,7 +22,7 @@ class SNPService(BaseService):
 
     def upload_snps(self, snps_file: UploadFile) -> list[SNPResponse]:
         """Upload snps to the database, raises an error when SNPs already exist."""
-        existing_snps: list[SNP] = self.store.get_snps(self.session)
+        existing_snps: list[SNP] = self.store.get_snps()
         if existing_snps:
             raise SNPExistsError
         snps: list[SNP] = SNPReaderService.read_snps_from_file(snps_file)
@@ -30,5 +30,5 @@ class SNPService(BaseService):
         return [self._get_snp_response(new_snp) for new_snp in new_snps]
 
     def delete_all_snps(self) -> int:
-        result = self.store.delete_snps(self.session)
+        result = self.store.delete_snps()
         return result.rowcount
