@@ -7,8 +7,9 @@ from genotype_api.database.filters.sample_filters import (
     filter_samples_contain_id,
     filter_samples_having_comment,
     filter_samples_without_status,
+    filter_samples_analysed_on_plate,
 )
-from genotype_api.database.models import Sample
+from genotype_api.database.models import Sample, Plate
 from genotype_api.database.store import Store
 
 
@@ -38,17 +39,41 @@ def test_filter_samples_contain_id(base_store: Store, test_sample: Sample):
     assert sample.id == test_sample.id
 
 
+def test_filter_samples_contain_id_when_no_id(base_store: Store, test_sample: Sample):
+    """Test filtering samples by id when no id is provided."""
+    # GIVEN a store with two samples
+
+    # WHEN filtering samples by id
+    query: Query = base_store._get_query(Sample)
+    samples: list[Sample] = filter_samples_contain_id(sample_id=None, samples=query).all()
+
+    # THEN all samples are returned
+    assert len(samples) == 2
+
+
 def test_filter_samples_having_comment(base_store: Store, test_sample: Sample):
     """Test filtering samples by having comment."""
     # GIVEN a store with a sample
 
     # WHEN filtering samples by having comment
     query: Query = base_store._get_query(Sample)
-    sample: Sample = filter_samples_having_comment(samples=query).first()
+    sample: Sample = filter_samples_having_comment(samples=query, is_commented=True).first()
 
     # THEN the sample is returned
     assert sample
     assert sample.comment is not None
+
+
+def test_filter_samples_having_comment_none_provided(base_store: Store, test_sample: Sample):
+    """Test filtering samples by having comment."""
+    # GIVEN a store with a sample
+
+    # WHEN filtering samples by having comment
+    query: Query = base_store._get_query(Sample)
+    samples: list[Sample] = filter_samples_having_comment(samples=query, is_commented=None).all()
+
+    # THEN the sample is returned
+    assert len(samples) == 2
 
 
 def test_filter_samples_without_status(base_store: Store, test_sample: Sample):
@@ -57,7 +82,36 @@ def test_filter_samples_without_status(base_store: Store, test_sample: Sample):
 
     # WHEN filtering samples by having comment
     query: Query = base_store._get_query(Sample)
-    sample: Sample = filter_samples_without_status(samples=query).first()
+    sample: Sample = filter_samples_without_status(samples=query, is_missing=True).first()
 
     # THEN no sample is returned
     assert not sample
+
+
+def test_filter_samples_without_status_none_provided(base_store: Store, test_sample: Sample):
+    """Test filtering samples by having comment."""
+    # GIVEN a store with a sample that has a comment
+
+    # WHEN filtering samples by having comment
+    query: Query = base_store._get_query(Sample)
+    samples: list[Sample] = filter_samples_without_status(samples=query, is_missing=None).all()
+
+    # THEN no sample is returned
+    assert len(samples) == 2
+
+
+def test_filter_samples_analysed_on_plate(
+    base_store: Store, test_sample: Sample, test_plate: Plate
+):
+    """Test filtering samples by having comment."""
+    # GIVEN a store with a sample that has a comment
+
+    # WHEN filtering samples by having comment
+    query: Query = base_store._get_join_analysis_on_sample()
+    test = query.all()
+    sample: Sample = filter_samples_analysed_on_plate(
+        samples=query, plate_id=test_plate.plate_id
+    ).first()
+
+    # THEN no sample is returned
+    assert sample.analyses[0].plate_id == test_plate.plate_id

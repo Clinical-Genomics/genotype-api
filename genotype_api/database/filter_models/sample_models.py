@@ -6,11 +6,11 @@ from genotype_api.constants import Sexes
 
 
 class SampleFilterParams(BaseModel):
-    sample_id: str | None
-    plate_id: str | None
-    is_incomplete: bool | None
-    is_commented: bool | None
-    is_missing: bool | None
+    sample_id: str | None = None
+    plate_id: str | None = None
+    is_incomplete: bool | None = None
+    is_commented: bool | None = None
+    is_missing: bool | None = None
     skip: int
     limit: int
 
