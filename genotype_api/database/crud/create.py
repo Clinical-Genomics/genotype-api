@@ -2,7 +2,7 @@ import logging
 
 
 from genotype_api.database.base_handler import BaseHandler
-from genotype_api.database.models import Analysis, Plate, Sample, User, SNP
+from genotype_api.database.models import Analysis, Plate, Sample, User, SNP, Genotype
 from genotype_api.dto.user import UserRequest
 from genotype_api.exceptions import SampleExistsError
 
@@ -42,14 +42,18 @@ class CreateHandler(BaseHandler):
             if not self.session.query(Sample).filter(Sample.id == analysis.sample_id).one_or_none()
         ]
 
-    def create_user(self, user: UserRequest) -> User:
-        db_user = User(email=user.email, name=user.name)
-        self.session.add(db_user)
+    def create_user(self, user: User) -> User:
+        self.session.add(user)
         self.session.commit()
-        self.session.refresh(db_user)
-        return db_user
+        self.session.refresh(user)
+        return user
 
     def create_snps(self, snps: list[SNP]) -> list[SNP]:
         self.session.add_all(snps)
         self.session.commit()
         return snps
+
+    def create_genotype(self, genotype: Genotype) -> Genotype:
+        self.session.add(genotype)
+        self.session.commit()
+        return genotype

@@ -1,8 +1,6 @@
 from dataclasses import dataclass
 from typing import Type
-
 from sqlalchemy.orm import Session, Query, DeclarativeBase
-
 from genotype_api.database.models import Analysis, Sample
 
 

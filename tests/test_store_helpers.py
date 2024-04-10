@@ -95,7 +95,7 @@ def test_ensure_analysis(
     added_analysis: Analysis = store.get_analysis_by_id(test_analysis.id)
     assert added_analysis
 
-    added_sample: Sample = store.get_sample(test_sample.id)
+    added_sample: Sample = store.get_sample_by_id(test_sample.id)
     assert added_sample
 
     added_plate: Plate = store.get_plate_by_id(test_plate.id)
@@ -112,5 +112,5 @@ def test_ensure_sample(store: Store, test_sample: Sample, helpers: StoreHelpers)
     helpers.ensure_sample(store=store, sample=test_sample)
 
     # THEN a sample is added
-    added_sample: Sample = store.get_sample(test_sample.id)
+    added_sample: Sample = store.get_sample_by_id(test_sample.id)
     assert added_sample

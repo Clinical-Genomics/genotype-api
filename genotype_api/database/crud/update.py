@@ -28,7 +28,7 @@ class UpdateHandler(BaseHandler):
         return sample
 
     def update_sample_comment(self, sample_id: str, comment: str) -> Sample:
-        sample: Sample = self.get_sample(sample_id=sample_id)
+        sample: Sample = self.get_sample_by_id(sample_id=sample_id)
         if not sample:
             raise SampleNotFoundError
         sample.comment = comment
@@ -38,7 +38,7 @@ class UpdateHandler(BaseHandler):
         return sample
 
     def update_sample_status(self, sample_id: str, status: str | None) -> Sample:
-        sample: Sample = self.get_sample(sample_id=sample_id)
+        sample: Sample = self.get_sample_by_id(sample_id=sample_id)
         if not sample:
             raise SampleNotFoundError
         sample.status = status

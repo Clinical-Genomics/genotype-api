@@ -23,17 +23,6 @@ class ReadHandler(BaseHandler):
     def get_analyses_from_plate(self, plate_id: int) -> list[Analysis]:
         return self.session.query(Analysis).filter(Analysis.plate_id == plate_id).all()
 
-    def get_analysis_by_type_sample(
-        self,
-        sample_id: str,
-        analysis_type: str,
-    ) -> Analysis | None:
-        return (
-            self.session.query(Analysis)
-            .filter(Analysis.sample_id == sample_id, Analysis.type == analysis_type)
-            .first()
-        )
-
     def get_analysis_by_id(self, analysis_id: int) -> Analysis:
         return self.session.query(Analysis).filter(Analysis.id == analysis_id).first()
 
@@ -130,7 +119,7 @@ class ReadHandler(BaseHandler):
         """Returns a query for samples containing the given sample_id."""
         return query.filter(Sample.id.contains(sample_id))
 
-    def get_sample(self, sample_id: str) -> Sample:
+    def get_sample_by_id(self, sample_id: str) -> Sample:
         return self.session.query(Sample).filter(Sample.id == sample_id).first()
 
     def get_user_by_id(self, user_id: int) -> User:
@@ -145,7 +134,7 @@ class ReadHandler(BaseHandler):
     def check_analyses_objects(self, analyses: list[Analysis], analysis_type: Types) -> None:
         """Raising 400 if any analysis in the list already exist in the database"""
         for analysis_obj in analyses:
-            existing_analysis = self.get_analysis_by_type_sample(
+            existing_analysis = self.get_analysis_by_type_and_sample_id(
                 sample_id=analysis_obj.sample_id,
                 analysis_type=analysis_type,
             )

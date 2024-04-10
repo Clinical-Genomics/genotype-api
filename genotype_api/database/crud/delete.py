@@ -26,7 +26,10 @@ class DeleteHandler(BaseHandler):
         self.session.delete(user)
         self.session.commit()
 
-    def delete_snps(self) -> any:
-        result = self.session.execute(delete(SNP))
+    def delete_snps(self) -> int:
+        snps: list[SNP] = self._get_query(SNP).all()
+        count: int = len(snps)
+        for snp in snps:
+            self.session.delete(snp)
         self.session.commit()
-        return result
+        return count
