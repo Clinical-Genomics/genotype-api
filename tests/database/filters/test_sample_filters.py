@@ -8,6 +8,7 @@ from genotype_api.database.filters.sample_filters import (
     filter_samples_having_comment,
     filter_samples_without_status,
     filter_samples_analysed_on_plate,
+    add_skip_and_limit,
 )
 from genotype_api.database.models import Sample, Plate
 from genotype_api.database.store import Store
@@ -127,3 +128,17 @@ def test_filter_samples_analysed_on_plate_none_provided(
 
     # THEN no sample is returned
     assert len(samples) == 2
+
+
+def test_add_skip_and_limit(base_store: Store, test_sample: Sample):
+    """Test add_skip_and_limit function."""
+
+    # GIVEN a store with two samples
+
+    # WHEN adding skip and limit to the query
+    query: Query = base_store._get_query(Sample)
+    samples: list[Sample] = add_skip_and_limit(query, skip=0, limit=1).all()
+
+    # THEN one SNP is returned
+    assert samples
+    assert len(samples) == 1
