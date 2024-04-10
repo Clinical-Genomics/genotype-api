@@ -70,12 +70,12 @@ def test_get_analyses_by_type_between_dates(
     date_two_weeks_future: date,
     helpers: StoreHelpers,
 ):
-    # GIVEN an analysis and a store with the analysis and the same analysis type with a different date
+    # GIVEN a store with two analyses of the same type but different dates
     future_analysis: Analysis = test_analysis
     future_analysis.created_at = date_two_weeks_future
     helpers.ensure_analysis(store=base_store, analysis=future_analysis)
 
-    # WHEN getting the analyses by type between dates
+    # WHEN getting the analyses by type between dates excluding one of the analyses
     analyses: list[Analysis] = base_store.get_analyses_by_type_between_dates(
         analysis_type=test_analysis.type, date_min=date_yesterday, date_max=date_tomorrow
     )
@@ -87,7 +87,7 @@ def test_get_analyses_by_type_between_dates(
 
 
 def test_get_plate_by_id(base_store: Store, test_plate: Plate):
-    # GIVEN a plate and a store with the plate
+    # GIVEN a store with a plate
 
     # WHEN getting the plate by id
     plate: Plate = base_store.get_plate_by_id(plate_id=test_plate.id)
@@ -97,7 +97,7 @@ def test_get_plate_by_id(base_store: Store, test_plate: Plate):
 
 
 def test_get_plate_by_plate_id(base_store: Store, test_plate: Plate):
-    # GIVEN a plate and a store with the plate
+    # GIVEN a store with a plate
 
     # WHEN getting the plate by plate id
     plate: Plate = base_store.get_plate_by_plate_id(plate_id=test_plate.plate_id)
@@ -107,7 +107,7 @@ def test_get_plate_by_plate_id(base_store: Store, test_plate: Plate):
 
 
 def get_user_by_id(base_store: Store, test_user: User):
-    # GIVEN a user and a store with the user
+    # GIVEN a store with a user
 
     # WHEN getting the user by id
     user: User = base_store.get_user_by_id(user_id=test_user.id)
@@ -117,7 +117,7 @@ def get_user_by_id(base_store: Store, test_user: User):
 
 
 def get_user_by_email(base_store: Store, test_user: User):
-    # GIVEN a user and a store with the user
+    # GIVEN a store with a user
 
     # WHEN getting the user by email
     user: User = base_store.get_user_by_email(email=test_user.email)
