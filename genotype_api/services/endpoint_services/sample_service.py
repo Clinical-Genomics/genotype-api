@@ -26,7 +26,7 @@ class SampleService(BaseService):
                 rsnumber=genotype_on_analysis.rsnumber,
                 analysis_id=genotype_on_analysis.analysis_id,
                 allele_1=genotype_on_analysis.allele_1,
-                allele_2=genotype_on_analysis.allele_1,
+                allele_2=genotype_on_analysis.allele_2,
             )
             genotypes.append(genotype)
         return genotypes
