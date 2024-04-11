@@ -68,7 +68,7 @@ class PlateService(BaseService):
         # Get the plate id from the standardized name of the plate
         return file_name.name.split("_", 1)[0]
 
-    def upload_plate(self, file: UploadFile) -> PlateResponse:
+    def upload_plate(self, file: UploadFile):
         file_name: Path = check_file(file_path=file.filename, extension=".xlsx")
         plate_id: str = self._get_plate_id_from_file(file_name)
         db_plate = self.store.get_plate_by_plate_id(plate_id)
@@ -93,7 +93,6 @@ class PlateService(BaseService):
             sample: Sample = self.store.get_sample_by_id(sample_id=analysis.sample_id)
             self.store.refresh_sample_status(sample=sample)
         self.store.refresh_plate(plate=plate)
-        return self._create_plate_response(plate)
 
     def update_plate_sign_off(
         self, plate_id: int, user_email: EmailStr, method_document: str, method_version: str

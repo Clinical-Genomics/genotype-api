@@ -24,15 +24,13 @@ def get_plate_service(store: Store = Depends(get_store)) -> PlateService:
 
 @router.post(
     "/plate",
-    response_model=PlateResponse,
-    response_model_exclude={"plate_status_counts"},
 )
 def upload_plate(
     file: UploadFile = File(...),
     plate_service: PlateService = Depends(get_plate_service),
     current_user: CurrentUser = Depends(get_active_user),
 ):
-    return plate_service.upload_plate(file)
+    plate_service.upload_plate(file)
 
 
 @router.patch(
