@@ -68,7 +68,7 @@ class PlateService(BaseService):
         # Get the plate id from the standardized name of the plate
         return file_name.name.split("_", 1)[0]
 
-    def upload_plate(self, file: UploadFile):
+    def upload_plate(self, file: UploadFile) -> None:
         file_name: Path = check_file(file_path=file.filename, extension=".xlsx")
         plate_id: str = self._get_plate_id_from_file(file_name)
         db_plate = self.store.get_plate_by_plate_id(plate_id)
