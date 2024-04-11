@@ -42,6 +42,10 @@ def filter_incomplete_samples(samples: Query, is_incomplete: bool | None, **kwar
 
 
 def filter_samples_analysed_on_plate(samples: Query, plate_id: str | None, **kwargs) -> Query:
+    """
+    Return samples analysed on a plate.
+    Requires a Sample and Analysis table join to work.
+    """
     return samples.filter(Analysis.plate_id == plate_id) if plate_id else samples
 
 

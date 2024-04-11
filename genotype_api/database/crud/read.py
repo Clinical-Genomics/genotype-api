@@ -54,7 +54,7 @@ class ReadHandler(BaseHandler):
         self, analysis_type: Types, date_min: date, date_max: date
     ) -> list[Analysis]:
         analyses: Query = self._get_query(Analysis)
-        filter_functions = [AnalysisFilter.BY_TYPE_BETWEEN_DATES]
+        filter_functions = [AnalysisFilter.BY_TYPE, AnalysisFilter.BETWEEN_DATES]
         return apply_analysis_filter(
             analyses=analyses,
             filter_functions=filter_functions,

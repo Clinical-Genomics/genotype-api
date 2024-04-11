@@ -27,7 +27,7 @@ def order_plates(plates: Query, order_by: str, sort_func: callable, **kwargs) ->
 
 def apply_plate_filter(
     filter_functions: list[callable],
-    plates: Query = None,
+    plates: Query,
     entry_id: int = None,
     plate_id: str = None,
     skip: int = None,

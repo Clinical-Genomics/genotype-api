@@ -33,12 +33,11 @@ def add_skip_and_limit(analyses: Query, skip: int, limit: int, **kwargs) -> Quer
     return analyses.offset(skip).limit(limit)
 
 
-def filter_analyses_by_type_between_dates(
-    analyses: Query, type: str, date_min: date, date_max: date, **kwargs
+def filter_analyses_between_dates(
+    analyses: Query, date_min: date, date_max: date, **kwargs
 ) -> Query:
     """Return analysis by type between dates."""
     return analyses.filter(
-        Analysis.type == type,
         Analysis.created_at > date_min - timedelta(days=1),
         Analysis.created_at < date_max + timedelta(days=1),
     )
@@ -81,4 +80,4 @@ class AnalysisFilter(Enum):
     BY_PLATE_ID: callable = filter_analyses_by_plate_id
     BY_SAMPLE_ID: callable = filter_analyses_by_sample_id
     SKIP_AND_LIMIT: callable = add_skip_and_limit
-    BY_TYPE_BETWEEN_DATES: callable = filter_analyses_by_type_between_dates
+    BETWEEN_DATES: callable = filter_analyses_between_dates
