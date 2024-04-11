@@ -15,7 +15,7 @@ def filter_samples_by_id(sample_id: str, samples: Query, **kwargs) -> Query:
 
 
 def filter_samples_having_comment(samples: Query, is_commented: bool | None, **kwargs) -> Query:
-    """Return sample with a comment."""
+    """Return samples with a comment."""
     return samples.filter(Sample.comment.isnot(None)) if is_commented else samples
 
 

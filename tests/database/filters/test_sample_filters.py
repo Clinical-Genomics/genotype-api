@@ -117,7 +117,7 @@ def test_filter_samples_without_status_none_provided(base_store: Store, test_sam
     query: Query = base_store._get_query(Sample)
     samples: list[Sample] = filter_samples_without_status(samples=query, is_missing=None).all()
 
-    # THEN no sample is returned
+    # THEN all samples are returned
     assert len(samples) == 2
 
 
@@ -131,7 +131,7 @@ def test_filter_samples_analysed_on_plate(
     query: Query = base_store._get_join_analysis_on_sample()
     sample: Sample = filter_samples_analysed_on_plate(samples=query, plate_id=test_plate.id).first()
 
-    # THEN no sample is returned
+    # THEN one sample is returned
     assert sample.analyses[0].plate_id == test_plate.id
 
 
@@ -147,7 +147,7 @@ def test_filter_samples_analysed_on_plate_none_provided(
     query: Query = base_store._get_join_analysis_on_sample()
     samples: list[Sample] = filter_samples_analysed_on_plate(samples=query, plate_id=None).all()
 
-    # THEN no sample is returned
+    # THEN all samples are returned
     assert len(samples) == 2
 
 
@@ -160,6 +160,6 @@ def test_add_skip_and_limit(base_store: Store, test_sample: Sample):
     query: Query = base_store._get_query(Sample)
     samples: list[Sample] = add_skip_and_limit(query, skip=0, limit=1).all()
 
-    # THEN one SNP is returned
+    # THEN one sample is returned
     assert samples
     assert len(samples) == 1
