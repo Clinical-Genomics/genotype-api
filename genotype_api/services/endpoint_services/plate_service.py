@@ -85,9 +85,9 @@ class PlateService(BaseService):
         new_plate: Plate = self.store.get_plate_by_plate_id(plate_id=plate_id)
         analyses: list[Analysis] = list(excel_parser.generate_analyses(plate_id=new_plate.id))
         self.store.check_analyses_objects(analyses=analyses, analysis_type=Types.GENOTYPE)
+        self.store.create_analyses_samples(analyses=analyses)
         for analysis in analyses:
             self.store.create_analysis(analysis=analysis)
-        self.store.create_analyses_samples(analyses=analyses)
         plate_obj.analyses = analyses
         for analysis in analyses:
             sample: Sample = self.store.get_sample_by_id(sample_id=analysis.sample_id)
