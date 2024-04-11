@@ -81,15 +81,14 @@ class PlateService(BaseService):
             include_key="-CG-",
         )
 
-        analyses: list[Analysis] = list(excel_parser.generate_analyses())
+        analyses: list[Analysis] = list(excel_parser.generate_analyses(plate_id=plate_id))
         self.store.check_analyses_objects(analyses=analyses, analysis_type=Types.GENOTYPE)
         self.store.create_analyses_samples(analyses=analyses)
         plate_obj = Plate(plate_id=plate_id)
         plate_obj.analyses = analyses
         plate: Plate = self.store.create_plate(plate=plate_obj)
-        for analysis in analyses:
-            sample: Sample = self.store.get_sample_by_id(sample_id=analysis.sample_id)
-            self.store.refresh_sample_status(sample=sample)
+        for analysis in plate.analyses:
+            self.store.refresh_sample_status(sample=analysis.sample)
         self.store.refresh_plate(plate=plate)
 
     def update_plate_sign_off(
