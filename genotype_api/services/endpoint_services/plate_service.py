@@ -11,7 +11,7 @@ from pydantic import EmailStr
 from starlette import status
 from genotype_api.constants import Types
 from genotype_api.database.filter_models.plate_models import PlateSignOff, PlateOrderParams
-from genotype_api.database.models import Plate, Analysis, User
+from genotype_api.database.models import Plate, Analysis, User, Sample
 from genotype_api.dto.plate import PlateResponse, UserOnPlate, AnalysisOnPlate, SampleStatus
 from genotype_api.exceptions import PlateNotFoundError, UserNotFoundError
 from genotype_api.file_parsing.excel import GenotypeAnalysis
@@ -89,10 +89,10 @@ class PlateService(BaseService):
         plate_obj = Plate(plate_id=plate_id)
         plate_obj.analyses = analyses
         plate: Plate = self.store.create_plate(plate=plate_obj)
-        for analysis in plate.analyses:
-            self.store.refresh_sample_status(sample=analysis.sample)
+        for analysis in analyses:
+            sample: Sample = self.store.get_sample_by_id(sample_id=analysis.sample_id)
+            self.store.refresh_sample_status(sample=sample)
         self.store.refresh_plate(plate=plate)
-
         return self._create_plate_response(plate)
 
     def update_plate_sign_off(
