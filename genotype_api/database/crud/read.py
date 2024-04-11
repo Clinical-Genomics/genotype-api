@@ -49,7 +49,7 @@ class ReadHandler(BaseHandler):
         return (
             self.session.query(Analysis)
             .filter(Analysis.sample_id == sample_id, Analysis.type == analysis_type)
-            .one()
+            .first()
         )
 
     def get_plate_by_id(self, plate_id: int) -> Plate:
