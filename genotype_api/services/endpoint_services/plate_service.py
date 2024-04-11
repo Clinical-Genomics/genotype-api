@@ -13,7 +13,7 @@ from genotype_api.constants import Types
 from genotype_api.database.filter_models.plate_models import PlateSignOff, PlateOrderParams
 from genotype_api.database.models import Plate, Analysis, User, Sample
 from genotype_api.dto.plate import PlateResponse, UserOnPlate, AnalysisOnPlate, SampleStatus
-from genotype_api.exceptions import PlateNotFoundError, UserNotFoundError
+from genotype_api.exceptions import PlateNotFoundError, UserNotFoundError, PlateExistsError
 from genotype_api.file_parsing.excel import GenotypeAnalysis
 from genotype_api.file_parsing.files import check_file
 from genotype_api.services.endpoint_services.base_service import BaseService
@@ -73,16 +73,14 @@ class PlateService(BaseService):
         plate_id: str = self._get_plate_id_from_file(file_name)
         db_plate = self.store.get_plate_by_plate_id(plate_id)
         if db_plate:
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail=f"Plate with id {db_plate.id} already exists",
-            )
+            raise PlateExistsError
 
         excel_parser = GenotypeAnalysis(
             excel_file=BytesIO(file.file.read()),
             file_name=str(file_name),
             include_key="-CG-",
         )
+
         analyses: list[Analysis] = list(excel_parser.generate_analyses())
         self.store.check_analyses_objects(analyses=analyses, analysis_type=Types.GENOTYPE)
         self.store.create_analyses_samples(analyses=analyses)
