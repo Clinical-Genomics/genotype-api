@@ -71,7 +71,7 @@ class GenotypeAnalysis:
         LOG.info("Use sample id %s", sample_id)
         return sample_id
 
-    def generate_analyses(self, plate_id: str) -> Iterable[Analysis]:
+    def generate_analyses(self, plate_id: int) -> Iterable[Analysis]:
         """Loop over the rows and create one analysis for each individual"""
         nr_row: int
         row: list[str]
