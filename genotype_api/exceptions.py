@@ -51,3 +51,7 @@ class SampleExistsError(Exception):
 
 class SNPExistsError(Exception):
     pass
+
+
+class PlateExistsError(Exception):
+    pass
