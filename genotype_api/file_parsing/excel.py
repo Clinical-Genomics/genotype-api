@@ -1,6 +1,7 @@
 """Code to work with excel files"""
 
 import logging
+from datetime import datetime
 from pathlib import Path
 from typing import ByteString, Iterable
 
@@ -96,6 +97,7 @@ class GenotypeAnalysis:
                 sex=sex,
                 genotypes=genotypes,
                 plate_id=plate_id,
+                created_at=datetime.now(),
             )
 
     @staticmethod
@@ -135,18 +137,3 @@ class GenotypeAnalysis:
             # assays returned conflicting results
             message = "conflicting sex predictions: {}".format(sex_cells)
             raise SexConflictError(message)
-
-
-if __name__ == "__main__":
-    import sys
-
-    import coloredlogs
-
-    coloredlogs.install()
-
-    in_file = Path(sys.argv[1])
-    # include_key = "ID-CG-"
-    include_key = "-CG-"
-    genotype_analysis = GenotypeAnalysis(in_file, include_key)
-    for analysis in genotype_analysis.generate_analyses():
-        print(analysis)
