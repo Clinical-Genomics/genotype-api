@@ -20,12 +20,12 @@ app = FastAPI(
 )
 app.add_middleware(
     CORSMiddleware,
-    DBSessionMiddleware,
     allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(DBSessionMiddleware)
 
 
 @app.exception_handler(NoResultFound)
