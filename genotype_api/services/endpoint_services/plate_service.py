@@ -93,7 +93,6 @@ class PlateService(BaseService):
             plate_obj.analyses = analyses
             for analysis in analyses:
                 sample: Sample = self.store.get_sample_by_id(sample_id=analysis.sample_id)
-                sample.analyses.append(analysis)
                 self.store.refresh_sample_status(sample=sample)
             self.store.refresh_plate(plate=plate)
         except Exception as error:
