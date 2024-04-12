@@ -107,31 +107,53 @@ class ReadHandler(BaseHandler):
             genotypes=genotypes, filter_functions=filter_functions, entry_id=entry_id
         ).first()
 
-    @staticmethod
-    def _get_filtered_samples(samples: Query, filter_params: SampleFilterParams) -> Query:
-        filter_functions = [
-            SampleFilter.CONTAINS_ID,
-            SampleFilter.ANALYSED_ON_PLATE,
-            SampleFilter.INCOMPLETE,
-            SampleFilter.HAVING_COMMENT,
-            SampleFilter.WITHOUT_STATUS,
-            SampleFilter.SKIP_AND_LIMIT,
-        ]
-        return apply_sample_filter(
-            filter_functions=filter_functions,
-            samples=samples,
-            sample_id=filter_params.sample_id,
-            plate_id=filter_params.plate_id,
-            is_incomplete=filter_params.is_incomplete,
-            is_commented=filter_params.is_commented,
-            is_missing=filter_params.is_missing,
-            skip=filter_params.skip,
-            limit=filter_params.limit,
+    def get_filtered_samples(self, filter_params: SampleFilterParams) -> list[Sample]:
+        query = self.session.query(Sample).distinct().join(Analysis)
+        if filter_params.sample_id:
+            query = self._get_samples(query, filter_params.sample_id)
+        if filter_params.plate_id:
+            query = self._get_plate_samples(query, filter_params.plate_id)
+        if filter_params.is_incomplete:
+            query = self._get_incomplete_samples(query)
+        if filter_params.is_commented:
+            query = self._get_commented_samples(query)
+        if filter_params.is_missing:
+            query = self._get_status_missing_samples(query)
+        return (
+            query.order_by(Sample.created_at.desc())
+            .offset(filter_params.skip)
+            .limit(filter_params.limit)
+            .all()
         )
 
-    def get_filtered_samples(self, filter_params: SampleFilterParams) -> list[Sample]:
-        samples = self._get_join_analysis_on_sample()
-        return self._get_filtered_samples(samples=samples, filter_params=filter_params).all()
+    @staticmethod
+    def _get_incomplete_samples(query: Query) -> Query:
+        """Returning sample query statement for samples with less than two analyses."""
+        return (
+            query.group_by(Analysis.sample_id)
+            .order_by(Analysis.created_at)
+            .having(func.count(Analysis.sample_id) < 2)
+        )
+
+    @staticmethod
+    def _get_plate_samples(query: Query, plate_id: str) -> Query:
+        """Returning sample query statement for samples analysed on a specific plate."""
+        return query.filter(Analysis.plate_id == plate_id)
+
+    @staticmethod
+    def _get_commented_samples(query: Query) -> Query:
+        """Returning sample query statement for samples with no comment."""
+        return query.filter(Sample.comment != None)
+
+    @staticmethod
+    def _get_status_missing_samples(query: Query) -> Query:
+        """Returning sample query statement for samples with no comment."""
+        return query.filter(Sample.status == None)
+
+    @staticmethod
+    def _get_samples(query: Query, sample_id: str) -> Query:
+        """Returns a query for samples containing the given sample_id."""
+        return query.filter(Sample.id.contains(sample_id))
 
     def get_sample_by_id(self, sample_id: str) -> Sample:
         samples: Query = self._get_query(Sample)
