@@ -10,7 +10,7 @@ from genotype_api.database.filter_models.plate_models import PlateOrderParams
 from genotype_api.database.store import Store, get_store
 from genotype_api.dto.plate import PlateResponse
 from genotype_api.dto.user import CurrentUser
-from genotype_api.exceptions import PlateNotFoundError
+from genotype_api.exceptions import PlateNotFoundError, PlateExistsError
 from genotype_api.security import get_active_user
 from genotype_api.services.endpoint_services.plate_service import PlateService
 
@@ -24,15 +24,20 @@ def get_plate_service(store: Store = Depends(get_store)) -> PlateService:
 
 @router.post(
     "/plate",
-    response_model=PlateResponse,
-    response_model_exclude={"plate_status_counts"},
 )
 def upload_plate(
     file: UploadFile = File(...),
     plate_service: PlateService = Depends(get_plate_service),
     current_user: CurrentUser = Depends(get_active_user),
 ):
-    return plate_service.upload_plate(file)
+
+    try:
+        plate_service.upload_plate(file)
+    except PlateExistsError:
+        raise HTTPException(
+            detail="Plate already exists in the database.", status_code=HTTPStatus.BAD_REQUEST
+        )
+    return JSONResponse("Plate uploaded successfully", status_code=status.HTTP_201_CREATED)
 
 
 @router.patch(

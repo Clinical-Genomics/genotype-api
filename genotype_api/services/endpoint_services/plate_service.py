@@ -1,19 +1,20 @@
 """Module to holds the plate service."""
 
+import logging
 from datetime import datetime
-from http.client import HTTPException
+
 from io import BytesIO
 from pathlib import Path
 
 
 from fastapi import UploadFile
 from pydantic import EmailStr
-from starlette import status
+
 from genotype_api.constants import Types
 from genotype_api.database.filter_models.plate_models import PlateSignOff, PlateOrderParams
-from genotype_api.database.models import Plate, Analysis, User
+from genotype_api.database.models import Plate, Analysis, User, Sample
 from genotype_api.dto.plate import PlateResponse, UserOnPlate, AnalysisOnPlate, SampleStatus
-from genotype_api.exceptions import PlateNotFoundError, UserNotFoundError
+from genotype_api.exceptions import PlateNotFoundError, UserNotFoundError, PlateExistsError
 from genotype_api.file_parsing.excel import GenotypeAnalysis
 from genotype_api.file_parsing.files import check_file
 from genotype_api.services.endpoint_services.base_service import BaseService
@@ -68,32 +69,32 @@ class PlateService(BaseService):
         # Get the plate id from the standardized name of the plate
         return file_name.name.split("_", 1)[0]
 
-    def upload_plate(self, file: UploadFile) -> PlateResponse:
+    def upload_plate(self, file: UploadFile) -> None:
         file_name: Path = check_file(file_path=file.filename, extension=".xlsx")
         plate_id: str = self._get_plate_id_from_file(file_name)
         db_plate = self.store.get_plate_by_plate_id(plate_id)
         if db_plate:
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail=f"Plate with id {db_plate.id} already exists",
-            )
+            raise PlateExistsError
 
         excel_parser = GenotypeAnalysis(
             excel_file=BytesIO(file.file.read()),
             file_name=str(file_name),
             include_key="-CG-",
         )
-        analyses: list[Analysis] = list(excel_parser.generate_analyses())
+
+        plate_obj = Plate(plate_id=plate_id)
+        plate: Plate = self.store.create_plate(plate=plate_obj)
+        new_plate: Plate = self.store.get_plate_by_plate_id(plate_id=plate_id)
+        analyses: list[Analysis] = list(excel_parser.generate_analyses(plate_id=new_plate.id))
         self.store.check_analyses_objects(analyses=analyses, analysis_type=Types.GENOTYPE)
         self.store.create_analyses_samples(analyses=analyses)
-        plate_obj = Plate(plate_id=plate_id)
+        for analysis in analyses:
+            self.store.create_analysis(analysis=analysis)
         plate_obj.analyses = analyses
-        plate: Plate = self.store.create_plate(plate=plate_obj)
-        for analysis in plate.analyses:
-            self.store.refresh_sample_status(sample=analysis.sample)
+        for analysis in analyses:
+            sample: Sample = self.store.get_sample_by_id(sample_id=analysis.sample_id)
+            self.store.refresh_sample_status(sample=sample)
         self.store.refresh_plate(plate=plate)
-
-        return self._create_plate_response(plate)
 
     def update_plate_sign_off(
         self, plate_id: int, user_email: EmailStr, method_document: str, method_version: str
