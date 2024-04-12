@@ -7,8 +7,9 @@ from fastapi import FastAPI, status, Request
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
+from genotype_api.api.middleware import DBSessionMiddleware
 from genotype_api.config import security_settings, settings
-from genotype_api.database.database import create_all_tables, initialise_database, close_session
+from genotype_api.database.database import create_all_tables, initialise_database
 from genotype_api.api.endpoints import samples, snps, users, plates, analyses
 from sqlalchemy.exc import NoResultFound
 
@@ -24,6 +25,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(DBSessionMiddleware)
 
 
 @app.exception_handler(NoResultFound)
