@@ -81,23 +81,20 @@ class PlateService(BaseService):
             file_name=str(file_name),
             include_key="-CG-",
         )
-        try:
-            plate_obj = Plate(plate_id=plate_id)
-            plate: Plate = self.store.create_plate(plate=plate_obj)
-            new_plate: Plate = self.store.get_plate_by_plate_id(plate_id=plate_id)
-            analyses: list[Analysis] = list(excel_parser.generate_analyses(plate_id=new_plate.id))
-            self.store.check_analyses_objects(analyses=analyses, analysis_type=Types.GENOTYPE)
-            self.store.create_analyses_samples(analyses=analyses)
-            for analysis in analyses:
-                self.store.create_analysis(analysis=analysis)
-            plate_obj.analyses = analyses
-            for analysis in analyses:
-                sample: Sample = self.store.get_sample_by_id(sample_id=analysis.sample_id)
-                self.store.refresh_sample_status(sample=sample)
-            self.store.refresh_plate(plate=plate)
-        except Exception as error:
-            logging.debug(error)
-            self.store.session.rollback()
+
+        plate_obj = Plate(plate_id=plate_id)
+        plate: Plate = self.store.create_plate(plate=plate_obj)
+        new_plate: Plate = self.store.get_plate_by_plate_id(plate_id=plate_id)
+        analyses: list[Analysis] = list(excel_parser.generate_analyses(plate_id=new_plate.id))
+        self.store.check_analyses_objects(analyses=analyses, analysis_type=Types.GENOTYPE)
+        self.store.create_analyses_samples(analyses=analyses)
+        for analysis in analyses:
+            self.store.create_analysis(analysis=analysis)
+        plate_obj.analyses = analyses
+        for analysis in analyses:
+            sample: Sample = self.store.get_sample_by_id(sample_id=analysis.sample_id)
+            self.store.refresh_sample_status(sample=sample)
+        self.store.refresh_plate(plate=plate)
 
     def update_plate_sign_off(
         self, plate_id: int, user_email: EmailStr, method_document: str, method_version: str
