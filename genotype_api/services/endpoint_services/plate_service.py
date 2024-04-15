@@ -131,7 +131,7 @@ class PlateService(BaseService):
         plate = self.store.get_plate_by_id(plate_id=plate_id)
         if not plate:
             raise PlateNotFoundError
-        analyses: list[Analysis] = self.store.get_analyses_from_plate(plate_id=plate_id)
+        analyses: list[Analysis] = self.store.get_analyses_by_plate_id(plate_id=plate_id)
         analysis_ids: list[int] = [analyse.id for analyse in analyses]
         for analysis in analyses:
             self.store.delete_analysis(analysis=analysis)

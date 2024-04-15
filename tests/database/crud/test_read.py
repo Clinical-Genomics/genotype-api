@@ -2,7 +2,6 @@
 
 from datetime import date
 
-from astroid import helpers
 
 from genotype_api.database.filter_models.plate_models import PlateOrderParams
 from genotype_api.database.models import Analysis, Plate, SNP, User, Genotype
@@ -14,7 +13,7 @@ def test_get_analysis_by_plate_id(base_store: Store, test_analysis: Analysis):
     # GIVEN an analysis and a store with the analysis
 
     # WHEN getting the analysis by plate id
-    analyses: list[Analysis] = base_store.get_analyses_from_plate(plate_id=test_analysis.plate_id)
+    analyses: list[Analysis] = base_store.get_analyses_by_plate_id(plate_id=test_analysis.plate_id)
 
     # THEN the analysis is returned
     for analysis in analyses:
@@ -73,6 +72,7 @@ def test_get_analyses_by_type_between_dates(
     helpers: StoreHelpers,
 ):
     # GIVEN a store with two analyses of the same type but different dates
+
     future_analysis: Analysis = test_analysis
     future_analysis.created_at = date_two_weeks_future
     helpers.ensure_analysis(store=base_store, analysis=future_analysis)

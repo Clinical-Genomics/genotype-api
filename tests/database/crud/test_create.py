@@ -6,7 +6,9 @@ from genotype_api.database.store import Store
 
 def test_create_analysis(store: Store, test_analysis: Analysis):
     # GIVEN an analysis and an empty store
+
     assert not store._get_query(Analysis).all()
+
     # WHEN creating the analysis
     store.create_analysis(analysis=test_analysis)
 
@@ -16,6 +18,7 @@ def test_create_analysis(store: Store, test_analysis: Analysis):
 
 def test_create_genotype(store: Store, test_genotype: Genotype):
     # GIVEN a genotype and an empty store
+
     assert not store._get_query(Genotype).all()
 
     # WHEN creating the genotype
@@ -73,6 +76,7 @@ def test_create_analyses_samples(store: Store, test_analysis: Analysis):
     # GIVEN an analysis in a store
     assert not store._get_query(Sample).all()
     assert not store._get_query(Analysis).all()
+
     store.create_analysis(test_analysis)
 
     # WHEN creating the analyses
