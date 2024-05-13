@@ -44,12 +44,14 @@ def create_all_tables() -> None:
     """Create all tables in genotype api."""
     session: Session = get_session()
     Base.metadata.create_all(bind=session.get_bind())
+    close_session()
 
 
 def drop_all_tables() -> None:
     """Drop all tables in genotype api."""
     session: Session = get_session()
     Base.metadata.drop_all(bind=session.get_bind())
+    close_session()
 
 
 def get_tables() -> list[str]:
