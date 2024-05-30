@@ -1,7 +1,7 @@
 FROM docker.io/library/python:3.11-slim-bullseye as base
 
 LABEL about.home="https://github.com/Clinical-Genomics/genotype-api"
-LABEL about.tags="CG Core database and API"
+LABEL about.tags="Genotype API"
 
 
 ENV GUNICORN_WORKERS=1
