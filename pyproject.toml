@@ -27,7 +27,7 @@ python-dotenv = "^1.0.1"
 python-jose = {extras = ["cryptography"], version = "^3.3.0"}
 python-multipart = "^0.0.9"
 pyyaml = "^6.0.1"
-requests = "^2.31.0"
+requests = "*"
 sqlalchemy = "^2.0.29"
 sqlalchemy-utils = "^0.41.2"
 starlette = "^0.37.2"
