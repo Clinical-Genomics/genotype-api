@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "genotype-api"
-version = "3.0.14"
+version = "3.0.15"
 description = "Genotype-api"
 authors = ["Christian Oertlin <c.oertlin@gmail.com>"]
 readme = "README.md"
