@@ -1,4 +1,5 @@
 """Hold the database information"""
+
 import logging
 
 from sqlalchemy import create_engine, inspect
