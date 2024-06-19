@@ -1,4 +1,5 @@
 """Hold the database information"""
+import logging
 
 from sqlalchemy import create_engine, inspect
 from sqlalchemy.engine.base import Engine
@@ -10,6 +11,8 @@ from genotype_api.database.models import Base
 
 SESSION: scoped_session | None = None
 ENGINE: Engine | None = None
+
+LOG = logging.getLogger(__name__)
 
 
 def initialise_database(db_uri: str) -> None:
@@ -63,9 +66,11 @@ def get_tables() -> list[str]:
 
 def close_session():
     """Close the global database session of the genotype api."""
+    LOG.info("Closing database session")
     SESSION.close()
 
 
 def rollback_transactions():
     """Rollback the global database session of the genotype api."""
+    LOG.info("Rolling back database transactions")
     SESSION.rollback()
