@@ -20,7 +20,7 @@ def initialise_database(db_uri: str) -> None:
     global SESSION, ENGINE
 
     ENGINE = create_engine(db_uri, pool_pre_ping=True)
-    session_factory = sessionmaker(ENGINE)
+    session_factory = sessionmaker(autoflush=False, bind=ENGINE)
     SESSION = scoped_session(session_factory)
 
 
