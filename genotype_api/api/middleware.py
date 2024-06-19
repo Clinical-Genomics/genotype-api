@@ -5,6 +5,8 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from genotype_api.database.database import close_session, rollback_transactions
 
 LOG = logging.getLogger(__name__)
+
+
 class DBSessionMiddleware(BaseHTTPMiddleware):
     def __init__(self, app):
         super().__init__(app)
