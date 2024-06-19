@@ -1,6 +1,6 @@
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
-from genotype_api.database.database import close_session
+from genotype_api.database.database import close_session, rollback_transactions
 
 
 class DBSessionMiddleware(BaseHTTPMiddleware):
@@ -8,6 +8,11 @@ class DBSessionMiddleware(BaseHTTPMiddleware):
         super().__init__(app)
 
     async def dispatch(self, request: Request, call_next):
-        response = await call_next(request)
-        close_session()
+        try:
+            response = await call_next(request)
+        except Exception as error:
+            rollback_transactions()
+            raise error
+        finally:
+            close_session()
         return response
