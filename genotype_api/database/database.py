@@ -11,7 +11,6 @@ from genotype_api.database.models import Base
 
 SESSION: scoped_session | None = None
 ENGINE: Engine | None = None
-
 LOG = logging.getLogger(__name__)
 
 
