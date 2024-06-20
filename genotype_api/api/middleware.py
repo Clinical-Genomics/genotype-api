@@ -13,12 +13,7 @@ class DBSessionMiddleware(BaseHTTPMiddleware):
 
     async def dispatch(self, request: Request, call_next):
         try:
-            LOG.error("Opening dispatching request")
             response = await call_next(request)
-        except Exception as error:
-            LOG.error(f"Caught exception: {error}")
-            rollback_transactions()
-            raise error
         finally:
             close_session()
         return response

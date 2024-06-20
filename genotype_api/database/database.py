@@ -66,11 +66,5 @@ def get_tables() -> list[str]:
 
 def close_session():
     """Close the global database session of the genotype api."""
-    LOG.error("Closing database session")
     SESSION.remove()
 
-
-def rollback_transactions():
-    """Rollback the global database session of the genotype api."""
-    LOG.error("Rolling back database transactions")
-    SESSION.rollback()
