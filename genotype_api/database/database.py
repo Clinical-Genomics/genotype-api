@@ -67,4 +67,3 @@ def get_tables() -> list[str]:
 def close_session():
     """Close the global database session of the genotype api."""
     SESSION.remove()
-
