@@ -1,7 +1,5 @@
 """Hold the database information"""
 
-import logging
-
 from sqlalchemy import create_engine, inspect
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.engine.reflection import Inspector
@@ -12,7 +10,6 @@ from genotype_api.database.models import Base
 
 SESSION: scoped_session | None = None
 ENGINE: Engine | None = None
-LOG = logging.getLogger(__name__)
 
 
 def initialise_database(db_uri: str) -> None:

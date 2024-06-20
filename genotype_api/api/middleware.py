@@ -1,10 +1,6 @@
-import logging
-
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
-from genotype_api.database.database import close_session, rollback_transactions
-
-LOG = logging.getLogger(__name__)
+from genotype_api.database.database import close_session
 
 
 class DBSessionMiddleware(BaseHTTPMiddleware):
