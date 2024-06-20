@@ -8,6 +8,8 @@ class DBSessionMiddleware(BaseHTTPMiddleware):
         super().__init__(app)
 
     async def dispatch(self, request: Request, call_next):
-        response = await call_next(request)
-        close_session()
+        try:
+            response = await call_next(request)
+        finally:
+            close_session()
         return response
