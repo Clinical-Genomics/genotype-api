@@ -1,0 +1,40 @@
+diff --git a/genotype_api/api/app.py b/genotype_api/api/app.py
+index d521c23..f6630fc 100644
+--- a/genotype_api/api/app.py
++++ b/genotype_api/api/app.py
+@@ -7,8 +7,9 @@
+ from fastapi.responses import JSONResponse
+ from fastapi.middleware.cors import CORSMiddleware
+ 
++from genotype_api.api.middleware import DBSessionMiddleware
+ from genotype_api.config import security_settings, settings
+-from genotype_api.database.database import create_all_tables, initialise_database, close_session
++from genotype_api.database.database import create_all_tables, initialise_database
+ from genotype_api.api.endpoints import samples, snps, users, plates, analyses
+ from sqlalchemy.exc import NoResultFound
+ 
+@@ -24,6 +25,7 @@
+     allow_methods=["*"],
+     allow_headers=["*"],
+ )
++app.add_middleware(DBSessionMiddleware)
+ 
+ 
+ @app.exception_handler(NoResultFound)
+diff --git a/genotype_api/api/middleware.py b/genotype_api/api/middleware.py
+new file mode 100644
+index 0000000..4f3e817
+--- /dev/null
++++ b/genotype_api/api/middleware.py
+@@ -0,0 +1,11 @@
++from fastapi import Request
++from genotype_api.database.database import close_session
++
++
++class DBSessionMiddleware:
++    async def __call__(self, request: Request, call_next):
++        try:
++            response = await call_next(request)
++        finally:
++            close_session()
++        return response
