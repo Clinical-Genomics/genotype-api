@@ -96,6 +96,7 @@ def read_plate(
 ):
     """Display information about a plate."""
     logging.error("Retrieving plates")
+    logging.info("Retrieving plates with info")
     try:
         return plate_service.get_plate(plate_id=plate_id)
     except PlateNotFoundError:
