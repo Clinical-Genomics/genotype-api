@@ -8,14 +8,14 @@ logger = logging.getLogger(__name__)
 
 class DBSessionMiddleware(BaseHTTPMiddleware):
     def __init__(self, app):
-        logger.info("Initialising DBSessionMiddleware")
+        logger.error("Initialising DBSessionMiddleware")
         super().__init__(app)
 
     async def dispatch(self, request: Request, call_next):
         try:
-            logger.info("In dispatch")
+            logger.error("In dispatch")
             response = await call_next(request)
         finally:
-            logger.info("Closing session")
+            logger.error("Closing session")
             close_session()
         return response
