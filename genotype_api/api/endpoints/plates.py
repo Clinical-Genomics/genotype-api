@@ -95,7 +95,7 @@ def read_plate(
     current_user: CurrentUser = Depends(get_active_user),
 ):
     """Display information about a plate."""
-    logging.info("Retrieving plates")
+    logging.error("Retrieving plates")
     try:
         return plate_service.get_plate(plate_id=plate_id)
     except PlateNotFoundError:
