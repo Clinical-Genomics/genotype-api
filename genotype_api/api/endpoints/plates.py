@@ -1,5 +1,6 @@
 """Routes for plates"""
 
+import logging
 from http import HTTPStatus
 from typing import Literal
 from fastapi import APIRouter, Depends, File, Query, UploadFile, status, HTTPException
@@ -16,6 +17,7 @@ from genotype_api.services.endpoint_services.plate_service import PlateService
 
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 
 def get_plate_service(store: Store = Depends(get_store)) -> PlateService:
@@ -93,6 +95,7 @@ def read_plate(
     current_user: CurrentUser = Depends(get_active_user),
 ):
     """Display information about a plate."""
+    logging.info("Retrieving plates")
     try:
         return plate_service.get_plate(plate_id=plate_id)
     except PlateNotFoundError:
