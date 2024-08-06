@@ -5,6 +5,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 class DBSessionMiddleware(BaseHTTPMiddleware):
     def __init__(self, app):
         logger.info("Initialising DBSessionMiddleware")
