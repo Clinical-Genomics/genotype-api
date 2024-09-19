@@ -3,11 +3,11 @@
 from collections import Counter
 
 from genotype_api.database.models import Analysis, Sample
-from genotype_api.models import MatchResult, MatchCounts, SampleDetail
+from genotype_api.models import MatchCounts, MatchResult, SampleDetail
 from genotype_api.services.match_genotype_service.utils import (
-    compare_genotypes,
-    check_snps,
     check_sex,
+    check_snps,
+    compare_genotypes,
 )
 
 
@@ -16,6 +16,8 @@ class MatchGenotypeService:
     def get_matches(analyses: list[Analysis], sample_analysis: Analysis) -> list[MatchResult]:
         match_results = []
         for genotype in analyses:
+            if genotype.genotypes is None:
+                continue
             genotype_pairs = zip(genotype.genotypes, sample_analysis.genotypes)
             results = dict(
                 compare_genotypes(genotype_1, genotype_2)
