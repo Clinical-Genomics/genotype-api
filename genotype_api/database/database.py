@@ -5,8 +5,8 @@ from sqlalchemy.engine.base import Engine
 from sqlalchemy.engine.reflection import Inspector
 from sqlalchemy.orm import Session, scoped_session, sessionmaker
 
-from genotype_api.exceptions import GenotypeDBError
 from genotype_api.database.models import Base
+from genotype_api.exceptions import GenotypeDBError
 
 SESSION: scoped_session | None = None
 ENGINE: Engine | None = None
@@ -16,7 +16,7 @@ def initialise_database(db_uri: str) -> None:
     """Initialize the SQLAlchemy engine and session for genotype api."""
     global SESSION, ENGINE
 
-    ENGINE = create_engine(db_uri, pool_pre_ping=True)
+    ENGINE = create_engine(db_uri, pool_pre_ping=True, pool_recycle=3600)
     session_factory = sessionmaker(ENGINE)
     SESSION = scoped_session(session_factory)
 
