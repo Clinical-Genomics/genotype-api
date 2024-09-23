@@ -16,8 +16,6 @@ class MatchGenotypeService:
     def get_matches(analyses: list[Analysis], sample_analysis: Analysis) -> list[MatchResult]:
         match_results = []
         for genotype in analyses:
-            if genotype.genotypes is None:
-                continue
             genotype_pairs = zip(genotype.genotypes, sample_analysis.genotypes)
             results = dict(
                 compare_genotypes(genotype_1, genotype_2)
