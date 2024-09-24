@@ -16,7 +16,7 @@ def initialise_database(db_uri: str) -> None:
     """Initialize the SQLAlchemy engine and session for genotype api."""
     global SESSION, ENGINE
 
-    ENGINE = create_engine(db_uri, pool_pre_ping=True, pool_recycle=3600)
+    ENGINE = create_engine(db_uri, pool_pre_ping=True)
     session_factory = sessionmaker(ENGINE)
     SESSION = scoped_session(session_factory)
 
@@ -61,6 +61,10 @@ def get_tables() -> list[str]:
     return inspector.get_table_names()
 
 
-def close_session():
+def close_session() -> None:
     """Close the global database session of the genotype api."""
-    SESSION.remove()
+    if SESSION:
+        session = SESSION()
+        if session.is_active:
+            session.rollback()
+        SESSION.remove()
