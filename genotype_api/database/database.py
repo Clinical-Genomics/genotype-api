@@ -61,10 +61,6 @@ def get_tables() -> list[str]:
     return inspector.get_table_names()
 
 
-def close_session() -> None:
+def close_session():
     """Close the global database session of the genotype api."""
-    if SESSION:
-        session = SESSION()
-        if session.is_active:
-            session.rollback()
-        SESSION.remove()
+    SESSION.remove()
