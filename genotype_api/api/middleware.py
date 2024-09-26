@@ -1,7 +1,8 @@
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
-from genotype_api.exceptions import GenotypeDBError
+
 from genotype_api.database.database import close_session
+from genotype_api.exceptions import GenotypeDBError
 
 
 class DBSessionMiddleware(BaseHTTPMiddleware):
@@ -13,6 +14,6 @@ class DBSessionMiddleware(BaseHTTPMiddleware):
             response = await call_next(request)
         except Exception:
             raise GenotypeDBError
-        finally
+        finally:
             close_session()
         return response
