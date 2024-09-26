@@ -14,8 +14,13 @@ from genotype_api.services.match_genotype_service.utils import (
 class MatchGenotypeService:
     @staticmethod
     def get_matches(analyses: list[Analysis], sample_analysis: Analysis) -> list[MatchResult]:
+        if sample_analysis is None or sample_analysis.genotypes is None:
+            return []
+
         match_results = []
         for genotype in analyses:
+            if genotype is None or genotype.genotypes is None:
+                continue
             genotype_pairs = zip(genotype.genotypes, sample_analysis.genotypes)
             results = dict(
                 compare_genotypes(genotype_1, genotype_2)
