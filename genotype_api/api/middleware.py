@@ -16,36 +16,46 @@ class DBSessionMiddleware(BaseHTTPMiddleware):
         super().__init__(app)
 
     async def dispatch(self, request: Request, call_next):
-        session = None
-        message = "Internal server error: database session error."
-        error_message = JSONResponse(status_code=500, content={"message": message})
+        session = get_session()
+        if session is None:
+            LOG.error("No database session found.")
+            return JSONResponse(
+                status_code=500, content={"message": "Internal server error: No database session."}
+            )
 
         try:
-            session = get_session()
-            if session is None:
-                LOG.debug(f"No database session found.")
-                return error_message
-            elif session.dirty:
+            response = await call_next(request)
+
+            if session.dirty:
                 session.flush()
-                response = await call_next(request)
-                return response
-            else:
-                response = await call_next(request)
-                return response
+
+            return response
 
         except PendingRollbackError as e:
-            if session and session.is_active:
+            LOG.error("Pending rollback error, rolling back session", exc_info=True)
+            if session.is_active:
                 session.rollback()
-            LOG.debug(f"DB session error occurred: {e}")
-            return error_message
+            return JSONResponse(
+                status_code=500, content={"message": "Internal server error: Pending rollback."}
+            )
 
         except OperationalError as e:
-            LOG.debug(f"Database connection lost: {e}")
-            return error_message
+            LOG.error("Operational error: database connection lost", exc_info=True)
+            if session.is_active:
+                session.rollback()
+            return JSONResponse(
+                status_code=500,
+                content={"message": "Internal server error: Database connection lost."},
+            )
 
         except Exception as e:
-            LOG.debug(f"DB session occurred: {e}")
-            return error_message
+            LOG.error(f"Unexpected error occurred: {e}", exc_info=True)
+            if session.is_active:
+                session.rollback()
+            return JSONResponse(
+                status_code=500,
+                content={"message": "Internal server error: Unexpected error occurred."},
+            )
+
         finally:
-            if session:
-                close_session()
+            close_session()
