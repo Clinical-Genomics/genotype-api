@@ -17,16 +17,18 @@ class DBSessionMiddleware(BaseHTTPMiddleware):
 
     async def dispatch(self, request: Request, call_next):
         session = None
-        error_message = JSONResponse(
-            status_code=500, content={"message": "Internal server error: database session error."}
-        )
+        message = "Internal server error: database session error."
+        error_message = JSONResponse(status_code=500, content={"message": message})
 
         try:
             session = get_session()
             if session is None:
+                LOG.debug(f"No database session found.")
                 return error_message
             elif session.dirty:
                 session.flush()
+                response = await call_next(request)
+                return response
             else:
                 response = await call_next(request)
                 return response
@@ -42,8 +44,6 @@ class DBSessionMiddleware(BaseHTTPMiddleware):
             return error_message
 
         except Exception as e:
-            if session and session.is_active:
-                session.rollback()
             LOG.debug(f"DB session occurred: {e}")
             return error_message
         finally:
