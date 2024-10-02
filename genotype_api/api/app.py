@@ -2,7 +2,7 @@
 Main functions for the genotype api
 
 """
-
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, status, Request
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -13,7 +13,17 @@ from genotype_api.database.database import create_all_tables, initialise_databas
 from genotype_api.api.endpoints import samples, snps, users, plates, analyses
 from sqlalchemy.exc import NoResultFound
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup logic 
+    initialise_database(settings.db_uri)
+    create_all_tables()
+    yield
+    # Shutdown logic
+
 app = FastAPI(
+    lifespan=lifespan,
     root_path=security_settings.api_root_path,
     root_path_in_servers=True,
     openapi_prefix=security_settings.api_root_path,
@@ -72,9 +82,3 @@ app.include_router(
     tags=["analyses"],
     responses={status.HTTP_404_NOT_FOUND: {"description": "Not found"}},
 )
-
-
-@app.on_event("startup")
-def on_startup():
-    initialise_database(settings.db_uri)
-    create_all_tables()
