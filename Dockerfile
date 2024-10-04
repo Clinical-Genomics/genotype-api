@@ -1,4 +1,4 @@
-FROM docker.io/library/python:3.11-slim-bullseye as base
+FROM docker.io/library/python:3.12-slim-bullseye as base
 
 LABEL about.home="https://github.com/Clinical-Genomics/genotype-api"
 LABEL about.tags="Genotype API"
