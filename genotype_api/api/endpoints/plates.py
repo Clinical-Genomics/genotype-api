@@ -3,8 +3,7 @@
 from http import HTTPStatus
 from typing import Literal
 
-from fastapi import (APIRouter, Depends, File, HTTPException, Query,
-                     UploadFile, status)
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, status
 from fastapi.responses import JSONResponse
 
 from genotype_api.database.filter_models.plate_models import PlateOrderParams
