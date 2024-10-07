@@ -96,4 +96,3 @@ class UpdateHandler(BaseHandler):
         await self.session.commit()
         await self.session.refresh(user)
         return user
-        return user
