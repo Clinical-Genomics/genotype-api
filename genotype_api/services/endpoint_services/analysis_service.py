@@ -49,7 +49,9 @@ class AnalysisService(BaseService):
         """
         file_name: Path = check_file(file_path=file.filename, extension=FileExtension.VCF)
         content = await file.file.read()
-        sequence_analysis = SequenceAnalysis(vcf_file=content.decode("utf-8"), source=str(file_name))
+        sequence_analysis = SequenceAnalysis(
+            vcf_file=content.decode("utf-8"), source=str(file_name)
+        )
         analyses: list[Analysis] = list(sequence_analysis.generate_analyses())
         await self.store.check_analyses_objects(analyses=analyses, analysis_type=Types.SEQUENCE)
         await self.store.create_analyses_samples(analyses=analyses)

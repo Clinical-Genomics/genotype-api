@@ -2,8 +2,7 @@
 
 from http import HTTPStatus
 
-from fastapi import (APIRouter, Depends, File, HTTPException, Query,
-                     UploadFile, status)
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, status
 from fastapi.responses import JSONResponse
 
 from genotype_api.database.store import Store, get_store
@@ -11,8 +10,7 @@ from genotype_api.dto.analysis import AnalysisResponse
 from genotype_api.dto.user import CurrentUser
 from genotype_api.exceptions import AnalysisNotFoundError
 from genotype_api.security import get_active_user
-from genotype_api.services.endpoint_services.analysis_service import \
-    AnalysisService
+from genotype_api.services.endpoint_services.analysis_service import AnalysisService
 
 router = APIRouter()
 

@@ -7,8 +7,7 @@ from starlette.responses import JSONResponse
 
 from genotype_api.database.store import Store, get_store
 from genotype_api.dto.user import CurrentUser, UserRequest, UserResponse
-from genotype_api.exceptions import (UserArchiveError, UserExistsError,
-                                     UserNotFoundError)
+from genotype_api.exceptions import UserArchiveError, UserExistsError, UserNotFoundError
 from genotype_api.security import get_active_user
 from genotype_api.services.endpoint_services.user_service import UserService
 
