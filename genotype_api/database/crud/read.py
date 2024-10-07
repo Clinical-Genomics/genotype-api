@@ -268,39 +268,3 @@ class ReadHandler(BaseHandler):
         )
         result = await self.session.execute(filtered_query)
         return result.scalars().all()
-
-    async def get_snps_by_limit_and_skip(self, skip: int, limit: int) -> list[SNP]:
-        snps: Query = self._get_query(SNP)
-        filter_functions = [SNPFilter.SKIP_AND_LIMIT]
-        filtered_query = apply_snp_filter(
-            snps=snps, filter_functions=filter_functions, skip=skip, limit=limit
-        )
-        result = await self.session.execute(filtered_query)
-        return result.scalars().all()
-
-    async def get_snps_by_limit_and_skip(self, skip: int, limit: int) -> list[SNP]:
-        snps: Query = self._get_query(SNP)
-        filter_functions = [SNPFilter.SKIP_AND_LIMIT]
-        filtered_query = apply_snp_filter(
-            snps=snps, filter_functions=filter_functions, skip=skip, limit=limit
-        )
-        result = await self.session.execute(filtered_query)
-        return result.scalars().all()
-
-    async def get_snps_by_limit_and_skip(self, skip: int, limit: int) -> list[SNP]:
-        snps: Query = self._get_query(SNP)
-        filter_functions = [SNPFilter.SKIP_AND_LIMIT]
-        filtered_query = apply_snp_filter(
-            snps=snps, filter_functions=filter_functions, skip=skip, limit=limit
-        )
-        result = await self.session.execute(filtered_query)
-        return result.scalars().all()
-
-    async def get_snps_by_limit_and_skip(self, skip: int, limit: int) -> list[SNP]:
-        snps: Query = self._get_query(SNP)
-        filter_functions = [SNPFilter.SKIP_AND_LIMIT]
-        filtered_query = apply_snp_filter(
-            snps=snps, filter_functions=filter_functions, skip=skip, limit=limit
-        )
-        result = await self.session.execute(filtered_query)
-        return result.scalars().all()
