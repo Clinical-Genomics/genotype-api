@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "genotype-api"
-version = "3.0.17"
+version = "3.0.18"
 description = "Genotype-api"
 authors = ["Christian Oertlin <c.oertlin@gmail.com>"]
 readme = "README.md"
@@ -11,6 +11,7 @@ bcrypt = "^4.1.2"
 bump2version = "^1.0.1"
 click = "^8.1.7"
 coloredlogs = "^15.0.1"
+cryptography = "^42.0.8"
 email-validator = "^2.1.1"
 fastapi = ">=0.109.1"
 google-auth = "^2.29.0"
@@ -37,6 +38,7 @@ aiomysql = "^0.2.0"
 pytest-asyncio = "^0.24.0"
 
 
+
 [tool.poetry.group.dev.dependencies]
 bump2version = "^1.0.1"
 coveralls = "^3.3.1"
@@ -48,3 +50,15 @@ pytest = ">=5.2"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 100
+
+[tool.isort]
+profile = "black"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+exclude = ["alembic"]
+ignore = ["E501"]
