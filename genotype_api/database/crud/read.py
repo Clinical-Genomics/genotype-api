@@ -218,7 +218,7 @@ class ReadHandler(BaseHandler):
         return result.scalars().first()
 
     async def get_user_by_id(self, user_id: int) -> User:
-        users: Query = self._get_query(User)
+        users: Query = self._get_query(User).options(selectinload(User.plates))
         filter_functions = [UserFilter.BY_ID]
         filtered_query = apply_user_filter(
             users=users, filter_functions=filter_functions, user_id=user_id
