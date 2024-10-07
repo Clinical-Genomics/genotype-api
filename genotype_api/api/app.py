@@ -2,30 +2,31 @@
 Main functions for the genotype api
 
 """
-from contextlib import asynccontextmanager
-from fastapi import FastAPI, status, Request
-from fastapi.responses import JSONResponse
-from fastapi.middleware.cors import CORSMiddleware
 
-from genotype_api.api.middleware import DBSessionMiddleware
-from genotype_api.config import security_settings, settings
-from genotype_api.database.database import create_all_tables, initialise_database
-from genotype_api.api.endpoints import samples, snps, users, plates, analyses
+import logging
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI, Request, status
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from sqlalchemy.exc import NoResultFound
+
+from genotype_api.api.endpoints import analyses, plates, samples, snps, users
+from genotype_api.config import security_settings
+
+LOG = logging.getLogger(__name__)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup logic 
-    initialise_database(settings.db_uri)
-    create_all_tables()
-    yield
-    # Shutdown logic
+    # Startup actions, like connecting to the database
+    LOG.debug("Starting up...")
+    yield  # This is important, it must yield control
+    # Shutdown actions, like closing the database connection
+    LOG.debug("Shutting down...")
 
-app = FastAPI(
-    lifespan=lifespan,
-    root_path=security_settings.api_root_path
-)
+
+app = FastAPI(lifespan=lifespan, root_path=security_settings.api_root_path)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -33,7 +34,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-app.add_middleware(DBSessionMiddleware)
 
 
 @app.exception_handler(NoResultFound)
