@@ -1,18 +1,19 @@
 from pydantic import EmailStr
-
+from sqlalchemy.future import select
+from sqlalchemy.orm import Query, selectinload
 
 from genotype_api.constants import Types
 from genotype_api.database.base_handler import BaseHandler
 from genotype_api.database.filter_models.plate_models import PlateSignOff
 from genotype_api.database.filter_models.sample_models import SampleSexesUpdate
-from genotype_api.database.models import Sample, Plate, User
+from genotype_api.database.models import Analysis, Plate, Sample, User
 from genotype_api.exceptions import SampleNotFoundError
 from genotype_api.services.match_genotype_service.match_genotype import MatchGenotypeService
 
 
 class UpdateHandler(BaseHandler):
 
-    def refresh_sample_status(
+    async def refresh_sample_status(
         self,
         sample: Sample,
     ) -> Sample:
@@ -20,49 +21,60 @@ class UpdateHandler(BaseHandler):
             sample.status = None
         else:
             results = MatchGenotypeService.check_sample(sample=sample)
-            sample.status = "fail" if "fail" in results.dict().values() else "pass"
+            sample.status = "fail" if "fail" in results.model_dump().values() else "pass"
 
         self.session.add(sample)
-        self.session.commit()
-        self.session.refresh(sample)
+        await self.session.commit()
+        await self.session.refresh(sample)
         return sample
 
-    def update_sample_comment(self, sample_id: str, comment: str) -> Sample:
-        sample: Sample = self.get_sample_by_id(sample_id=sample_id)
+    async def update_sample_comment(self, sample_id: str, comment: str) -> Sample:
+        query: Query = select(Sample).distinct().filter(Sample.id == sample_id)
+        result = await self.session.execute(query)
+        sample: Sample = result.scalars().one_or_none()
         if not sample:
             raise SampleNotFoundError
         sample.comment = comment
         self.session.add(sample)
-        self.session.commit()
-        self.session.refresh(sample)
+        await self.session.commit()
+        await self.session.refresh(sample)
         return sample
 
-    def update_sample_status(self, sample_id: str, status: str | None) -> Sample:
-        sample: Sample = self.get_sample_by_id(sample_id=sample_id)
+    async def update_sample_status(self, sample_id: str, status: str | None) -> Sample:
+        query: Query = select(Sample).distinct().filter(Sample.id == sample_id)
+        result = await self.session.execute(query)
+        sample: Sample = result.scalars().one_or_none()
         if not sample:
             raise SampleNotFoundError
         sample.status = status
         self.session.add(sample)
-        self.session.commit()
-        self.session.refresh(sample)
+        await self.session.commit()
+        await self.session.refresh(sample)
         return sample
 
-    def refresh_plate(self, plate: Plate) -> None:
-        self.session.refresh(plate)
+    async def refresh_plate(self, plate: Plate) -> None:
+        await self.session.refresh(plate)
 
-    def update_plate_sign_off(self, plate: Plate, plate_sign_off: PlateSignOff) -> Plate:
+    async def update_plate_sign_off(self, plate: Plate, plate_sign_off: PlateSignOff) -> Plate:
         plate.signed_by = plate_sign_off.user_id
         plate.signed_at = plate_sign_off.signed_at
         plate.method_document = plate_sign_off.method_document
         plate.method_version = plate_sign_off.method_version
-        self.session.commit()
-        self.session.refresh(plate)
+        await self.session.commit()
+        await self.session.refresh(plate)
         return plate
 
-    def update_sample_sex(self, sexes_update: SampleSexesUpdate) -> Sample:
-        sample = (
-            self.session.query(Sample).filter(Sample.id == sexes_update.sample_id).one_or_none()
+    async def update_sample_sex(self, sexes_update: SampleSexesUpdate) -> Sample:
+        query: Query = (
+            select(Sample)
+            .distinct()
+            .options(selectinload(Sample.analyses).selectinload(Analysis.genotypes))
+            .join(Analysis)
+            .filter(Sample.id == sexes_update.sample_id)
         )
+
+        result = await self.session.execute(query)
+        sample = result.scalars().one_or_none()
         if not sample:
             raise SampleNotFoundError
         sample.sex = sexes_update.sex
@@ -72,15 +84,16 @@ class UpdateHandler(BaseHandler):
             elif sexes_update.sequence_sex and analysis.type == Types.SEQUENCE:
                 analysis.sex = sexes_update.sequence_sex
             self.session.add(analysis)
-        self.session.add(sample)
-        self.session.commit()
-        self.session.refresh(sample)
-        sample = self.refresh_sample_status(sample)
+        self.session.add_all(sample)
+        await self.session.commit()
+        await self.session.refresh(sample)
+        sample = await self.refresh_sample_status(sample)
         return sample
 
-    def update_user_email(self, user: User, email: EmailStr) -> User:
+    async def update_user_email(self, user: User, email: EmailStr) -> User:
         user.email = email
         self.session.add(user)
-        self.session.commit()
-        self.session.refresh(user)
+        await self.session.commit()
+        await self.session.refresh(user)
+        return user
         return user
