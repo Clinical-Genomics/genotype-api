@@ -8,7 +8,9 @@ from genotype_api.database.filter_models.plate_models import PlateSignOff
 from genotype_api.database.filter_models.sample_models import SampleSexesUpdate
 from genotype_api.database.models import Analysis, Plate, Sample, User
 from genotype_api.exceptions import SampleNotFoundError
-from genotype_api.services.match_genotype_service.match_genotype import MatchGenotypeService
+from genotype_api.services.match_genotype_service.match_genotype import (
+    MatchGenotypeService,
+)
 
 
 class UpdateHandler(BaseHandler):
@@ -69,7 +71,7 @@ class UpdateHandler(BaseHandler):
             select(Sample)
             .distinct()
             .options(selectinload(Sample.analyses).selectinload(Analysis.genotypes))
-            .join(Analysis)
+            .join(Analysis, Analysis.sample_id == Sample.id)
             .filter(Sample.id == sexes_update.sample_id)
         )
 

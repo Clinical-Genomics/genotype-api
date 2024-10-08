@@ -29,4 +29,4 @@ class BaseHandler:
         return select(table)
 
     def _get_join_analysis_on_sample(self) -> Query:
-        return self._get_query(table=Sample).join(Analysis)
+        return self._get_query(table=Sample).join(Analysis, Analysis.sample_id == Sample.id)

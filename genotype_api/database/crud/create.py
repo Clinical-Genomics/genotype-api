@@ -1,5 +1,7 @@
 import logging
 
+from sqlalchemy.future import select
+
 from genotype_api.database.base_handler import BaseHandler
 from genotype_api.database.models import SNP, Analysis, Genotype, Plate, Sample, User
 from genotype_api.dto.user import UserRequest
@@ -25,8 +27,9 @@ class CreateHandler(BaseHandler):
 
     async def create_sample(self, sample: Sample) -> Sample:
         """Creates a sample in the database."""
-        sample_in_db = await self._get_query(Analysis).filter(Sample.id == sample.id).one_or_none()
-        if sample_in_db:
+        sample_in_db_query = self._get_query(Analysis).filter(Sample.id == sample.id)
+        result = await self.session.execute(sample_in_db_query)
+        if sample_in_db := result.one_or_none():
             raise SampleExistsError
         self.session.add(sample)
         await self.session.commit()
@@ -34,14 +37,22 @@ class CreateHandler(BaseHandler):
         return sample
 
     async def create_analyses_samples(self, analyses: list[Analysis]) -> list[Sample]:
-        """creating samples in an analysis if not already in db."""
-        return [
-            await self.create_sample(sample=Sample(id=analysis.sample_id))
-            for analysis in analyses
-            if not await self.session.query(Sample)
-            .filter(Sample.id == analysis.sample_id)
-            .one_or_none()
-        ]
+        """Creating samples in an analysis if not already in db."""
+        created_samples = []
+
+        for analysis in analyses:
+            # Sample already exists in the database
+            sample_in_db_query = self._get_query(Sample).filter(Sample.id == analysis.sample_id)
+            result = await self.session.execute(sample_in_db_query)
+            sample_in_db = result.one_or_none()
+
+            # Sample doesn't exist
+            if not sample_in_db:
+                sample = Sample(id=analysis.sample_id)
+                created_sample = await self.create_sample(sample=sample)
+                created_samples.append(created_sample)
+
+        return created_samples
 
     async def create_user(self, user: User) -> User:
         self.session.add(user)

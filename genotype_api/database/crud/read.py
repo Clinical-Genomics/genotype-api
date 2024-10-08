@@ -9,10 +9,19 @@ from genotype_api.constants import Types
 from genotype_api.database.base_handler import BaseHandler
 from genotype_api.database.filter_models.plate_models import PlateOrderParams
 from genotype_api.database.filter_models.sample_models import SampleFilterParams
-from genotype_api.database.filters.analysis_filter import AnalysisFilter, apply_analysis_filter
-from genotype_api.database.filters.genotype_filters import GenotypeFilter, apply_genotype_filter
+from genotype_api.database.filters.analysis_filter import (
+    AnalysisFilter,
+    apply_analysis_filter,
+)
+from genotype_api.database.filters.genotype_filters import (
+    GenotypeFilter,
+    apply_genotype_filter,
+)
 from genotype_api.database.filters.plate_filters import PlateFilter, apply_plate_filter
-from genotype_api.database.filters.sample_filters import SampleFilter, apply_sample_filter
+from genotype_api.database.filters.sample_filters import (
+    SampleFilter,
+    apply_sample_filter,
+)
 from genotype_api.database.filters.snp_filters import SNPFilter, apply_snp_filter
 from genotype_api.database.filters.user_filters import UserFilter, apply_user_filter
 from genotype_api.database.models import SNP, Analysis, Genotype, Plate, Sample, User
@@ -147,7 +156,7 @@ class ReadHandler(BaseHandler):
             select(Sample)
             .distinct()
             .options(selectinload(Sample.analyses).selectinload(Analysis.genotypes))
-            .join(Analysis)
+            .join(Analysis, Analysis.sample_id == Sample.id)
         )
         if filter_params.sample_id:
             query = self._get_samples(query, filter_params.sample_id)
