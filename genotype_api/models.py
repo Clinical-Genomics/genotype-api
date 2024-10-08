@@ -1,4 +1,4 @@
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, field_validator
 
 
 class SampleDetailStats(BaseModel):
@@ -25,22 +25,21 @@ class SampleDetail(BaseModel):
     stats: SampleDetailStats | None = None
     status: SampleDetailStatus | None = None
 
-    @validator("stats")
-    def validate_stats(cls, value, values) -> SampleDetailStats:
-        matches = values.get("matches")
-        mismatches = values.get("mismatches")
-        unknown = values.get("unknown")
+    @field_validator("stats", mode="before")
+    def validate_stats(cls, value, data) -> SampleDetailStats:
+        matches = data.get("matches")
+        mismatches = data.get("mismatches")
+        unknown = data.get("unknown")
         return SampleDetailStats(matches=matches, mismatches=mismatches, unknown=unknown)
 
-    @validator("status")
-    def validate_status(cls, value, values) -> SampleDetailStatus:
-        sex = values.get("sex")
-        snps = values.get("snps")
-        nocalls = values.get("nocalls")
+    @field_validator("status", mode="before")
+    def validate_status(cls, value, data) -> SampleDetailStatus:
+        sex = data.get("sex")
+        snps = data.get("snps")
+        nocalls = data.get("nocalls")
         return SampleDetailStatus(sex=sex, snps=snps, nocalls=nocalls)
 
-    class Config:
-        validate_default = True
+    model_config = {"validate_assignment": True}
 
 
 class MatchCounts(BaseModel):

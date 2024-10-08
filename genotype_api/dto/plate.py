@@ -3,7 +3,7 @@
 from collections import Counter
 from datetime import datetime
 
-from pydantic import BaseModel, EmailStr, Field, validator
+from pydantic import BaseModel, EmailStr, Field, field_validator
 
 from genotype_api.constants import Sexes, Status, Types
 from genotype_api.database.models import Analysis
@@ -55,7 +55,7 @@ class PlateResponse(BaseModel):
     analyses: list[AnalysisOnPlate] | None = None
     plate_status_counts: PlateStatusCounts | None = None
 
-    @validator("plate_status_counts")
+    @field_validator("plate_status_counts", mode="before")
     def check_detail(cls, value, values):
         analyses = values.get("analyses")
         if not analyses:
@@ -65,5 +65,4 @@ class PlateResponse(BaseModel):
         status_counts = Counter(statuses)
         return PlateStatusCounts(**status_counts, total=len(analyses), commented=commented)
 
-    class Config:
-        validate_default = True
+    model_config = {"validate_assignment": True}
