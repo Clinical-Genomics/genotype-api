@@ -9,7 +9,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from sqlalchemy.exc import NoResultFound
+from sqlalchemy.exc import NoResultFound, OperationalError
 
 from genotype_api.api.endpoints import analyses, plates, samples, snps, users
 from genotype_api.config import security_settings
@@ -34,6 +34,15 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.exception_handler(OperationalError)
+async def db_connection_exception_handler(request: Request, exc: OperationalError):
+    LOG.error(f"Database connection error: {exc}")
+    return JSONResponse(
+        content={"detail": "Database connection error. Please try again later."},
+        status_code=status.HTTP_503_SERVICE_UNAVAILABLE,  # 503 indicates a service is unavailable
+    )
 
 
 @app.exception_handler(NoResultFound)
