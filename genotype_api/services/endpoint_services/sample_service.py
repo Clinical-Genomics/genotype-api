@@ -4,14 +4,23 @@ from datetime import date
 from typing import Literal
 
 from genotype_api.constants import Sexes, Types
-from genotype_api.database.filter_models.sample_models import SampleFilterParams, SampleSexesUpdate
+from genotype_api.database.filter_models.sample_models import (
+    SampleFilterParams,
+    SampleSexesUpdate,
+)
 from genotype_api.database.models import Analysis, Sample
 from genotype_api.dto.genotype import GenotypeResponse
 from genotype_api.dto.sample import AnalysisOnSample, SampleCreate, SampleResponse
-from genotype_api.exceptions import GenotypeDBError, InsufficientAnalysesError, SampleNotFoundError
+from genotype_api.exceptions import (
+    GenotypeDBError,
+    InsufficientAnalysesError,
+    SampleNotFoundError,
+)
 from genotype_api.models import MatchResult, SampleDetail
 from genotype_api.services.endpoint_services.base_service import BaseService
-from genotype_api.services.match_genotype_service.match_genotype import MatchGenotypeService
+from genotype_api.services.match_genotype_service.match_genotype import (
+    MatchGenotypeService,
+)
 
 
 class SampleService(BaseService):
@@ -115,20 +124,10 @@ class SampleService(BaseService):
             analysis_type=comparison_set, date_min=date_min, date_max=date_max
         )
 
-        # if not analyses:
-        #     raise InsufficientAnalysesError
-
         # Fetch the sample analysis with eager loading
         sample_analysis = await self.store.get_analysis_by_type_and_sample_id(
             sample_id=sample_id, analysis_type=analysis_type
         )
-
-        # if sample_analysis is None:
-        #     raise SampleNotFoundError
-
-        # # Ensure that genotypes are eagerly loaded to avoid lazy loading
-        # if not sample_analysis.genotypes:
-        #     raise GenotypeDBError
 
         # Perform matching using the MatchGenotypeService
         matches: list[MatchResult] = MatchGenotypeService.get_matches(
