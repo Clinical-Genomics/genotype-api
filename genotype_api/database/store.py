@@ -1,7 +1,10 @@
 """Module for the store handler."""
 
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.ext.asyncio import AsyncSession
+from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_fixed
 
+from genotype_api.config import settings
 from genotype_api.database.crud.create import CreateHandler
 from genotype_api.database.crud.delete import DeleteHandler
 from genotype_api.database.crud.read import ReadHandler
@@ -24,6 +27,12 @@ class Store(
         UpdateHandler.__init__(self, session)
 
     @classmethod
+    @retry(
+        stop=stop_after_attempt(settings.max_retries),
+        wait=wait_fixed(settings.retry_delay),
+        retry=retry_if_exception_type(OperationalError),
+        reraise=True,
+    )
     async def create(cls) -> "Store":
         """Asynchronously create and return a Store instance with a session."""
         async with get_session() as session:  # Correctly use async context manager
