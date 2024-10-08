@@ -3,7 +3,6 @@
 from pydantic import EmailStr
 
 from genotype_api.database.models import User
-from genotype_api.database.store import Store
 from genotype_api.dto.user import PlateOnUser, UserRequest, UserResponse
 from genotype_api.exceptions import UserArchiveError, UserExistsError, UserNotFoundError
 from genotype_api.services.endpoint_services.base_service import BaseService

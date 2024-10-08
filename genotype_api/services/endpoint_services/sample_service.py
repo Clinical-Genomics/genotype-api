@@ -11,11 +11,7 @@ from genotype_api.database.filter_models.sample_models import (
 from genotype_api.database.models import Analysis, Sample
 from genotype_api.dto.genotype import GenotypeResponse
 from genotype_api.dto.sample import AnalysisOnSample, SampleCreate, SampleResponse
-from genotype_api.exceptions import (
-    GenotypeDBError,
-    InsufficientAnalysesError,
-    SampleNotFoundError,
-)
+from genotype_api.exceptions import SampleNotFoundError
 from genotype_api.models import MatchResult, SampleDetail
 from genotype_api.services.endpoint_services.base_service import BaseService
 from genotype_api.services.match_genotype_service.match_genotype import (
