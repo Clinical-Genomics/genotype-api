@@ -41,7 +41,7 @@ async def db_connection_exception_handler(request: Request, exc: OperationalErro
     LOG.error(f"Database connection error: {exc}")
     return JSONResponse(
         content={"detail": "Database connection error. Please try again later."},
-        status_code=status.HTTP_503_SERVICE_UNAVAILABLE,  # 503 indicates a service is unavailable
+        status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
     )
 
 
