@@ -114,18 +114,12 @@ class SampleService(BaseService):
         """
         Get the match results for a specific analysis type and comparison set within a date range.
         """
-
-        # Fetch the analyses with eager loading using selectinload
         analyses = await self.store.get_analyses_by_type_between_dates(
             analysis_type=comparison_set, date_min=date_min, date_max=date_max
         )
-
-        # Fetch the sample analysis with eager loading
         sample_analysis = await self.store.get_analysis_by_type_and_sample_id(
             sample_id=sample_id, analysis_type=analysis_type
         )
-
-        # Perform matching using the MatchGenotypeService
         matches: list[MatchResult] = MatchGenotypeService.get_matches(
             analyses=analyses, sample_analysis=sample_analysis
         )
