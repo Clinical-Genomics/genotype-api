@@ -1,5 +1,5 @@
 import logging
-from datetime import date, timedelta
+from datetime import date
 
 from sqlalchemy import asc, desc, func
 from sqlalchemy.future import select
