@@ -81,7 +81,6 @@ class ReadHandler(BaseHandler):
 
         filtered_query = filtered_query.options(selectinload(Analysis.genotypes))
 
-        # Execute the query asynchronously
         result = await self.session.execute(filtered_query)
         return result.scalars().all()
 
@@ -97,7 +96,6 @@ class ReadHandler(BaseHandler):
             type=analysis_type,
         )
 
-        # Add selectinload to eagerly load genotypes
         filtered_query = filtered_query.options(selectinload(Analysis.genotypes))
 
         result = await self.session.execute(filtered_query)
@@ -105,9 +103,7 @@ class ReadHandler(BaseHandler):
 
     async def get_plate_by_id(self, plate_id: int) -> Plate:
         plates: Query = self._get_query(Plate).options(
-            selectinload(Plate.analyses).selectinload(
-                Analysis.sample
-            )  # Eager loading of analyses and samples
+            selectinload(Plate.analyses).selectinload(Analysis.sample)
         )
         filter_functions = [PlateFilter.BY_ID]
         filtered_query = apply_plate_filter(
@@ -206,23 +202,14 @@ class ReadHandler(BaseHandler):
         return query.filter(Sample.id.contains(sample_id))
 
     async def get_sample_by_id(self, sample_id: str) -> Sample:
-        # Start by getting a base query for Sample
         samples: Query = self._get_query(Sample)
-
-        # Define the filter functions for filtering by Sample ID
         filter_functions = [SampleFilter.BY_ID]
-
-        # Apply the filters using apply_sample_filter
         filtered_query = apply_sample_filter(
             samples=samples, filter_functions=filter_functions, sample_id=sample_id
         )
-
-        # Ensure we load related analyses and genotypes using selectinload to avoid lazy loading
         filtered_query = filtered_query.options(
             selectinload(Sample.analyses).selectinload(Analysis.genotypes)
         )
-
-        # Execute the query asynchronously
         result = await self.session.execute(filtered_query)
         return result.scalars().first()
 

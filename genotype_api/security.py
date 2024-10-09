@@ -75,7 +75,6 @@ async def get_active_user(
             detail="Invalid or expired token",
         )
 
-    # Now check for the presence of "payload" and "email" safely
     payload = token_info.get("payload")
     if not payload or "email" not in payload:
         raise HTTPException(

@@ -65,13 +65,11 @@ class SampleService(BaseService):
         )
 
     async def get_sample(self, sample_id: str) -> SampleResponse:
-        # Use the ReadHandler to fetch the sample
         sample: Sample = await self.store.get_sample_by_id(sample_id)
 
         if not sample:
             raise SampleNotFoundError
 
-        # If sample has two analyses and no status, refresh its status
         if len(sample.analyses) == 2 and not sample.status:
             sample: Sample = await self.store.refresh_sample_status(sample=sample)
 

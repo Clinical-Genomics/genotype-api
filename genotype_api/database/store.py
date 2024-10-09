@@ -45,6 +45,6 @@ async def get_store() -> AsyncGenerator[Store, None]:
     """Return a Store instance."""
     store = await Store.create()
     try:
-        yield store  # Yield the store for the duration of the request
+        yield store
     finally:
         await store.session.close()
