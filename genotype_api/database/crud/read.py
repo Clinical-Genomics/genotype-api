@@ -39,8 +39,7 @@ class ReadHandler(BaseHandler):
         filtered_query = apply_analysis_filter(
             analyses=analyses, filter_functions=filter_functions, plate_id=plate_id
         )
-        result = await self.session.execute(filtered_query)
-        return result.scalars().all()
+        return (await self.session.execute(filtered_query)).scalars().all()
 
     async def get_analysis_by_id(self, analysis_id: int) -> Analysis:
         analyses: Query = self._get_query(Analysis)
@@ -48,13 +47,11 @@ class ReadHandler(BaseHandler):
         filtered_query = apply_analysis_filter(
             analyses=analyses, filter_functions=filter_functions, analysis_id=analysis_id
         )
-        result = await self.session.execute(filtered_query)
-        return result.scalars().first()
+        return (await self.session.execute(filtered_query)).scalars().first()
 
     async def get_analyses(self) -> list[Analysis]:
         filtered_query = self._get_query(Analysis)
-        result = await self.session.execute(filtered_query)
-        return result.scalars().all()
+        return (await self.session.execute(filtered_query)).scalars().all()
 
     async def get_analyses_with_skip_and_limit(self, skip: int, limit: int) -> list[Analysis]:
         analyses: Query = self._get_query(Analysis)
@@ -62,8 +59,7 @@ class ReadHandler(BaseHandler):
         filtered_query = apply_analysis_filter(
             analyses=analyses, filter_functions=filter_functions, skip=skip, limit=limit
         )
-        result = await self.session.execute(filtered_query)
-        return result.scalars().all()
+        return (await self.session.execute(filtered_query)).scalars().all()
 
     async def get_analyses_by_type_between_dates(
         self, analysis_type: Types, date_min: date, date_max: date
@@ -80,9 +76,7 @@ class ReadHandler(BaseHandler):
         )
 
         filtered_query = filtered_query.options(selectinload(Analysis.genotypes))
-
-        result = await self.session.execute(filtered_query)
-        return result.scalars().all()
+        return (await self.session.execute(filtered_query)).scalars().all()
 
     async def get_analysis_by_type_and_sample_id(
         self, sample_id: str, analysis_type: Types
@@ -97,9 +91,7 @@ class ReadHandler(BaseHandler):
         )
 
         filtered_query = filtered_query.options(selectinload(Analysis.genotypes))
-
-        result = await self.session.execute(filtered_query)
-        return result.scalars().first()
+        return (await self.session.execute(filtered_query)).scalars().first()
 
     async def get_plate_by_id(self, plate_id: int) -> Plate:
         plates: Query = self._get_query(Plate).options(
@@ -109,8 +101,7 @@ class ReadHandler(BaseHandler):
         filtered_query = apply_plate_filter(
             plates=plates, filter_functions=filter_functions, entry_id=plate_id
         )
-        result = await self.session.execute(filtered_query)
-        return result.scalars().first()
+        return (await self.session.execute(filtered_query)).scalars().first()
 
     async def get_plate_by_plate_id(self, plate_id: str) -> Plate:
         plates: Query = self._get_query(Plate).options(selectinload(Plate.analyses))
@@ -118,8 +109,7 @@ class ReadHandler(BaseHandler):
         filtered_query = apply_plate_filter(
             plates=plates, filter_functions=filter_functions, plate_id=plate_id
         )
-        result = await self.session.execute(filtered_query)
-        return result.scalars().first()
+        return (await self.session.execute(filtered_query)).scalars().first()
 
     async def get_ordered_plates(self, order_params: PlateOrderParams) -> list[Plate]:
         sort_func = desc if order_params.sort_order == "descend" else asc
@@ -135,8 +125,7 @@ class ReadHandler(BaseHandler):
             limit=order_params.limit,
             sort_func=sort_func,
         )
-        result = await self.session.execute(filtered_query)
-        return result.scalars().all()
+        return (await self.session.execute(filtered_query)).scalars().all()
 
     async def get_genotype_by_id(self, entry_id: int) -> Genotype:
         genotypes: Query = self._get_query(Genotype).options(selectinload(Genotype.analysis))
@@ -144,8 +133,7 @@ class ReadHandler(BaseHandler):
         filtered_query = apply_genotype_filter(
             genotypes=genotypes, filter_functions=filter_functions, entry_id=entry_id
         )
-        result = await self.session.execute(filtered_query)
-        return result.scalars().first()
+        return (await self.session.execute(filtered_query)).scalars().first()
 
     async def get_filtered_samples(self, filter_params: SampleFilterParams) -> list[Sample]:
         query = (
@@ -169,8 +157,7 @@ class ReadHandler(BaseHandler):
             .offset(filter_params.skip)
             .limit(filter_params.limit)
         )
-        result = await self.session.execute(filtered_query)
-        return result.scalars().all()
+        return (await self.session.execute(filtered_query)).scalars().all()
 
     @staticmethod
     def _get_incomplete_samples(query: Query) -> Query:
@@ -210,8 +197,7 @@ class ReadHandler(BaseHandler):
         filtered_query = filtered_query.options(
             selectinload(Sample.analyses).selectinload(Analysis.genotypes)
         )
-        result = await self.session.execute(filtered_query)
-        return result.scalars().first()
+        return (await self.session.execute(filtered_query)).scalars().first()
 
     async def get_user_by_id(self, user_id: int) -> User:
         users: Query = self._get_query(User).options(selectinload(User.plates))
@@ -219,8 +205,7 @@ class ReadHandler(BaseHandler):
         filtered_query = apply_user_filter(
             users=users, filter_functions=filter_functions, user_id=user_id
         )
-        result = await self.session.execute(filtered_query)
-        return result.scalars().first()
+        return (await self.session.execute(filtered_query)).scalars().first()
 
     async def get_user_by_email(self, email: str) -> User | None:
         users: Query = self._get_query(User)
@@ -228,8 +213,7 @@ class ReadHandler(BaseHandler):
         filtered_query = apply_user_filter(
             users=users, filter_functions=filter_functions, email=email
         )
-        result = await self.session.execute(filtered_query)
-        return result.scalars().first()
+        return (await self.session.execute(filtered_query)).scalars().first()
 
     async def get_users_with_skip_and_limit(self, skip: int, limit: int) -> list[User]:
         users: Query = self._get_query(User).options(selectinload(User.plates))
@@ -237,8 +221,7 @@ class ReadHandler(BaseHandler):
         filtered_query = apply_user_filter(
             users=users, filter_functions=filter_functions, skip=skip, limit=limit
         )
-        result = await self.session.execute(filtered_query)
-        return result.scalars().all()
+        return (await self.session.execute(filtered_query)).scalars().all()
 
     async def check_analyses_objects(self, analyses: list[Analysis], analysis_type: Types) -> None:
         """Raising 400 if any analysis in the list already exist in the database"""
@@ -253,8 +236,7 @@ class ReadHandler(BaseHandler):
 
     async def get_snps(self) -> list[SNP]:
         filtered_query = self._get_query(SNP)
-        result = await self.session.execute(filtered_query)
-        return result.scalars().all()
+        return (await self.session.execute(filtered_query)).scalars().all()
 
     async def get_snps_by_limit_and_skip(self, skip: int, limit: int) -> list[SNP]:
         snps: Query = self._get_query(SNP)
@@ -262,5 +244,4 @@ class ReadHandler(BaseHandler):
         filtered_query = apply_snp_filter(
             snps=snps, filter_functions=filter_functions, skip=skip, limit=limit
         )
-        result = await self.session.execute(filtered_query)
-        return result.scalars().all()
+        return (await self.session.execute(filtered_query)).scalars().all()
