@@ -10,10 +10,13 @@ ENV_FILE: Path = PACKAGE_ROOT / ".env"
 class DBSettings(BaseSettings):
     """Settings for serving the genotype-api app"""
 
-    db_uri: str = "sqlite:///database.db"
+    db_uri: str = "mysql+aiomysql://username:password@localhost/dbname"
     db_name: str = "database.db"
     host: str = "localhost"
     port: int = 8000
+    echo_sql: bool = False
+    max_retries: int = 5
+    retry_delay: int = 120  # 2 minutes
 
     class Config:
         env_file = str(ENV_FILE)

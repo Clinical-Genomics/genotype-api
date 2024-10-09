@@ -1,13 +1,8 @@
 from collections import Counter
 from datetime import datetime
-from sqlalchemy import Integer, DateTime
-from sqlalchemy.orm import relationship
-from sqlalchemy import (
-    Column,
-    ForeignKey,
-    String,
-)
-from sqlalchemy.orm import DeclarativeBase
+
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
+from sqlalchemy.orm import DeclarativeBase, relationship
 from sqlalchemy_utils import EmailType
 
 

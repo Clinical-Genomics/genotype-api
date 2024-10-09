@@ -3,9 +3,9 @@
 from collections import Counter
 from datetime import datetime
 
-from pydantic import BaseModel, validator, Field, EmailStr
+from pydantic import BaseModel, EmailStr, Field, validator
 
-from genotype_api.constants import Types, Sexes, Status
+from genotype_api.constants import Sexes, Status, Types
 from genotype_api.database.models import Analysis
 
 

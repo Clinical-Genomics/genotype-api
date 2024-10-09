@@ -2,14 +2,14 @@
 
 import datetime
 from pathlib import Path
-from typing import Generator
+from typing import AsyncGenerator
 
 import pytest
 
-from genotype_api.database.database import initialise_database, create_all_tables, drop_all_tables
+from genotype_api.database.database import create_all_tables, drop_all_tables, get_session
 from genotype_api.database.filter_models.plate_models import PlateSignOff
 from genotype_api.database.filter_models.sample_models import SampleSexesUpdate
-from genotype_api.database.models import User, Plate, SNP, Sample, Genotype, Analysis
+from genotype_api.database.models import SNP, Analysis, Genotype, Plate, Sample, User
 from genotype_api.database.store import Store
 from tests.store_helpers import StoreHelpers
 
@@ -34,14 +34,14 @@ def date_tomorrow() -> datetime:
     return datetime.date.today() + datetime.timedelta(days=1)
 
 
-@pytest.fixture
-def store() -> Generator[Store, None, None]:
+@pytest.fixture(scope="session")
+async def store() -> AsyncGenerator[Store, None]:
     """Return a CG store."""
-    initialise_database("sqlite:///")
-    _store = Store()
-    create_all_tables()
+    session = get_session()
+    _store = Store(session)
+    await create_all_tables()
     yield _store
-    drop_all_tables()
+    await drop_all_tables()
 
 
 @pytest.fixture
@@ -226,7 +226,7 @@ def test_analyses(
 
 
 @pytest.fixture
-def base_store(
+async def base_store(
     store: Store,
     helpers: StoreHelpers,
     test_snps: list[SNP],
@@ -237,17 +237,17 @@ def base_store(
     test_analyses: list[Analysis],
 ):
     for snp in test_snps:
-        helpers.ensure_snp(store=store, snp=snp)
+        await helpers.ensure_snp(store=store, snp=snp)
     for genotype in test_genotypes:
-        helpers.ensure_genotype(store=store, genotype=genotype)
+        await helpers.ensure_genotype(store=store, genotype=genotype)
     for plate in test_plates:
-        helpers.ensure_plate(store=store, plate=plate)
+        await helpers.ensure_plate(store=store, plate=plate)
     for user in test_users:
-        helpers.ensure_user(store=store, user=user)
+        await helpers.ensure_user(store=store, user=user)
     for sample in test_samples:
-        helpers.ensure_sample(store=store, sample=sample)
+        await helpers.ensure_sample(store=store, sample=sample)
     for analysis in test_analyses:
-        helpers.ensure_analysis(store=store, analysis=analysis)
+        await helpers.ensure_analysis(store=store, analysis=analysis)
     return store
 
 

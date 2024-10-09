@@ -2,11 +2,11 @@
 
 from enum import Enum
 from typing import Callable
-from sqlalchemy.orm import joinedload
+
 from sqlalchemy import func
 from sqlalchemy.orm import Query
 
-from genotype_api.database.models import Sample, Analysis
+from genotype_api.database.models import Analysis, Sample
 
 
 def filter_samples_by_id(sample_id: str, samples: Query, **kwargs) -> Query:
