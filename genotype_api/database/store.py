@@ -1,5 +1,7 @@
 """Module for the store handler."""
 
+from typing import AsyncGenerator
+
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.ext.asyncio import AsyncSession
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_fixed
@@ -39,7 +41,7 @@ class Store(
             return cls(session)  # Return a Store instance with the session
 
 
-async def get_store() -> Store:
+async def get_store() -> AsyncGenerator[Store, None]:
     """Return a Store instance."""
     store = await Store.create()
     try:
