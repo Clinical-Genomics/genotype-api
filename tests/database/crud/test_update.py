@@ -94,4 +94,3 @@ async def test_update_sample_sex(base_store: Store, sample_sex_update: SampleSex
     assert updated_sample.sex == sample_sex_update.sex
     for analysis in updated_sample.analyses:
         assert analysis.sex == sample_sex_update.genotype_sex
-        assert analysis.sex == sample_sex_update.genotype_sex
