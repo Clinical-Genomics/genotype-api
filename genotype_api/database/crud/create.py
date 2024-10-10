@@ -1,5 +1,6 @@
 import logging
 
+from sqlalchemy.future import select
 from sqlalchemy.orm import Query
 
 from genotype_api.database.base_handler import BaseHandler
@@ -26,9 +27,9 @@ class CreateHandler(BaseHandler):
 
     async def create_sample(self, sample: Sample) -> Sample:
         """Creates a sample in the database."""
-        sample_in_db: Query = self._get_query(Analysis).filter(Sample.id == sample.id)
-        result = await self.session.execute(sample_in_db)
-        if result.one_or_none():
+        sample_query: Query = select(Analysis).filter(Sample.id == sample.id)
+        sample_in_db = await self.fetch_one_or_none(sample_query)
+        if await sample_in_db:
             raise SampleExistsError
         self.session.add(sample)
         await self.session.commit()
@@ -41,9 +42,8 @@ class CreateHandler(BaseHandler):
 
         for analysis in analyses:
             # Sample already exists in the database
-            sample_in_db_query = self._get_query(Sample).filter(Sample.id == analysis.sample_id)
-            result = await self.session.execute(sample_in_db_query)
-            sample_in_db = result.one_or_none()
+            sample_query = select(Sample).filter(Sample.id == analysis.sample_id)
+            sample_in_db = await self.fetch_one_or_none(sample_query)
 
             # Sample doesn't exist
             if not sample_in_db:
