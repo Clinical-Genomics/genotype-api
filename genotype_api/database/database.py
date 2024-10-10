@@ -1,12 +1,13 @@
 """Hold the database information and session manager."""
 
-import asyncio
 import logging
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
+from sqlalchemy import text
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_fixed
 
 from genotype_api.config import settings
 from genotype_api.database.models import Base
@@ -17,8 +18,8 @@ engine = create_async_engine(
     settings.db_uri,
     echo=settings.echo_sql,
     future=True,
-    pool_size=10,
-    max_overflow=20,
+    pool_recycle=3600,  # Recycle connections after 3600 seconds (1 hour)
+    pool_pre_ping=True,  # Enable connection health checks (pings)
 )
 
 sessionmanager = async_sessionmaker(
@@ -28,25 +29,24 @@ sessionmanager = async_sessionmaker(
 )
 
 
+@retry(
+    stop=stop_after_attempt(settings.max_retries),
+    wait=wait_fixed(settings.retry_delay),
+    retry=retry_if_exception_type(OperationalError),
+    reraise=True,
+)
 @asynccontextmanager
 async def get_session() -> AsyncGenerator[AsyncSession, None]:
-    """Provides an asynchronous session context manager with retry logic."""
-    retries = 0
-    while retries < settings.max_retries:
-        async with sessionmanager() as session:
-            try:
-                yield session
-                break
-            except OperationalError as e:
-                retries += 1
-                LOG.error(f"OperationalError: {e}, retrying {retries}/{settings.max_retries}...")
-                if retries >= settings.max_retries:
-                    LOG.error("Max retries exceeded. Could not connect to the database.")
-                    raise
-                await session.close()
-                await asyncio.sleep(settings.retry_delay)
-            finally:
-                await session.close()
+    """Yield a valid database session with retry logic for OperationalError."""
+    async with sessionmanager() as session:
+        try:
+            # Test if the session is still valid by executing a simple query
+            await session.execute(text("SELECT 1"))
+            yield session
+        except OperationalError as e:
+            # If session is invalid, retry
+            LOG.error(f"OperationalError: {e}")
+            raise
 
 
 async def create_all_tables():
