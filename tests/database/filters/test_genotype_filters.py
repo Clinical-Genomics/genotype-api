@@ -1,5 +1,6 @@
 """Module to test the genotype filters."""
 
+from sqlalchemy.future import select
 from sqlalchemy.orm import Query
 
 from genotype_api.database.filters.genotype_filters import filter_genotypes_by_id
@@ -13,11 +14,9 @@ async def test_filter_genotypes_by_id(store: Store, test_genotype: Genotype, hel
     await helpers.ensure_genotype(store=store, genotype=test_genotype)
 
     # WHEN filtering genotypes by id
-    query: Query = store._get_query(Genotype)
-    result = await store.session.execute(query)
-    genotypes: list[Genotype] = filter_genotypes_by_id(
-        entry_id=test_genotype.id, genotypes=result.scalars()
-    ).all()
+    query: Query = select(Genotype)
+    filtered_query = filter_genotypes_by_id(entry_id=test_genotype, genotypes=query)
+    genotypes: list[Genotype] = await store.fetch_all_rows(filtered_query)
 
     # THEN assert the genotype is returned
     assert genotypes
