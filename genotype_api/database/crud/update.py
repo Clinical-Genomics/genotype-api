@@ -32,8 +32,7 @@ class UpdateHandler(BaseHandler):
 
     async def update_sample_comment(self, sample_id: str, comment: str) -> Sample:
         query: Query = select(Sample).distinct().filter(Sample.id == sample_id)
-        result = await self.session.execute(query)
-        sample: Sample = result.scalars().one_or_none()
+        sample: Sample = await self.fetch_one_or_none(query)
         if not sample:
             raise SampleNotFoundError
         sample.comment = comment
@@ -44,8 +43,7 @@ class UpdateHandler(BaseHandler):
 
     async def update_sample_status(self, sample_id: str, status: str | None) -> Sample:
         query: Query = select(Sample).distinct().filter(Sample.id == sample_id)
-        result = await self.session.execute(query)
-        sample: Sample = result.scalars().one_or_none()
+        sample: Sample = await self.fetch_one_or_none(query)
         if not sample:
             raise SampleNotFoundError
         sample.status = status
@@ -74,9 +72,7 @@ class UpdateHandler(BaseHandler):
             .join(Analysis, Analysis.sample_id == Sample.id)
             .filter(Sample.id == sexes_update.sample_id)
         )
-
-        result = await self.session.execute(query)
-        sample = result.scalars().one_or_none()
+        sample = await self.fetch_one_or_none(query)
         if not sample:
             raise SampleNotFoundError
         sample.sex = sexes_update.sex
