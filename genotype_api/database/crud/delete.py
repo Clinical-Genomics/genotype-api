@@ -1,5 +1,7 @@
 import logging
 
+from sqlalchemy.future import select
+
 from genotype_api.database.base_handler import BaseHandler
 from genotype_api.database.models import SNP, Analysis, Plate, Sample, User
 
@@ -25,9 +27,8 @@ class DeleteHandler(BaseHandler):
         await self.session.commit()
 
     async def delete_snps(self) -> int:
-        query = self._get_query(SNP)
-        result = await self.session.execute(query)
-        snps: list[SNP] = result.scalars().all()
+        query = select(SNP)
+        snps: list[SNP] = await self.fetch_all_rows(query)
         count: int = len(snps)
         for snp in snps:
             self.session.delete(snp)
