@@ -1,5 +1,6 @@
 """Module to test the analysis filters."""
 
+from sqlalchemy.future import select
 from sqlalchemy.orm import Query
 
 from genotype_api.database.filters.analysis_filter import (
@@ -17,10 +18,9 @@ async def test_filter_analyses_by_id(base_store: Store, test_analysis, helpers):
     # GIVEN an analysis
 
     # WHEN filtering analyses by id
-    query: Query = base_store._get_query(Analysis)
+    query: Query = select(Analysis)
     filtered_query = filter_analyses_by_id(analysis_id=test_analysis.id, analyses=query)
-    result = await base_store.session.execute(filtered_query)
-    analyses: list[Analysis] = result.scalars().all()
+    analyses: list[Analysis] = await base_store.fetch_all_rows(filtered_query)
 
     # THEN assert the analysis is returned
     assert analyses
@@ -33,10 +33,9 @@ async def test_filter_analyses_by_type(
     # GIVEN an analysis
 
     # WHEN filtering analyses by type
-    query: Query = base_store._get_query(Analysis)
+    query: Query = select(Analysis)
     filtered_query = filter_analyses_by_type(type=test_analysis.type, analyses=query)
-    result = await base_store.session.execute(filtered_query)
-    analyses: list[Analysis] = result.scalars().all()
+    analyses: list[Analysis] = await base_store.fetch_all_rows(filtered_query)
 
     # THEN assert the analysis is returned
     assert analyses
@@ -49,10 +48,9 @@ async def test_filter_analyses_by_plate_id(
     # GIVEN an analysis
 
     # WHEN filtering analyses by plate id
-    query: Query = base_store._get_query(Analysis)
+    query: Query = select(Analysis)
     filtered_query = filter_analyses_by_plate_id(plate_id=test_analysis.plate_id, analyses=query)
-    result = await base_store.session.execute(filtered_query)
-    analyses: list[Analysis] = result.scalars().all()
+    analyses: list[Analysis] = await base_store.fetch_all_rows(filtered_query)
 
     # THEN assert the analysis is returned
     assert analyses
@@ -63,10 +61,9 @@ async def test_filter_analyses_by_sample_id(base_store: Store, test_analysis, he
     # GIVEN an analysis
 
     # WHEN filtering analyses by sample id
-    query: Query = base_store._get_query(Analysis)
+    query: Query = select(Analysis)
     filtered_query = filter_analyses_by_sample_id(sample_id=test_analysis.sample_id, analyses=query)
-    result = await base_store.session.execute(filtered_query)
-    analyses: list[Analysis] = result.scalars().all()
+    analyses: list[Analysis] = await base_store.fetch_all_rows(filtered_query)
 
     # THEN assert the analysis is returned
     assert analyses
