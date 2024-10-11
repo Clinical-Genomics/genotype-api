@@ -98,7 +98,7 @@ class ReadHandler(BaseHandler):
         return await self.fetch_first_row(filtered_query)
 
     async def get_plate_by_plate_id(self, plate_id: str) -> Plate:
-        plates: Query = self._get_plate_with_analyses
+        plates: Query = self._get_plate_with_analyses()
         filtered_query = filter_plates_by_plate_id(plate_id=plate_id, plates=plates)
         return await self.fetch_first_row(filtered_query)
 
