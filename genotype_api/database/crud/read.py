@@ -25,11 +25,7 @@ from genotype_api.database.filters.plate_filters import (
     filter_plates_by_id,
     filter_plates_by_plate_id,
 )
-from genotype_api.database.filters.sample_filters import (
-    SampleFilter,
-    apply_sample_filter,
-    filter_samples_by_id,
-)
+from genotype_api.database.filters.sample_filters import filter_samples_by_id
 from genotype_api.database.filters.snp_filters import SNPFilter, apply_snp_filter
 from genotype_api.database.filters.user_filters import (
     UserFilter,
@@ -254,6 +250,10 @@ class ReadHandler(BaseHandler):
             .options(selectinload(Sample.analyses).selectinload(Analysis.genotypes))
             .join(Analysis, Analysis.sample_id == Sample.id)
         )
+
+    @staticmethod
+    def _get_samples_with_analyses() -> Query:
+        return select(Sample).options(selectinload(Sample.analyses))
 
     @staticmethod
     def _get_user_with_plates() -> Query:
