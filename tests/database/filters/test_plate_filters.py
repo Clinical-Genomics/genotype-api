@@ -1,5 +1,6 @@
 """Module to test the plate filters."""
 
+from sqlalchemy.future import select
 from sqlalchemy.orm import Query
 
 from genotype_api.database.filters.plate_filters import (
@@ -16,13 +17,12 @@ async def test_filter_plates_by_id(base_store: Store, test_plate: Plate):
     # GIVEN a store with a plate
 
     # WHEN filtering plates by id
-    query: Query = base_store._get_query(Plate)
+    query: Query = select(Plate)
     filter_functions = filter_plates_by_id(entry_id=test_plate.id, plates=query)
     filtered_query = apply_plate_filter(
         plates=query, filter_functions=filter_functions, entry_id=test_plate.id
     )
-    result = await base_store.session.execute(filtered_query)
-    plate: Plate = result.scalars().first()
+    plate: Plate = await base_store.fetch_first_row(filtered_query)
 
     # THEN the plate is returned
     assert plate
@@ -34,13 +34,12 @@ async def test_filter_plates_by_plate_id(base_store: Store, test_plate: Plate):
     # GIVEN a store with a plate
 
     # WHEN filtering plates by plate id
-    query: Query = base_store._get_query(Plate)
+    query: Query = select(Plate)
     filter_functions = filter_plates_by_plate_id(plate_id=test_plate.id, plates=query)
     filtered_query = apply_plate_filter(
         plates=query, filter_functions=filter_functions, plate_id=test_plate.id
     )
-    result = await base_store.session.execute(filtered_query)
-    plate: Plate = result.scalars().first()
+    plate: Plate = await base_store.fetch_first_row(filtered_query)
 
     # THEN the plate is returned
     assert plate
