@@ -19,10 +19,7 @@ async def test_filter_snps_by_id(base_store: Store, test_snp: SNP):
 
     # WHEN filtering a SNP by id
     query: Query = select(SNP)
-    filter_functions = filter_snps_by_id(snp_id=test_snp.id, snps=query)
-    filtered_query = apply_snp_filter(
-        snps=query, filter_functions=filter_functions, snp_id=test_snp.id
-    )
+    filtered_query = filter_snps_by_id(snp_id=test_snp.id, snps=query)
     snp: SNP = base_store.fetch_first_row(filtered_query)
 
     # THEN the SNP is returned

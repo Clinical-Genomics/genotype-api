@@ -37,10 +37,7 @@ async def test_filter_samples_contain_id(base_store: Store, test_sample: Sample)
 
     # WHEN filtering samples by id
     query: Query = select(Sample)
-    filter_functions = filter_samples_contain_id(sample_id=test_sample.id, samples=query)
-    filtered_query = apply_sample_filter(
-        samples=query, filter_functions=filter_functions, sample_id=test_sample.id
-    )
+    filtered_query = filter_samples_contain_id(sample_id=test_sample.id, samples=query)
     sample: Sample = await base_store.fetch_first_row(filtered_query)
 
     # THEN the sample is returned
@@ -56,10 +53,7 @@ async def test_filter_samples_contain_id_when_no_id(base_store: Store, test_samp
     assert len(samples) == 2
 
     # WHEN filtering samples by id
-    filter_functions = filter_samples_contain_id(sample_id=None, samples=query)
-    filtered_query = apply_sample_filter(
-        samples=query, filter_functions=filter_functions, sample_id=None
-    )
+    filtered_query = filter_samples_contain_id(sample_id=None, samples=query)
     samples: list[Sample] = await base_store.fetch_all_rows(filtered_query)
 
     # THEN all samples are returned
@@ -80,8 +74,7 @@ async def test_filter_samples_having_comment(
     await helpers.ensure_sample(store=base_store, sample=sample_without_comment)
 
     # WHEN filtering samples by having comment
-    filter_functions = filter_samples_having_comment(samples=query, is_commented=True)
-    filtered_query = apply_sample_filter(samples=query, filter_functions=filter_functions)
+    filtered_query = filter_samples_having_comment(samples=query, is_commented=True)
     samples: list[Sample] = await base_store.fetch_all_rows(filtered_query)
 
     # THEN samples with comments are returned
@@ -98,8 +91,7 @@ async def test_filter_samples_having_comment_none_provided(base_store: Store, te
     assert len(samples) == 2
 
     # WHEN filtering samples by having comment
-    filter_functions = filter_samples_having_comment(samples=query, is_commented=None)
-    filtered_query = apply_sample_filter(samples=query, filter_functions=filter_functions)
+    filtered_query = filter_samples_having_comment(samples=query, is_commented=None)
     samples: list[Sample] = await base_store.fetch_all_rows(filtered_query)
 
     # THEN the sample is returned
@@ -136,8 +128,7 @@ async def test_filter_samples_without_status_none_provided(base_store: Store, te
 
     # WHEN filtering samples by having a status
     query: Query = select(Sample)
-    filter_functions = filter_samples_without_status(samples=query, is_missing=None)
-    filtered_query = apply_sample_filter(samples=query, filter_functions=filter_functions)
+    filtered_query = filter_samples_without_status(samples=query, is_missing=None)
     samples: list[Sample] = await base_store.fetch_all_rows(filtered_query)
 
     # THEN all samples are returned
