@@ -1,15 +1,13 @@
 """Routes for users"""
 
-from fastapi import APIRouter, Depends, Query, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import EmailStr
-
 from starlette import status
-
 from starlette.responses import JSONResponse
 
-from genotype_api.database.store import get_store, Store
-from genotype_api.dto.user import UserRequest, UserResponse, CurrentUser
-from genotype_api.exceptions import UserNotFoundError, UserArchiveError, UserExistsError
+from genotype_api.database.store import Store, get_store
+from genotype_api.dto.user import CurrentUser, UserRequest, UserResponse
+from genotype_api.exceptions import UserArchiveError, UserExistsError, UserNotFoundError
 from genotype_api.security import get_active_user
 from genotype_api.services.endpoint_services.user_service import UserService
 
@@ -21,25 +19,25 @@ def get_user_service(store: Store = Depends(get_store)) -> UserService:
 
 
 @router.get("/{user_id}", response_model=UserResponse)
-def read_user(
+async def read_user(
     user_id: int,
     user_service: UserService = Depends(get_user_service),
     current_user: CurrentUser = Depends(get_active_user),
 ) -> UserResponse:
     try:
-        return user_service.get_user(user_id)
+        return await user_service.get_user(user_id)
     except UserNotFoundError:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
 
 @router.delete("/{user_id}")
-def delete_user(
+async def delete_user(
     user_id: int,
     user_service: UserService = Depends(get_user_service),
     current_user: CurrentUser = Depends(get_active_user),
 ) -> JSONResponse:
     try:
-        user_service.delete_user(user_id)
+        await user_service.delete_user(user_id)
     except UserNotFoundError:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     except UserArchiveError:
@@ -51,36 +49,36 @@ def delete_user(
 
 
 @router.put("/{user_id}/email", response_model=UserResponse, response_model_exclude={"plates"})
-def change_user_email(
+async def change_user_email(
     user_id: int,
     email: EmailStr,
     user_service: UserService = Depends(get_user_service),
     current_user: CurrentUser = Depends(get_active_user),
 ) -> UserResponse:
     try:
-        return user_service.update_user_email(user_id=user_id, email=email)
+        return await user_service.update_user_email(user_id=user_id, email=email)
     except UserNotFoundError:
         HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
 
 @router.get("/", response_model=list[UserResponse], response_model_exclude={"plates"})
-def read_users(
+async def read_users(
     skip: int = 0,
     limit: int = Query(default=100, lte=100),
     user_service: UserService = Depends(get_user_service),
     current_user: CurrentUser = Depends(get_active_user),
 ) -> list[UserResponse]:
 
-    return user_service.get_users(skip=skip, limit=limit)
+    return await user_service.get_users(skip=skip, limit=limit)
 
 
 @router.post("/", response_model=UserResponse, response_model_exclude={"plates"})
-def create_user(
+async def create_user(
     user: UserRequest,
     user_service: UserService = Depends(get_user_service),
     current_user: CurrentUser = Depends(get_active_user),
 ):
     try:
-        return user_service.create_user(user)
+        return await user_service.create_user(user)
     except UserExistsError:
         HTTPException(status_code=409, detail="Email already registered.")

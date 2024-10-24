@@ -2,19 +2,17 @@
 
 import logging
 from datetime import datetime
-
 from io import BytesIO
 from pathlib import Path
-
 
 from fastapi import UploadFile
 from pydantic import EmailStr
 
 from genotype_api.constants import Types
-from genotype_api.database.filter_models.plate_models import PlateSignOff, PlateOrderParams
-from genotype_api.database.models import Plate, Analysis, User, Sample
-from genotype_api.dto.plate import PlateResponse, UserOnPlate, AnalysisOnPlate, SampleStatus
-from genotype_api.exceptions import PlateNotFoundError, UserNotFoundError, PlateExistsError
+from genotype_api.database.filter_models.plate_models import PlateOrderParams, PlateSignOff
+from genotype_api.database.models import Analysis, Plate, Sample, User
+from genotype_api.dto.plate import AnalysisOnPlate, PlateResponse, SampleStatus, UserOnPlate
+from genotype_api.exceptions import PlateExistsError, PlateNotFoundError, UserNotFoundError
 from genotype_api.file_parsing.excel import GenotypeAnalysis
 from genotype_api.file_parsing.files import check_file
 from genotype_api.services.endpoint_services.base_service import BaseService
@@ -43,15 +41,15 @@ class PlateService(BaseService):
                 analyses_response.append(analysis_response)
         return analyses_response if analyses_response else None
 
-    def _get_plate_user(self, plate: Plate) -> UserOnPlate | None:
+    async def _get_plate_user(self, plate: Plate) -> UserOnPlate | None:
         if plate.signed_by:
-            user: User = self.store.get_user_by_id(user_id=plate.signed_by)
+            user: User = await self.store.get_user_by_id(user_id=plate.signed_by)
             return UserOnPlate(email=user.email, name=user.name, id=user.id)
         return None
 
-    def _create_plate_response(self, plate: Plate) -> PlateResponse:
+    async def _create_plate_response(self, plate: Plate) -> PlateResponse:
         analyses_response: list[AnalysisOnPlate] = self._get_analyses_on_plate(plate)
-        user: UserOnPlate = self._get_plate_user(plate)
+        user: UserOnPlate = await self._get_plate_user(plate)
         return PlateResponse(
             created_at=plate.created_at,
             plate_id=plate.plate_id,
@@ -69,10 +67,10 @@ class PlateService(BaseService):
         # Get the plate id from the standardized name of the plate
         return file_name.name.split("_", 1)[0]
 
-    def upload_plate(self, file: UploadFile) -> None:
+    async def upload_plate(self, file: UploadFile) -> None:
         file_name: Path = check_file(file_path=file.filename, extension=".xlsx")
         plate_id: str = self._get_plate_id_from_file(file_name)
-        db_plate = self.store.get_plate_by_plate_id(plate_id)
+        db_plate = await self.store.get_plate_by_plate_id(plate_id)
         if db_plate:
             raise PlateExistsError
 
@@ -83,26 +81,26 @@ class PlateService(BaseService):
         )
 
         plate_obj = Plate(plate_id=plate_id)
-        plate: Plate = self.store.create_plate(plate=plate_obj)
-        new_plate: Plate = self.store.get_plate_by_plate_id(plate_id=plate_id)
+        plate: Plate = await self.store.create_plate(plate=plate_obj)
+        new_plate: Plate = await self.store.get_plate_by_plate_id(plate_id=plate_id)
         analyses: list[Analysis] = list(excel_parser.generate_analyses(plate_id=new_plate.id))
-        self.store.check_analyses_objects(analyses=analyses, analysis_type=Types.GENOTYPE)
-        self.store.create_analyses_samples(analyses=analyses)
+        await self.store.check_analyses_objects(analyses=analyses, analysis_type=Types.GENOTYPE)
+        await self.store.create_analyses_samples(analyses=analyses)
         for analysis in analyses:
-            self.store.create_analysis(analysis=analysis)
+            await self.store.create_analysis(analysis=analysis)
         plate_obj.analyses = analyses
         for analysis in analyses:
-            sample: Sample = self.store.get_sample_by_id(sample_id=analysis.sample_id)
-            self.store.refresh_sample_status(sample=sample)
-        self.store.refresh_plate(plate=plate)
+            sample: Sample = await self.store.get_sample_by_id(sample_id=analysis.sample_id)
+            await self.store.refresh_sample_status(sample=sample)
+        await self.store.refresh_plate(plate=plate)
 
-    def update_plate_sign_off(
+    async def update_plate_sign_off(
         self, plate_id: int, user_email: EmailStr, method_document: str, method_version: str
     ) -> PlateResponse:
-        plate: Plate = self.store.get_plate_by_id(plate_id=plate_id)
+        plate: Plate = await self.store.get_plate_by_id(plate_id=plate_id)
         if not plate:
             raise PlateNotFoundError
-        user: User = self.store.get_user_by_email(email=user_email)
+        user: User = await self.store.get_user_by_email(email=user_email)
         if not user:
             raise UserNotFoundError
         plate_sign_off = PlateSignOff(
@@ -111,29 +109,31 @@ class PlateService(BaseService):
             method_document=method_document,
             method_version=method_version,
         )
-        self.store.update_plate_sign_off(plate=plate, plate_sign_off=plate_sign_off)
-        return self._create_plate_response(plate)
+        await self.store.update_plate_sign_off(plate=plate, plate_sign_off=plate_sign_off)
+        return await self._create_plate_response(plate)
 
-    def get_plate(self, plate_id: int) -> PlateResponse:
-        plate: Plate = self.store.get_plate_by_id(plate_id=plate_id)
+    async def get_plate(self, plate_id: int) -> PlateResponse:
+        plate = await self.store.get_plate_by_id(plate_id)
+
         if not plate:
             raise PlateNotFoundError
-        return self._create_plate_response(plate)
 
-    def get_plates(self, order_params: PlateOrderParams) -> list[PlateResponse]:
-        plates: list[Plate] = self.store.get_ordered_plates(order_params=order_params)
+        return await self._create_plate_response(plate)
+
+    async def get_plates(self, order_params: PlateOrderParams) -> list[PlateResponse]:
+        plates: list[Plate] = await self.store.get_ordered_plates(order_params=order_params)
         if not plates:
             raise PlateNotFoundError
-        return [self._create_plate_response(plate) for plate in plates]
+        return [await self._create_plate_response(plate) for plate in plates]
 
-    def delete_plate(self, plate_id) -> list[int]:
+    async def delete_plate(self, plate_id) -> list[int]:
         """Delete a plate with the given plate id and return associated analysis ids."""
-        plate = self.store.get_plate_by_id(plate_id=plate_id)
+        plate = await self.store.get_plate_by_id(plate_id=plate_id)
         if not plate:
             raise PlateNotFoundError
-        analyses: list[Analysis] = self.store.get_analyses_by_plate_id(plate_id=plate_id)
+        analyses: list[Analysis] = await self.store.get_analyses_by_plate_id(plate_id=plate_id)
         analysis_ids: list[int] = [analyse.id for analyse in analyses]
         for analysis in analyses:
-            self.store.delete_analysis(analysis=analysis)
-        self.store.delete_plate(plate=plate)
+            await self.store.delete_analysis(analysis=analysis)
+        await self.store.delete_plate(plate=plate)
         return analysis_ids

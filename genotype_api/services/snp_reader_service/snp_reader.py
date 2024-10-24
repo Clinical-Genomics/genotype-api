@@ -9,9 +9,9 @@ SNP_HEADER = ["id", "ref", "chrom", "pos"]
 
 class SNPReaderService:
     @staticmethod
-    def read_snps_from_file(snps_file: UploadFile) -> list[SNP]:
+    async def read_snps_from_file(snps_file: UploadFile) -> list[SNP]:
         snps: list[SNP] = []
-        content = snps_file.read()
+        content = await snps_file.read()
         header = SNP_HEADER
         for line in content.decode().split("\n"):
             if len(line) <= 10:

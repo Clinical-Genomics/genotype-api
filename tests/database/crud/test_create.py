@@ -1,88 +1,112 @@
 """Module to test the create functionality of the genotype API CRUD."""
 
-from genotype_api.database.models import Analysis, SNP, User, Genotype, Sample, Plate
+from sqlalchemy.future import select
+from sqlalchemy.orm import Query
+
+from genotype_api.database.models import SNP, Analysis, Genotype, Plate, Sample, User
 from genotype_api.database.store import Store
 
 
-def test_create_analysis(store: Store, test_analysis: Analysis):
+async def test_create_analysis(store: Store, test_analysis: Analysis):
     # GIVEN an analysis and an empty store
-
-    assert not store._get_query(Analysis).all()
+    analyses_query: Query = select(Analysis)
+    analyses = await store.fetch_all_rows(analyses_query)
+    assert not analyses
 
     # WHEN creating the analysis
-    store.create_analysis(analysis=test_analysis)
+    await store.create_analysis(analysis=test_analysis)
 
-    # THEN the analysis is created
-    assert store._get_query(Analysis).all()[0].id == test_analysis.id
+    analyses = await store.fetch_all_rows(analyses_query)
+    assert analyses[0].id == test_analysis.id
 
 
-def test_create_genotype(store: Store, test_genotype: Genotype):
+async def test_create_genotype(store: Store, test_genotype: Genotype):
     # GIVEN a genotype and an empty store
-
-    assert not store._get_query(Genotype).all()
+    genotypes_query: Query = select(Genotype)
+    genotypes = await store.fetch_all_rows(genotypes_query)
+    assert not genotypes
 
     # WHEN creating the genotype
-    store.create_genotype(genotype=test_genotype)
+    await store.create_genotype(genotype=test_genotype)
 
     # THEN the genotype is created
-    assert store._get_query(Genotype).all()[0].id == test_genotype.id
+    genotypes = await store.fetch_all_rows(genotypes_query)
+    assert genotypes[0].id == test_genotype.id
 
 
-def test_create_snp(store: Store, test_snp: SNP):
+async def test_create_snp(store: Store, test_snp: SNP):
     # GIVEN a SNP and an empty store
-    assert not store._get_query(SNP).all()
+    snps_query: Query = select(SNP)
+    snps = await store.fetch_all_rows(snps_query)
+    assert not snps
 
     # WHEN creating the SNP
-    store.create_snps(snps=[test_snp])
+    await store.create_snps(snps=[test_snp])
 
     # THEN the SNP is created
-    assert store._get_query(SNP).all()[0].id == test_snp.id
+    snps = await store.fetch_all_rows(snps_query)
+    assert snps[0].id == test_snp.id
 
 
-def test_create_user(store: Store, test_user: User):
+async def test_create_user(store: Store, test_user: User):
     # GIVEN a user and an empty store
-    assert not store._get_query(User).all()
+    users_query: Query = select(User)
+    users = await store.fetch_all_rows(users_query)
+    assert not users
 
     # WHEN creating the user
-    store.create_user(user=test_user)
+    await store.create_user(user=test_user)
 
     # THEN the user is created
-    assert store._get_query(User).all()[0].id == test_user.id
+    users = await store.fetch_all_rows(users_query)
+    assert users[0].id == test_user.id
 
 
-def test_create_sample(store: Store, test_sample: Sample):
+async def test_create_sample(store: Store, test_sample: Sample):
     # GIVEN a sample and an empty store
-    assert not store._get_query(Sample).all()
+    samples_query: Query = select(Sample)
+    samples = await store.fetch_all_rows(samples_query)
+    assert not samples
 
     # WHEN creating the sample
-    store.create_sample(sample=test_sample)
+    await store.create_sample(sample=test_sample)
 
     # THEN the sample is created
-    assert store._get_query(Sample).all()[0].id == test_sample.id
+    samples = await store.fetch_all_rows(samples_query)
+    assert samples[0].id == test_sample.id
 
 
-def test_create_plate(store: Store, test_plate: Plate):
+async def test_create_plate(store: Store, test_plate: Plate):
     # GIVEN a plate and an empty store
-    assert not store._get_query(Plate).all()
+    plates_query: Query = select(Plate)
+    plates = await store.fetch_all_rows(plates_query)
+    assert not plates
 
     # WHEN creating the plate
-    store.create_plate(plate=test_plate)
+    await store.create_plate(plate=test_plate)
 
     # THEN the plate is created
-    assert store._get_query(Plate).all()[0].id == test_plate.id
+    plates = await store.fetch_all_rows(plates_query)
+    assert plates[0].id == test_plate.id
 
 
-def test_create_analyses_samples(store: Store, test_analysis: Analysis):
+async def test_create_analyses_samples(store: Store, test_analysis: Analysis):
     # GIVEN an analysis in a store
-    assert not store._get_query(Sample).all()
-    assert not store._get_query(Analysis).all()
+    samples_query: Query = select(Sample)
+    analyses_query: Query = select(Analysis)
 
-    store.create_analysis(test_analysis)
+    samples = await store.fetch_all_rows(samples_query)
+    assert not samples
 
-    # WHEN creating the analyses
-    store.create_analyses_samples(analyses=[test_analysis])
+    analyses = await store.fetch_all_rows(analyses_query)
+    assert not analyses
+
+    await store.create_analysis(test_analysis)
+
+    # WHEN creating the analyses samples
+    await store.create_analyses_samples(analyses=[test_analysis])
 
     # THEN the samples are created
-    sample: Sample = store._get_query(Sample).all()[0]
+    sample: Sample = await store.fetch_all_rows(samples_query)[0]
     assert sample
     assert sample.id == test_analysis.sample_id

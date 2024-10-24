@@ -3,21 +3,30 @@ Main functions for the genotype api
 
 """
 
-from fastapi import FastAPI, status, Request
-from fastapi.responses import JSONResponse
+import logging
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from sqlalchemy.exc import NoResultFound, OperationalError
 
-from genotype_api.api.middleware import DBSessionMiddleware
-from genotype_api.config import security_settings, settings
-from genotype_api.database.database import create_all_tables, initialise_database
-from genotype_api.api.endpoints import samples, snps, users, plates, analyses
-from sqlalchemy.exc import NoResultFound
+from genotype_api.api.endpoints import analyses, plates, samples, snps, users
+from genotype_api.config import security_settings
 
-app = FastAPI(
-    root_path=security_settings.api_root_path,
-    root_path_in_servers=True,
-    openapi_prefix=security_settings.api_root_path,
-)
+LOG = logging.getLogger(__name__)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup actions, like connecting to the database
+    LOG.debug("Starting up...")
+    yield  # This is important, it must yield control
+    # Shutdown actions, like closing the database connection
+    LOG.debug("Shutting down...")
+
+
+app = FastAPI(lifespan=lifespan, root_path=security_settings.api_root_path)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -25,7 +34,15 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-app.add_middleware(DBSessionMiddleware)
+
+
+@app.exception_handler(OperationalError)
+async def db_connection_exception_handler(request: Request, exc: OperationalError):
+    LOG.error(f"Database connection error: {exc}")
+    return JSONResponse(
+        content={"detail": "Database connection error. Please try again later."},
+        status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+    )
 
 
 @app.exception_handler(NoResultFound)
@@ -72,9 +89,3 @@ app.include_router(
     tags=["analyses"],
     responses={status.HTTP_404_NOT_FOUND: {"description": "Not found"}},
 )
-
-
-@app.on_event("startup")
-def on_startup():
-    initialise_database(settings.db_uri)
-    create_all_tables()

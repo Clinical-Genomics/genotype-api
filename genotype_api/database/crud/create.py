@@ -1,9 +1,10 @@
 import logging
 
+from sqlalchemy.future import select
+from sqlalchemy.orm import Query
 
 from genotype_api.database.base_handler import BaseHandler
-from genotype_api.database.models import Analysis, Plate, Sample, User, SNP, Genotype
-from genotype_api.dto.user import UserRequest
+from genotype_api.database.models import SNP, Analysis, Genotype, Plate, Sample, User
 from genotype_api.exceptions import SampleExistsError
 
 LOG = logging.getLogger(__name__)
@@ -11,49 +12,59 @@ LOG = logging.getLogger(__name__)
 
 class CreateHandler(BaseHandler):
 
-    def create_analysis(self, analysis: Analysis) -> Analysis:
+    async def create_analysis(self, analysis: Analysis) -> Analysis:
         self.session.add(analysis)
-        self.session.commit()
-        self.session.refresh(analysis)
+        await self.session.commit()
+        await self.session.refresh(analysis)
         return analysis
 
-    def create_plate(self, plate: Plate) -> Plate:
+    async def create_plate(self, plate: Plate) -> Plate:
         self.session.add(plate)
-        self.session.commit()
-        self.session.refresh(plate)
+        await self.session.commit()
+        await self.session.refresh(plate)
         LOG.info(f"Creating plate with id {plate.plate_id}.")
         return plate
 
-    def create_sample(self, sample: Sample) -> Sample:
+    async def create_sample(self, sample: Sample) -> Sample:
         """Creates a sample in the database."""
-        sample_in_db = self.session.query(Sample).filter(Sample.id == sample.id).one_or_none()
-        if sample_in_db:
+        sample_query: Query = select(Analysis).filter(Sample.id == sample.id)
+        sample_in_db = await self.fetch_one_or_none(sample_query)
+        if await sample_in_db:
             raise SampleExistsError
         self.session.add(sample)
-        self.session.commit()
-        self.session.refresh(sample)
+        await self.session.commit()
+        await self.session.refresh(sample)
         return sample
 
-    def create_analyses_samples(self, analyses: list[Analysis]) -> list[Sample]:
-        """creating samples in an analysis if not already in db."""
-        return [
-            self.create_sample(sample=Sample(id=analysis.sample_id))
-            for analysis in analyses
-            if not self.session.query(Sample).filter(Sample.id == analysis.sample_id).one_or_none()
-        ]
+    async def create_analyses_samples(self, analyses: list[Analysis]) -> list[Sample]:
+        """Creating samples in an analysis if not already in db."""
+        created_samples = []
 
-    def create_user(self, user: User) -> User:
+        for analysis in analyses:
+            # Sample already exists in the database
+            sample_query = select(Sample).filter(Sample.id == analysis.sample_id)
+            sample_in_db = await self.fetch_one_or_none(sample_query)
+
+            # Sample doesn't exist
+            if not sample_in_db:
+                sample = Sample(id=analysis.sample_id)
+                created_sample = await self.create_sample(sample=sample)
+                created_samples.append(created_sample)
+
+        return created_samples
+
+    async def create_user(self, user: User) -> User:
         self.session.add(user)
-        self.session.commit()
-        self.session.refresh(user)
+        await self.session.commit()
+        await self.session.refresh(user)
         return user
 
-    def create_snps(self, snps: list[SNP]) -> list[SNP]:
+    async def create_snps(self, snps: list[SNP]) -> list[SNP]:
         self.session.add_all(snps)
-        self.session.commit()
+        await self.session.commit()
         return snps
 
-    def create_genotype(self, genotype: Genotype) -> Genotype:
+    async def create_genotype(self, genotype: Genotype) -> Genotype:
         self.session.add(genotype)
-        self.session.commit()
+        await self.session.commit()
         return genotype
