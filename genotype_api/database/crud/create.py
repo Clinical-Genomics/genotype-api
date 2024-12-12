@@ -29,7 +29,7 @@ class CreateHandler(BaseHandler):
         """Creates a sample in the database."""
         sample_query: Query = select(Analysis).filter(Sample.id == sample.id)
         sample_in_db = await self.fetch_one_or_none(sample_query)
-        if await sample_in_db:
+        if sample_in_db:
             raise SampleExistsError
         self.session.add(sample)
         await self.session.commit()
