@@ -32,7 +32,9 @@ class UpdateHandler(BaseHandler):
 
     async def update_sample_comment(self, sample_id: str, comment: str) -> Sample:
         query: Query = (
-            select(Sample).options(selectinload(Sample.analyses)).filter(Sample.id == sample_id)
+            select(Sample)
+            .options(selectinload(Sample.analyses).selectinload(Analysis.genotypes))
+            .filter(Sample.id == sample_id)
         )
         sample: Sample = await self.fetch_one_or_none(query)
 
