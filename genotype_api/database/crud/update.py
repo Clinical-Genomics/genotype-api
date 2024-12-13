@@ -31,10 +31,14 @@ class UpdateHandler(BaseHandler):
         return sample
 
     async def update_sample_comment(self, sample_id: str, comment: str) -> Sample:
-        query: Query = select(Sample).distinct().filter(Sample.id == sample_id)
+        query: Query = (
+            select(Sample).options(selectinload(Sample.analyses)).filter(Sample.id == sample_id)
+        )
         sample: Sample = await self.fetch_one_or_none(query)
+
         if not sample:
             raise SampleNotFoundError
+
         sample.comment = comment
         self.session.add(sample)
         await self.session.commit()
