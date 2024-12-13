@@ -247,7 +247,11 @@ class ReadHandler(BaseHandler):
         return (
             select(Sample)
             .distinct()
-            .options(selectinload(Sample.analyses).selectinload(Analysis.genotypes))
+            .options(
+                selectinload(Sample.analyses)
+                .selectinload(Analysis.genotypes)
+                .selectinload(Genotype.analysis)
+            )
             .join(Analysis, Analysis.sample_id == Sample.id)
         )
 
