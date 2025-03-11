@@ -29,6 +29,10 @@ class UserNotFoundError(Exception):
     pass
 
 
+class UserRoleError(Exception):
+    pass
+
+
 class UserArchiveError(Exception):
     pass
 
@@ -54,4 +58,8 @@ class SNPExistsError(Exception):
 
 
 class PlateExistsError(Exception):
+    pass
+
+
+class AuthenticationError(Exception):
     pass

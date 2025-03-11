@@ -1,35 +1,22 @@
-import requests
 from fastapi import Depends, HTTPException, Security
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import jwt
 from starlette import status
 from starlette.requests import Request
 
-from genotype_api.config import security_settings
+from genotype_api.config import security_settings, keycloak_client
 from genotype_api.database.models import User
 from genotype_api.database.store import Store, get_store
 from genotype_api.dto.user import CurrentUser
 
-
-def decode_id_token(token: str):
-    try:
-        payload = jwt.decode(
-            token,
-            key=requests.get(security_settings.jwks_uri).json(),
-            algorithms=[security_settings.algorithm],
-            audience=security_settings.client_id,
-            options={
-                "verify_at_hash": False,
-            },
-        )
-        return payload
-    except jwt.JWTError:
-        return None
+from genotype_api.exceptions import AuthenticationError
+from genotype_api.services.authentication.service import AuthenticationService
 
 
 class JWTBearer(HTTPBearer):
-    def __init__(self, auto_error: bool = True):
+    def __init__(self, auth_service: AuthenticationService, auto_error: bool = True):
         super(JWTBearer, self).__init__(auto_error=auto_error)
+        self.auth_service = auth_service
 
     async def __call__(self, request: Request):
         credentials: HTTPAuthorizationCredentials = await super(JWTBearer, self).__call__(request)
@@ -48,19 +35,23 @@ class JWTBearer(HTTPBearer):
 
     def verify_jwt(self, jwtoken: str) -> dict | None:
         try:
-            payload = decode_id_token(jwtoken)
+            payload: dict = self.auth_service.verify_token(jwtoken).model_dump()
             if payload and "email" in payload:
                 return {"email": payload["email"]}
             else:
                 return None
-        except jwt.JWTError:
+        except AuthenticationError as error:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="Invalid token or expired token.",
+                detail=f"{error}",
             )
 
 
-jwt_scheme = JWTBearer()
+auth_service = AuthenticationService(
+    redirect_uri=security_settings.keycloak_redirect_uri,
+    keycloak_client=keycloak_client,
+)
+jwt_scheme = JWTBearer(auth_service=auth_service)
 
 
 async def get_active_user(

@@ -2,6 +2,8 @@ from pathlib import Path
 
 from pydantic_settings import BaseSettings
 
+from genotype_api.clients.authentication.keycloak_client import KeycloakClient
+
 GENOTYPE_PACKAGE = Path(__file__).parent
 PACKAGE_ROOT: Path = GENOTYPE_PACKAGE.parent
 ENV_FILE: Path = PACKAGE_ROOT / ".env"
@@ -25,9 +27,11 @@ class DBSettings(BaseSettings):
 class SecuritySettings(BaseSettings):
     """Settings for serving the genotype-api app"""
 
-    client_id: str = ""
-    algorithm: str = ""
-    jwks_uri: str = "https://www.googleapis.com/oauth2/v3/certs"
+    keycloak_client_id: str = "client_id"
+    keycloak_client_secret: str = "client_secret"
+    keycloak_server_url: str = "server_url"
+    keycloak_realm_name: str = "realm_name"
+    keycloak_redirect_uri: str = "redirect_uri"
     api_root_path: str = "/"
 
     class Config:
@@ -37,3 +41,11 @@ class SecuritySettings(BaseSettings):
 security_settings = SecuritySettings()
 
 settings = DBSettings()
+
+keycloak_client = KeycloakClient(
+    server_url=security_settings.keycloak_server_url,
+    client_id=security_settings.keycloak_client_id,
+    client_secret_key=security_settings.keycloak_client_secret,
+    realm_name=security_settings.keycloak_realm_name,
+    redirect_uri=security_settings.keycloak_redirect_uri,
+)

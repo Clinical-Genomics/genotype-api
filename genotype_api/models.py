@@ -52,3 +52,29 @@ class MatchCounts(BaseModel):
 class MatchResult(BaseModel):
     sample_id: str
     match_results: MatchCounts | None = None
+
+
+class RealmAccess(BaseModel):
+    roles: list[str]
+
+
+class DecodingResponse(BaseModel):
+    exp: int
+    iat: int
+    auth_time: int
+    jti: str
+    iss: str
+    sub: str
+    typ: str
+    azp: str
+    sid: str
+    acr: str
+    allowed_origins: list[str] | None = None
+    realm_access: RealmAccess
+    scope: str
+    email_verified: bool
+    name: str
+    preferred_username: str
+    given_name: str
+    family_name: str
+    email: str
