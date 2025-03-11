@@ -8,7 +8,6 @@ def realm_access() -> RealmAccess:
     return RealmAccess(roles=["cg-employee"])
 
 
-
 @pytest.fixture
 def decode_token_response(realm_access) -> DecodingResponse:
     return DecodingResponse(

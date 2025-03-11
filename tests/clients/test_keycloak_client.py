@@ -5,11 +5,12 @@ import pytest
 from genotype_api.clients.authentication.keycloak_client import KeycloakClient
 
 
-
 def test_get_client_success(mocker):
 
     # Mock the KeycloakOpenID class
-    mock_keycloak_openid = mocker.patch("genotype_api.clients.authentication.keycloak_client.KeycloakOpenID")
+    mock_keycloak_openid = mocker.patch(
+        "genotype_api.clients.authentication.keycloak_client.KeycloakOpenID"
+    )
     mock_instance = MagicMock()
     mock_keycloak_openid.return_value = mock_instance
 

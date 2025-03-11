@@ -15,7 +15,6 @@ def test_verify_token_success(decode_token_response):
     # GIVEN mocked responses from the services
     mock_keycloak_client.decode_token.return_value = decode_token_response.dict()
 
-
     # GIVEN an AuthenticationService
     auth_service = AuthenticationService(
         redirect_uri="redirect_uri",
@@ -48,6 +47,7 @@ def test_verify_token_invalid_role(decode_token_response):
 
     # THEN an UserRoleError is raised
     with pytest.raises(
-        AuthenticationError, match="The user does not have the required role to access this service."
+        AuthenticationError,
+        match="The user does not have the required role to access this service.",
     ):
         auth_service.verify_token("jwt_token")
