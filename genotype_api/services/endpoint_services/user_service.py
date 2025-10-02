@@ -36,6 +36,7 @@ class UserService(BaseService):
             raise UserExistsError
         db_user = User(email=user.email, name=user.name)
         new_user: User = await self.store.create_user(user=db_user)
+        await self.store.session.refresh(new_user, ["plates"])
         return self._create_user_response(new_user)
 
     async def get_users(self, skip: int, limit: int) -> list[UserResponse]:
