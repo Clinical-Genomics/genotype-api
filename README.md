@@ -52,6 +52,3 @@ Clustering to the left are the 200 true hits. Clustering around 26 mismatches ar
 
 Chosen cutoff: **3 mismatches**. Anything above that will set the status to fail and should launch an investigation.
 
-
-
- 
