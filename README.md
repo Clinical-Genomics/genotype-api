@@ -38,6 +38,20 @@ The same samples get sequenced and genotyped inhouse and the result of this is u
 
 The two analyses for each sample are then compared to check for anomalies.
 
+## Selection of the max_mismatch cutoff
+
+In order to choose the cutoff for max_mismatch (see genotype_api/constants.py:28), the following analysis was performed:
+
+To figure out a reasonable cutoff to differentiate between concordant and discordant results, results from 5 MAF plates (ID7-11) were loaded into a new database. Correspondingly, results from sequencing were also imported across all customers and from both exome and whole genome sequencing.
+
+The results were plotted as a histogram based on number of mismatches per comparison.
+
+<img width="397" height="281" alt="comparison_of_mismatches (1)" src="https://github.com/user-attachments/assets/f6bbdf01-1fdd-4352-ac09-a90e45baa917" />
+
+Clustering to the left are the 200 true hits. Clustering around 26 mismatches are the random hits. The gap between true and random hits is very obvious. This lets us set the cutoff rather liberally since we have confirmed that random hits have at least 14 mismatches.
+
+Chosen cutoff: **3 mismatches**. Anything above that will set the status to fail and should launch an investigation.
+
 
 
  
