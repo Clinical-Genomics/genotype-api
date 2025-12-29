@@ -50,5 +50,5 @@ The results were plotted as a histogram based on number of mismatches per compar
 
 Clustering to the left are the 200 true hits. Clustering around 26 mismatches are the random hits. The gap between true and random hits is very obvious. This lets us set the cutoff rather liberally since we have confirmed that random hits have at least 14 mismatches.
 
-Chosen cutoff: **3 mismatches**. Anything above that will set the status to fail and should launch an investigation.
+Chosen cutoff: **3 mismatches**. Anything above that will set the status to fail.
 
