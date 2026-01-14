@@ -1,6 +1,6 @@
 # Mac OSX hidden files
 .DS_Store
-
+venv
 # Byte-compiled / optimized / DLL files
 *.py[cod]
 __pycache__/
